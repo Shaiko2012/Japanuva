@@ -43,16 +43,22 @@ export function Countdown() {
 
   return (
     <div
-      className="countdown-sign flex h-full w-full min-h-[8.5rem] flex-col items-center justify-center gap-2 rounded-2xl px-2.5 py-2.5 sm:min-h-0 sm:gap-2.5 sm:px-3 sm:py-3"
+      className="countdown-sign flex h-full w-full min-h-[7.5rem] flex-col items-center justify-center gap-2 rounded-2xl px-2.5 py-2.5 md:min-h-0 md:gap-2.5 md:px-3 md:py-3"
       dir="ltr"
       suppressHydrationWarning
+      role="timer"
+      aria-live="polite"
+      aria-atomic="true"
       aria-label="זמן עד ליציאה"
     >
       <div className="flex items-center gap-1.5 text-muted" dir="rtl">
-        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-wood/15 text-wood">
+        <span
+          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-wood/15 text-wood"
+          aria-hidden
+        >
           <Clock className="h-3.5 w-3.5" strokeWidth={2.25} />
         </span>
-        <span className="whitespace-nowrap text-[10px] font-semibold tracking-wide sm:text-[11px]">
+        <span className="whitespace-nowrap text-[11px] font-semibold tracking-wide">
           זמן עד ליציאה
         </span>
       </div>
@@ -71,7 +77,7 @@ export function Countdown() {
             >
               {mounted ? formatUnit(unit.value) : "--"}
             </motion.span>
-            <span className="text-[9px] font-medium leading-none text-muted">
+            <span className="text-[10px] font-medium leading-none text-muted">
               {unit.label}
             </span>
           </div>

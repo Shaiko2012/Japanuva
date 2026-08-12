@@ -11,17 +11,19 @@ npm run dev
 
 פתחו [http://localhost:3000](http://localhost:3000).
 
-## התחברות Google + שמירה בענן
+## התחברות (Google / אימייל) + שמירה בענן
 
 1. צרו פרויקט ב־[Firebase Console](https://console.firebase.google.com)
-2. Authentication → Sign-in method → הפעילו **Google**
+2. Authentication → Sign-in method → הפעילו **Google** וגם **Email/Password**
 3. Firestore Database → צרו DB, והדביקו את הכללים מ־`firestore.rules`
 4. Project settings → Web app → העתיקו את הקונפיג
 5. העתיקו `.env.example` ל־`.env.local` ומלאו את המפתחות
 6. ב־Authentication → Settings → Authorized domains ודאו ש־`localhost` קיים
 7. הפעילו מחדש את `npm run dev`
 
-אחרי התחברות עם Google:
+> בלי להפעיל Email/Password בקונסול, הרשמה/התחברות באימייל תיכשל עם `operation-not-allowed`.
+
+אחרי התחברות:
 - המסלול נטען מהענן
 - שינויים בעורך הטיול נשמרים אוטומטית ל־Firestore
 - כפתור **שמירה בענן** בעמוד עריכת הטיול

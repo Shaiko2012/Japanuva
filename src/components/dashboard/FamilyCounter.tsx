@@ -75,10 +75,10 @@ function CounterRow({
         <button
           type="button"
           onClick={onDec}
-          className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-surface text-muted hover:border-olive/40 hover:text-foreground sm:h-8 sm:w-8"
+          className="touch-target flex items-center justify-center rounded-full border border-border bg-surface text-muted hover:border-olive/40 hover:text-foreground"
           aria-label={`הפחת ${label}`}
         >
-          <Minus className="h-3.5 w-3.5" />
+          <Minus className="h-3.5 w-3.5" aria-hidden />
         </button>
         <AnimatePresence mode="popLayout">
           <motion.span
@@ -87,6 +87,7 @@ function CounterRow({
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.7, opacity: 0 }}
             className="w-6 text-center font-[family-name:var(--font-quicksand)] text-lg font-bold tabular-nums text-foreground"
+            aria-live="polite"
           >
             {value}
           </motion.span>
@@ -94,10 +95,10 @@ function CounterRow({
         <button
           type="button"
           onClick={onInc}
-          className="flex h-11 w-11 items-center justify-center rounded-full bg-terracotta text-parchment shadow-[0_3px_10px_var(--glow)] hover:brightness-105 sm:h-8 sm:w-8"
+          className="touch-target flex items-center justify-center rounded-full bg-terracotta text-parchment shadow-[0_3px_10px_var(--glow)] hover:brightness-105"
           aria-label={`הוסף ${label}`}
         >
-          <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
+          <Plus className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden />
         </button>
       </div>
     </div>

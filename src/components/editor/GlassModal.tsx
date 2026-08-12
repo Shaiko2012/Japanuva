@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 
@@ -13,20 +14,39 @@ interface ModalProps {
 }
 
 export function GlassModal({ open, title, onClose, children, wide }: ModalProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", onKey);
+    };
   }, [open, onClose]);
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <AnimatePresence>
       {open && (
         <motion.div
           className="fixed inset-0 z-[80] flex items-end justify-center p-3 sm:items-center sm:p-6"
+          style={{
+            paddingTop: "max(0.75rem, var(--safe-top))",
+            paddingBottom: "max(0.75rem, var(--safe-bottom))",
+            paddingInlineStart: "max(0.75rem, var(--safe-left))",
+            paddingInlineEnd: "max(0.75rem, var(--safe-right))",
+          }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -44,7 +64,7 @@ export function GlassModal({ open, title, onClose, children, wide }: ModalProps)
             initial={{ y: 24, opacity: 0, scale: 0.98 }}
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: 16, opacity: 0, scale: 0.98 }}
-            className={`glass-strong relative z-10 max-h-[90vh] w-full overflow-y-auto rounded-3xl p-4 sm:p-6 ${
+            className={`glass-strong relative z-10 max-h-[min(90dvh,90vh)] w-full overflow-y-auto rounded-3xl p-4 sm:p-6 ${
               wide ? "max-w-2xl" : "max-w-lg"
             }`}
           >
@@ -55,7 +75,7 @@ export function GlassModal({ open, title, onClose, children, wide }: ModalProps)
               <button
                 type="button"
                 onClick={onClose}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface hover:border-accent/40"
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-surface hover:border-accent/40 sm:h-9 sm:w-9"
                 aria-label="סגור"
               >
                 <X className="h-4 w-4" />
@@ -65,6 +85,7 @@ export function GlassModal({ open, title, onClose, children, wide }: ModalProps)
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 }

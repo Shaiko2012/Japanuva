@@ -182,7 +182,7 @@ export function CurrencyConverter() {
       <div className="ledger-frame min-w-0 rounded-2xl p-3">
         <div className="grid grid-cols-2 gap-2 sm:gap-3">
           <label className="min-w-0 rounded-xl border border-border bg-surface/80 p-2.5 transition hover:border-olive/40 sm:p-3">
-            <div className="text-xs font-medium text-muted">שקלים (₪)</div>
+            <div className="text-xs font-semibold text-foreground/80">שקלים (₪)</div>
             <input
               type="number"
               min={0}
@@ -190,10 +190,11 @@ export function CurrencyConverter() {
               value={ils}
               onChange={(e) => setFromIls(Number(e.target.value))}
               className="mt-1 w-full min-w-0 bg-transparent font-[family-name:var(--font-quicksand)] text-lg font-bold tabular-nums text-foreground outline-none sm:text-xl"
+              aria-label="סכום בשקלים"
             />
           </label>
           <label className="min-w-0 rounded-xl border border-border bg-surface/80 p-2.5 transition hover:border-olive/40 sm:p-3">
-            <div className="text-xs font-medium text-muted">ין יפני (¥)</div>
+            <div className="text-xs font-semibold text-foreground/80">ין יפני (¥)</div>
             <input
               type="number"
               min={0}
@@ -201,6 +202,7 @@ export function CurrencyConverter() {
               value={jpy}
               onChange={(e) => setFromJpy(Number(e.target.value))}
               className="mt-1 w-full min-w-0 bg-transparent font-[family-name:var(--font-quicksand)] text-lg font-bold tabular-nums text-foreground outline-none sm:text-xl"
+              aria-label="סכום בין יפני"
             />
           </label>
         </div>
@@ -215,7 +217,7 @@ export function CurrencyConverter() {
               type="button"
               onClick={() => setFromJpy(amount)}
               className={cn(
-                "min-h-11 rounded-full border px-3 py-2 text-xs font-semibold transition sm:min-h-0 sm:py-1",
+                "min-h-11 rounded-full border px-3.5 py-2 text-xs font-semibold transition",
                 active
                   ? "border-terracotta/50 bg-terracotta text-parchment shadow-[0_4px_12px_var(--glow)]"
                   : "border-border bg-parchment-deep/60 text-muted hover:border-olive/45 hover:text-foreground",

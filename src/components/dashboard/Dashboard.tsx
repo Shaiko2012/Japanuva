@@ -20,14 +20,14 @@ export function Dashboard() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5 sm:space-y-6">
       <HeroBar />
 
       <motion.section
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.12, duration: 0.45 }}
-        className="grid min-w-0 gap-3 lg:grid-cols-2 lg:gap-4"
+        className="grid min-w-0 gap-4 lg:grid-cols-2 lg:gap-5"
       >
         <RouteMap
           selected={hydrated ? selectedDistrict : null}

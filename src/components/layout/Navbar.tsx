@@ -50,15 +50,22 @@ export function Navbar() {
       }}
     >
       <div className="mx-auto flex max-w-7xl min-w-0 items-center gap-2 sm:gap-3">
-        <Link href="/" className="group flex min-w-0 shrink items-center gap-2 sm:gap-2.5">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-olive text-parchment shadow-[0_4px_12px_color-mix(in_srgb,var(--olive)_40%,transparent)] sm:h-9 sm:w-9">
+        <Link
+          href="/"
+          className="group flex min-h-11 shrink-0 items-center gap-2 rounded-2xl sm:gap-2.5"
+          aria-label={`${tripMeta.name} — דף הבית`}
+        >
+          <span
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-olive text-parchment shadow-[0_4px_12px_color-mix(in_srgb,var(--olive)_40%,transparent)]"
+            aria-hidden
+          >
             <Leaf className="h-4 w-4" strokeWidth={2.25} />
           </span>
-          <span className="flex min-w-0 flex-col leading-snug">
-            <span className="truncate font-[family-name:var(--font-quicksand)] text-base font-bold tracking-tight text-foreground">
+          <span className="flex flex-col leading-snug">
+            <span className="whitespace-nowrap font-[family-name:var(--font-quicksand)] text-sm font-bold tracking-tight text-foreground sm:text-base">
               {tripMeta.name}
             </span>
-            <span className="hidden truncate text-[10px] text-muted sm:block">
+            <span className="hidden whitespace-nowrap text-[10px] text-muted sm:block">
               תכנון טיול חמים ליפן
             </span>
           </span>
@@ -78,7 +85,7 @@ export function Navbar() {
                   <Link
                     href={item.href}
                     className={cn(
-                      "relative flex min-h-11 items-center gap-1.5 rounded-full px-3 py-2 text-xs transition sm:min-h-0 sm:py-1.5 sm:text-sm",
+                      "relative flex min-h-11 items-center gap-1.5 rounded-full px-3 py-2 text-xs transition sm:text-sm",
                       active
                         ? "text-espresso"
                         : "text-muted hover:bg-parchment-deep hover:text-foreground",
@@ -89,9 +96,10 @@ export function Navbar() {
                         layoutId="nav-pill"
                         className="absolute inset-0 rounded-full border border-border bg-parchment-deep shadow-[0_2px_8px_rgba(44,34,30,0.06)]"
                         transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                        aria-hidden
                       />
                     )}
-                    <Icon className="relative z-10 h-3.5 w-3.5" strokeWidth={2} />
+                    <Icon className="relative z-10 h-3.5 w-3.5" strokeWidth={2} aria-hidden />
                     <span className="relative z-10 whitespace-nowrap font-semibold">
                       {item.label}
                     </span>

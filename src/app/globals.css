@@ -7,7 +7,8 @@
   --surface: rgba(255, 251, 242, 0.9);
   --surface-strong: rgba(255, 250, 238, 0.96);
   --border: #d9c8a8;
-  --muted: #6b5a48;
+  /* Darker muted for AA contrast on parchment (~5.5:1+) */
+  --muted: #564636;
   --accent: #c4451d;
   --accent-soft: rgba(196, 69, 29, 0.14);
   --glow: rgba(196, 69, 29, 0.22);
@@ -50,7 +51,8 @@
   --surface: rgba(36, 44, 56, 0.88);
   --surface-strong: rgba(42, 52, 66, 0.95);
   --border: #3d4a48;
-  --muted: #b8a894;
+  /* Lighter muted for contrast on dark parchment */
+  --muted: #c9b8a0;
   --accent: #d45630;
   --accent-soft: rgba(212, 86, 48, 0.22);
   --glow: rgba(224, 164, 66, 0.28);
@@ -144,6 +146,44 @@ body {
   overflow-wrap: break-word;
 }
 
+/* Visible keyboard focus — keep Ghibli olive, skip mouse clicks */
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--olive) 75%, var(--espresso));
+  outline-offset: 2px;
+}
+
+:focus-visible:not(input):not(textarea):not(select) {
+  border-radius: 0.75rem;
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline-color: color-mix(in srgb, var(--terracotta) 70%, var(--olive));
+  outline-offset: 1px;
+}
+
+.touch-target {
+  min-height: var(--touch-min);
+  min-width: var(--touch-min);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
 /* Soft parchment wash — moss / dusky teal / ochre */
 body::before {
   content: "";
@@ -219,8 +259,9 @@ body::before {
 
 .dashboard-widget-grid {
   display: grid;
-  gap: var(--space-gap);
+  gap: var(--space-gap-lg);
   grid-template-columns: minmax(0, 1fr);
+  align-items: stretch;
 }
 
 @media (min-width: 640px) {
@@ -232,7 +273,6 @@ body::before {
 @media (min-width: 1024px) {
   .dashboard-widget-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--space-gap-lg);
   }
 }
 
