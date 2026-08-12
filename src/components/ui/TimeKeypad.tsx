@@ -205,7 +205,7 @@ function KeyBtn({
       onClick={onClick}
       {...softTapProps(reduceMotion)}
       className={cn(
-        "flex h-14 items-center justify-center gap-1.5 rounded-2xl border text-lg font-semibold tabular-nums transition",
+        "flex h-12 items-center justify-center gap-1.5 rounded-2xl border text-lg font-semibold tabular-nums transition sm:h-14",
         muted
           ? "border-border bg-surface text-muted"
           : "border-border/80 bg-[color-mix(in_srgb,var(--yellow)_35%,white)] text-foreground hover:bg-[color-mix(in_srgb,var(--yellow)_55%,white)] dark:bg-[color-mix(in_srgb,var(--yellow)_18%,transparent)] dark:hover:bg-[color-mix(in_srgb,var(--yellow)_28%,transparent)]",

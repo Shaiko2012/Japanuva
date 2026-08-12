@@ -97,7 +97,6 @@ export function DailyItinerary({ selectedDistrict }: DailyItineraryProps) {
             return (
               <motion.div
                 key={day.id}
-                layout="position"
                 {...softEntranceProps(reduceMotion, {
                   delay: softStagger(index, 0.05),
                   y: 10,
@@ -140,7 +139,6 @@ export function DailyItinerary({ selectedDistrict }: DailyItineraryProps) {
                     {open && (
                       <motion.div
                         {...expandMotion}
-                        className="overflow-hidden"
                       >
                         <div className="mt-3 space-y-2 border-t border-border pt-3">
                           {day.activities.length === 0 ? (

@@ -77,20 +77,25 @@ export function KeypadField(props: KeypadFieldProps) {
       aria-expanded={open}
       className={cn(
         bare
-          ? "mt-1 flex w-full min-w-0 items-center gap-2 bg-transparent text-start outline-none"
-          : "mt-1 flex w-full min-w-0 items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2.5 text-start text-sm text-foreground outline-none transition hover:border-yellow/45 focus-visible:border-accent/50",
+          ? "mt-1 flex min-h-11 w-full min-w-0 items-center gap-2 bg-transparent text-start outline-none"
+          : "mt-1 flex min-h-11 w-full min-w-0 items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2.5 text-start text-sm text-foreground outline-none transition hover:border-yellow/45 focus-visible:border-accent/50",
         fieldClassName,
       )}
     >
-      {prefix ??
-        (props.mode === "time" ? (
-          <Clock3 className="h-3.5 w-3.5 shrink-0 text-muted" />
-        ) : (
-          <Hash className="h-3.5 w-3.5 shrink-0 text-muted" />
-        ))}
+      {prefix != null ? (
+        <span className="shrink-0">{prefix}</span>
+      ) : props.mode === "time" ? (
+        <Clock3 className="h-3.5 w-3.5 shrink-0 text-muted" />
+      ) : (
+        <Hash className="h-3.5 w-3.5 shrink-0 text-muted" />
+      )}
       <span
         className={cn(
-          "min-w-0 flex-1 truncate tabular-nums",
+          "min-w-0 flex-1 tabular-nums",
+          // Numbers must stay fully readable in narrow cards — never ellipsis mid-digit
+          props.mode === "number"
+            ? "break-all leading-tight"
+            : "truncate",
           props.mode === "time" && !props.value && "text-muted",
           props.mode === "number" &&
             props.value === 0 &&

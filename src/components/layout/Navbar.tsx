@@ -22,8 +22,8 @@ import { navItems, tripMeta } from "@/data/trip";
 import { cn } from "@/lib/utils";
 import {
   navPillTransition,
-  softExpandProps,
   softLogoHover,
+  softMenuProps,
   softSpring,
   softTap,
   softTapProps,
@@ -47,7 +47,7 @@ export function Navbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const reduceMotion = useReducedMotion();
-  const menuMotion = softExpandProps(reduceMotion);
+  const menuMotion = softMenuProps(reduceMotion);
   const menuBtnTap = softTapProps(reduceMotion);
 
   return (
@@ -174,9 +174,9 @@ export function Navbar() {
           <motion.nav
             key="mobile-nav"
             {...menuMotion}
-            className="mx-auto mt-3 w-full max-w-7xl overflow-hidden lg:hidden"
+            className="mx-auto w-full max-w-7xl overflow-hidden lg:hidden"
           >
-            <div className="nav-mobile-menu">
+            <div className="nav-mobile-menu mt-3">
               <ul className="flex flex-col gap-0.5">
                 {navItems.map((item) => {
                   const Icon = iconMap[item.icon];

@@ -122,7 +122,6 @@ export function TransitHub() {
             {options.map((option, index) => (
               <motion.div
                 key={option.id}
-                layout
                 {...softEntranceProps(reduceMotion, {
                   delay: softStagger(index, 0.05),
                   y: 10,

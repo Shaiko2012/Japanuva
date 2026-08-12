@@ -95,7 +95,6 @@ export function VjwGuide() {
                     <motion.button
                       key={item.id}
                       type="button"
-                      layout
                       {...softEntranceProps(reduceMotion, {
                         delay: softStagger(index, 0.04, 0.24),
                         y: 6,

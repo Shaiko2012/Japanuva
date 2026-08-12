@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
+import { softProgressProps } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 interface ProgressBarProps {
@@ -19,6 +20,8 @@ export function ProgressBar({
   label,
 }: ProgressBarProps) {
   const pct = Math.min(100, Math.max(0, (value / max) * 100));
+  const reduceMotion = useReducedMotion();
+  const fill = softProgressProps(pct, reduceMotion);
 
   return (
     <div className={cn("w-full", className)}>
@@ -31,12 +34,11 @@ export function ProgressBar({
       <div className="h-2.5 overflow-hidden rounded-full bg-foreground/10">
         <motion.div
           className={cn(
-            "h-full rounded-full bg-gradient-to-l from-accent to-apricot shadow-[0_0_16px_var(--glow)]",
+            "h-full w-full origin-[inline-start] rounded-full bg-gradient-to-l from-accent to-apricot shadow-[0_0_16px_var(--glow)]",
             barClassName,
           )}
-          initial={{ width: 0 }}
-          animate={{ width: `${pct}%` }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
+          style={{ transformOrigin: "inline-start" }}
+          {...fill}
         />
       </div>
     </div>

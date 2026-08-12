@@ -105,7 +105,7 @@ export function GoogleMapPip() {
             onClick={toggle}
             className="glow-accent fixed z-[70] flex min-h-11 items-center gap-2 rounded-full border border-nav-bg/40 bg-nav-bg px-4 py-3 text-sm font-bold text-nav-fg shadow-2xl"
             style={{
-              bottom: "max(1.25rem, var(--safe-bottom))",
+              bottom: "max(1.75rem, calc(var(--safe-bottom) + 0.5rem))",
               insetInlineStart: "max(1.25rem, var(--safe-right))",
             }}
             aria-label="פתח מפת Google"
@@ -130,7 +130,7 @@ export function GoogleMapPip() {
                 : "h-[min(42dvh,280px)] w-[min(calc(100vw-1.5rem-var(--safe-left)-var(--safe-right)),380px)]",
             )}
             style={{
-              bottom: "max(1.25rem, var(--safe-bottom))",
+              bottom: "max(1.75rem, calc(var(--safe-bottom) + 0.5rem))",
               insetInlineStart: "max(0.75rem, var(--safe-right))",
             }}
           >

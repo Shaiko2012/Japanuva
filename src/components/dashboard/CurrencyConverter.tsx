@@ -156,21 +156,21 @@ export function CurrencyConverter() {
 
   return (
     <div className="flex h-full min-w-0 flex-col space-y-3">
-      <div className="flex min-w-0 items-start justify-between gap-2">
+      <div className="flex min-w-0 flex-wrap items-start justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2 text-sm font-semibold text-foreground">
           <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-amber-soft text-wood">
             <ArrowLeftRight className="h-3.5 w-3.5" strokeWidth={2.25} />
           </span>
           <span className="min-w-0">המרת מטבע</span>
         </div>
-        <div className="min-w-0 max-w-[55%] text-end sm:max-w-none">
-          <div className="text-[11px] font-medium text-muted">
+        <div className="min-w-0 max-w-full text-end sm:max-w-[55%]">
+          <div className="text-[11px] font-medium tabular-nums text-muted">
             {loading ? <span>טוען שער…</span> : <span>1 ₪ ≈ {rate} ¥</span>}
           </div>
           {history && (
             <RateSparkline values={history} className="mt-1 justify-end" />
           )}
-          <p className="mt-1 max-w-full text-[10px] leading-4 text-muted sm:max-w-[11rem] sm:ms-auto">
+          <p className="mt-1 max-w-full text-[10px] leading-4 text-muted">
             {loading
               ? "מתחבר לשער חי…"
               : `${sourceLabelHe(source, isFallback)}${
@@ -180,9 +180,9 @@ export function CurrencyConverter() {
         </div>
       </div>
 
-      <div className="ledger-frame min-w-0 rounded-2xl p-3">
+      <div className="ledger-frame flex min-h-0 min-w-0 flex-1 flex-col justify-center gap-3 rounded-2xl p-3">
         <div className="grid grid-cols-2 gap-2 sm:gap-3">
-          <div className="min-w-0 rounded-xl border border-border bg-surface/80 p-2.5 transition hover:border-olive/40 sm:p-3">
+          <div className="min-w-0 overflow-hidden rounded-xl border border-border bg-surface/80 p-2 transition hover:border-olive/40 sm:p-2.5">
             <div className="text-xs font-semibold text-foreground/80">שקלים (₪)</div>
             <KeypadField
               mode="number"
@@ -192,11 +192,11 @@ export function CurrencyConverter() {
               title="סכום בשקלים"
               aria-label="סכום בשקלים"
               onChange={setFromIls}
-              fieldClassName="mt-1 font-[family-name:var(--font-quicksand)] text-lg font-bold tabular-nums sm:text-xl"
-              prefix={<span className="text-sm text-muted">₪</span>}
+              fieldClassName="mt-1 font-[family-name:var(--font-quicksand)] text-sm font-bold tabular-nums sm:text-base"
+              prefix={<span className="text-xs text-muted sm:text-sm">₪</span>}
             />
           </div>
-          <div className="min-w-0 rounded-xl border border-border bg-surface/80 p-2.5 transition hover:border-olive/40 sm:p-3">
+          <div className="min-w-0 overflow-hidden rounded-xl border border-border bg-surface/80 p-2 transition hover:border-olive/40 sm:p-2.5">
             <div className="text-xs font-semibold text-foreground/80">ין יפני (¥)</div>
             <KeypadField
               mode="number"
@@ -206,32 +206,32 @@ export function CurrencyConverter() {
               title="סכום בין יפני"
               aria-label="סכום בין יפני"
               onChange={setFromJpy}
-              fieldClassName="mt-1 font-[family-name:var(--font-quicksand)] text-lg font-bold tabular-nums sm:text-xl"
-              prefix={<span className="text-sm text-muted">¥</span>}
+              fieldClassName="mt-1 font-[family-name:var(--font-quicksand)] text-sm font-bold tabular-nums sm:text-base"
+              prefix={<span className="text-xs text-muted sm:text-sm">¥</span>}
             />
           </div>
         </div>
-      </div>
 
-      <div className="flex flex-wrap gap-2">
-        {QUICK_JPY.map((amount) => {
-          const active = jpy === amount;
-          return (
-            <button
-              key={amount}
-              type="button"
-              onClick={() => setFromJpy(amount)}
-              className={cn(
-                "min-h-11 rounded-full border px-3.5 py-2 text-xs font-semibold transition",
-                active
-                  ? "border-nav-bg/50 bg-nav-bg text-nav-fg shadow-[0_4px_12px_var(--glow)]"
-                  : "border-border bg-parchment-deep/60 text-muted hover:border-yellow/45 hover:text-foreground",
-              )}
-            >
-              ¥{formatNumber(amount)}
-            </button>
-          );
-        })}
+        <div className="flex flex-wrap gap-2">
+          {QUICK_JPY.map((amount) => {
+            const active = jpy === amount;
+            return (
+              <button
+                key={amount}
+                type="button"
+                onClick={() => setFromJpy(amount)}
+                className={cn(
+                  "min-h-11 rounded-full border px-3.5 py-2 text-xs font-semibold transition",
+                  active
+                    ? "border-nav-bg/50 bg-nav-bg text-nav-fg shadow-[0_4px_12px_var(--glow)]"
+                    : "border-border bg-surface/80 text-muted hover:border-yellow/45 hover:text-foreground",
+                )}
+              >
+                ¥{formatNumber(amount)}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <input

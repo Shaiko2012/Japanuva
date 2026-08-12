@@ -6,6 +6,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ChevronDown, Lightbulb, ArrowLeft } from "lucide-react";
 import { tipCards } from "@/data/tools";
 import {
+  softEase,
   softEntranceProps,
   softExpandProps,
   softInteractiveProps,
@@ -68,7 +69,7 @@ export function TipsGrid() {
                   />
                   <motion.span
                     animate={{ rotate: open ? 180 : 0 }}
-                    transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                    transition={{ duration: 0.22, ease: softEase }}
                     className="inline-flex"
                   >
                     <ChevronDown className="h-4 w-4 text-muted" />
@@ -82,7 +83,6 @@ export function TipsGrid() {
                 {open && (
                   <motion.div
                     {...expandMotion}
-                    className="overflow-hidden"
                   >
                     <p className="mt-3 border-t border-border pt-3 text-sm leading-6 text-foreground/90">
                       {card.body}

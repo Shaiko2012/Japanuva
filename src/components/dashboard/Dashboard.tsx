@@ -22,7 +22,7 @@ export function Dashboard() {
   }
 
   return (
-    <div className="space-y-5 sm:space-y-6">
+    <div className="space-y-5 pb-24 sm:space-y-6">
       <HeroBar />
 
       <motion.section

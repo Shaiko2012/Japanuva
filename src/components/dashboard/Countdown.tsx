@@ -43,7 +43,7 @@ export function Countdown() {
 
   return (
     <div
-      className="countdown-sign flex h-full w-full min-h-[7.5rem] flex-col items-center justify-center gap-2 rounded-2xl px-2.5 py-2.5 md:min-h-0 md:gap-2.5 md:px-3 md:py-3"
+      className="countdown-sign flex h-full w-full min-h-0 max-w-full flex-col items-center justify-center gap-1.5 overflow-visible rounded-2xl px-2.5 py-2.5 sm:gap-2 sm:px-3.5 md:min-h-0 md:gap-2.5 md:px-4 md:py-3.5 lg:gap-3 lg:px-5 lg:py-4"
       dir="ltr"
       suppressHydrationWarning
       role="timer"
@@ -51,33 +51,33 @@ export function Countdown() {
       aria-atomic="true"
       aria-label="זמן עד ליציאה"
     >
-      <div className="flex items-center gap-1.5 text-muted" dir="rtl">
+      <div className="flex items-center gap-1.5 text-muted md:gap-2" dir="rtl">
         <span
-          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-wood/15 text-wood"
+          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-wood/15 text-wood md:h-7 md:w-7"
           aria-hidden
         >
-          <Clock className="h-3.5 w-3.5" strokeWidth={2.25} />
+          <Clock className="h-3.5 w-3.5 md:h-4 md:w-4" strokeWidth={2.25} />
         </span>
-        <span className="whitespace-nowrap text-[11px] font-semibold tracking-wide">
+        <span className="whitespace-nowrap text-[11px] font-semibold tracking-wide md:text-sm">
           זמן עד ליציאה
         </span>
       </div>
 
-      <div className="grid w-full min-w-0 grid-cols-4 gap-1 sm:gap-1.5">
+      <div className="grid w-full min-w-0 max-w-full flex-1 grid-cols-4 gap-1 overflow-visible sm:gap-1.5 md:gap-2 lg:gap-2.5">
         {units.map((unit) => (
           <div
             key={unit.label}
-            className="flex min-w-0 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-lg bg-parchment/55 px-0.5 py-1.5 sm:py-2"
+            className="flex min-w-0 flex-col items-center justify-center gap-0.5 overflow-visible rounded-lg bg-parchment/55 px-0.5 py-1.5 sm:px-1.5 sm:py-2 md:gap-1 md:rounded-xl md:px-1.5 md:py-3 lg:px-2 lg:py-3.5"
           >
             <motion.span
               key={`${unit.label}-${mounted ? unit.value : "x"}-${startDate}`}
               initial={{ opacity: 0.4 }}
               animate={{ opacity: 1 }}
-              className="max-w-full truncate font-[family-name:var(--font-quicksand)] text-sm font-bold tabular-nums leading-none text-foreground sm:text-base"
+              className="countdown-digit block w-full min-w-0 overflow-visible text-center font-[family-name:var(--font-quicksand)] font-bold tabular-nums leading-none tracking-tight text-foreground"
             >
               {mounted ? formatUnit(unit.value) : "--"}
             </motion.span>
-            <span className="text-[10px] font-medium leading-none text-muted">
+            <span className="text-[10px] font-medium leading-none text-muted md:text-xs">
               {unit.label}
             </span>
           </div>

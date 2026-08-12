@@ -2,10 +2,15 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  useReducedMotion,
+  type Variants,
+} from "framer-motion";
 import { X } from "lucide-react";
 import {
-  softEntranceProps,
+  softBackdropTransition,
   softModalSpring,
   softTransition,
 } from "@/lib/motion";
@@ -17,6 +22,13 @@ interface ModalProps {
   children: ReactNode;
   wide?: boolean;
 }
+
+const BACKDROP_BLUR = "blur(5px)";
+
+const rootVariants: Variants = {
+  open: { transition: { when: "beforeChildren" } },
+  closed: { transition: { when: "afterChildren" } },
+};
 
 export function GlassModal({ open, title, onClose, children, wide }: ModalProps) {
   const [mounted, setMounted] = useState(false);
@@ -42,15 +54,53 @@ export function GlassModal({ open, title, onClose, children, wide }: ModalProps)
 
   if (!mounted) return null;
 
-  const panel = softEntranceProps(reduceMotion, { y: 14 });
-  const panelTransition = reduceMotion
-    ? softTransition()
-    : { ...softModalSpring, delay: 0.02 };
+  const backdropVariants: Variants = reduceMotion
+    ? {
+        open: { opacity: 1, transition: softBackdropTransition() },
+        closed: { opacity: 0, transition: softBackdropTransition() },
+      }
+    : {
+        open: {
+          opacity: 1,
+          backdropFilter: BACKDROP_BLUR,
+          transition: {
+            opacity: softBackdropTransition(),
+            backdropFilter: { duration: 0.12, ease: [0.16, 1, 0.3, 1] },
+          },
+        },
+        closed: {
+          opacity: 0,
+          backdropFilter: "blur(0px)",
+          transition: {
+            opacity: softBackdropTransition(),
+            backdropFilter: { duration: 0.1, ease: [0.16, 1, 0.3, 1] },
+          },
+        },
+      };
+
+  const panelVariants: Variants = reduceMotion
+    ? {
+        open: { opacity: 1, transition: softTransition() },
+        closed: { opacity: 0, transition: softTransition() },
+      }
+    : {
+        open: {
+          opacity: 1,
+          y: 0,
+          transition: { ...softModalSpring, delay: 0.02 },
+        },
+        closed: {
+          opacity: 0,
+          y: 14,
+          transition: softTransition(),
+        },
+      };
 
   return createPortal(
     <AnimatePresence>
       {open && (
         <motion.div
+          key="glass-modal"
           className="fixed inset-0 z-[80] flex items-end justify-center p-3 sm:items-center sm:p-6"
           style={{
             paddingTop: "max(0.75rem, var(--safe-top))",
@@ -58,25 +108,31 @@ export function GlassModal({ open, title, onClose, children, wide }: ModalProps)
             paddingInlineStart: "max(0.75rem, var(--safe-left))",
             paddingInlineEnd: "max(0.75rem, var(--safe-right))",
           }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={softTransition()}
+          initial="closed"
+          animate="open"
+          exit="closed"
+          variants={rootVariants}
         >
-          <button
+          <motion.button
             type="button"
-            className="absolute inset-0 bg-[#141210]/65 backdrop-blur-sm"
             aria-label="סגירה"
             onClick={onClose}
+            variants={backdropVariants}
+            className="absolute inset-0 bg-[#141210]/65"
+            style={
+              reduceMotion
+                ? undefined
+                : {
+                    transition:
+                      "backdrop-filter 0.25s ease, -webkit-backdrop-filter 0.25s ease",
+                  }
+            }
           />
           <motion.div
             role="dialog"
             aria-modal="true"
             aria-label={title}
-            initial={panel.initial}
-            animate={panel.animate}
-            exit={panel.exit}
-            transition={panelTransition}
+            variants={panelVariants}
             className={`glass-strong relative z-10 max-h-[min(90dvh,90vh)] w-full overflow-y-auto rounded-3xl p-4 sm:p-6 ${
               wide ? "max-w-2xl" : "max-w-lg"
             }`}

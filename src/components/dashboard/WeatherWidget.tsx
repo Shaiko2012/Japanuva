@@ -10,7 +10,8 @@ import {
   Thermometer,
   Umbrella,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
+import { softEase, softProgressProps } from "@/lib/motion";
 import { weatherTips } from "@/data/trip";
 import { useTripMetaStore } from "@/store/tripMeta";
 import { cn } from "@/lib/utils";
@@ -43,6 +44,8 @@ function weatherIconFor(rainfallMm?: number, avgHighC?: number) {
 
 function KoyoGauge({ value }: { value: number }) {
   const pct = Math.min(100, Math.max(0, value));
+  const reduceMotion = useReducedMotion();
+  const fill = softProgressProps(pct, reduceMotion);
   const status =
     pct < 40 ? "מוקדם" : pct < 70 ? "מתקרב לשיא" : pct < 90 ? "שיא" : "שיא גבוה";
   const statusColor =
@@ -64,7 +67,7 @@ function KoyoGauge({ value }: { value: number }) {
         </span>
       </div>
       <div
-        className="relative h-3.5 rounded-full border border-border/70 bg-parchment-deep/80"
+        className="relative h-3.5 overflow-hidden rounded-full border border-border/70 bg-parchment-deep/80"
         role="meter"
         aria-valuenow={pct}
         aria-valuemin={0}
@@ -72,10 +75,9 @@ function KoyoGauge({ value }: { value: number }) {
         aria-label="מד Koyo"
       >
         <motion.div
-          className="absolute inset-y-0 start-0 overflow-hidden rounded-full"
-          initial={{ width: 0 }}
-          animate={{ width: `${pct}%` }}
-          transition={{ duration: 0.85, ease: "easeOut" }}
+          className="absolute inset-y-0 start-0 w-full overflow-hidden rounded-full"
+          style={{ transformOrigin: "inline-start" }}
+          {...fill}
         >
           <div
             className="h-full w-full rounded-full"
@@ -90,7 +92,7 @@ function KoyoGauge({ value }: { value: number }) {
           style={{ insetInlineStart: `max(0px, calc(${pct}% - 3px))` }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.35 }}
+          transition={{ delay: 0.28, duration: 0.28, ease: softEase }}
         />
       </div>
       <div className="flex justify-between text-[10px] font-medium text-muted">
@@ -140,7 +142,7 @@ export function WeatherWidget() {
 
   return (
     <div className="autumn-wash flex h-full min-w-0 flex-col space-y-3 p-1 sm:p-1.5">
-      <div className="flex min-w-0 items-center justify-between gap-2">
+      <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-2 gap-y-1">
         <div className="flex min-w-0 items-center gap-2 text-sm font-semibold text-foreground">
           <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-sky-soft text-sky">
             <SkyIcon className="h-3.5 w-3.5" strokeWidth={2.25} />
@@ -166,27 +168,27 @@ export function WeatherWidget() {
 
       {showStats ? (
         <>
-          <div className="grid min-w-0 grid-cols-3 gap-1.5 sm:gap-2">
-            <div className="rounded-2xl border border-border bg-surface/75 p-2.5 text-center">
-              <Sun className="mx-auto mb-1 h-4 w-4 text-amber" strokeWidth={2.25} />
-              <div className="font-[family-name:var(--font-quicksand)] text-lg font-bold tabular-nums text-foreground">
+          <div className="grid min-w-0 grid-cols-3 gap-1 sm:gap-2">
+            <div className="min-w-0 rounded-2xl border border-border bg-surface/75 p-1.5 text-center sm:p-2.5">
+              <Sun className="mx-auto mb-0.5 h-3.5 w-3.5 text-amber sm:mb-1 sm:h-4 sm:w-4" strokeWidth={2.25} />
+              <div className="font-[family-name:var(--font-quicksand)] text-[0.8125rem] font-bold tabular-nums leading-tight text-foreground sm:text-lg">
                 {weather.avgHighC}°
               </div>
-              <div className="text-[11px] text-muted">מקסימום</div>
+              <div className="text-[10px] leading-tight text-muted sm:text-[11px]">מקסימום</div>
             </div>
-            <div className="rounded-2xl border border-border bg-surface/75 p-2.5 text-center">
-              <Thermometer className="mx-auto mb-1 h-4 w-4 text-olive" strokeWidth={2.25} />
-              <div className="font-[family-name:var(--font-quicksand)] text-lg font-bold tabular-nums text-foreground">
+            <div className="min-w-0 rounded-2xl border border-border bg-surface/75 p-1.5 text-center sm:p-2.5">
+              <Thermometer className="mx-auto mb-0.5 h-3.5 w-3.5 text-olive sm:mb-1 sm:h-4 sm:w-4" strokeWidth={2.25} />
+              <div className="font-[family-name:var(--font-quicksand)] text-[0.8125rem] font-bold tabular-nums leading-tight text-foreground sm:text-lg">
                 {weather.avgLowC}°
               </div>
-              <div className="text-[11px] text-muted">מינימום</div>
+              <div className="text-[10px] leading-tight text-muted sm:text-[11px]">מינימום</div>
             </div>
-            <div className="rounded-2xl border border-border bg-surface/75 p-2.5 text-center">
-              <Umbrella className="mx-auto mb-1 h-4 w-4 text-sky" strokeWidth={2.25} />
-              <div className="font-[family-name:var(--font-quicksand)] text-lg font-bold tabular-nums text-foreground">
+            <div className="min-w-0 rounded-2xl border border-border bg-surface/75 p-1.5 text-center sm:p-2.5">
+              <Umbrella className="mx-auto mb-0.5 h-3.5 w-3.5 text-sky sm:mb-1 sm:h-4 sm:w-4" strokeWidth={2.25} />
+              <div className="break-all font-[family-name:var(--font-quicksand)] text-[0.8125rem] font-bold tabular-nums leading-tight text-foreground sm:text-lg">
                 {weather.rainfallMm}
               </div>
-              <div className="text-[11px] text-muted">מ״מ גשם</div>
+              <div className="text-[10px] leading-tight text-muted sm:text-[11px]">מ״מ גשם</div>
             </div>
           </div>
           {weather.sourceLabelHe && (

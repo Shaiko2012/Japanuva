@@ -15,10 +15,10 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="pointer-events-none absolute inset-0 grid-noise opacity-35 dark:opacity-20" />
       <Navbar />
       <main
-        className={`relative z-0 mx-auto w-full min-w-0 max-w-full ps-[max(0.75rem,var(--safe-left))] pe-[max(0.75rem,var(--safe-right))] sm:ps-[max(1.25rem,var(--safe-left))] sm:pe-[max(1.25rem,var(--safe-right))] ${
+        className={`relative z-0 mx-auto w-full min-w-0 max-w-full overflow-x-clip ps-[max(0.75rem,var(--safe-left))] pe-[max(0.75rem,var(--safe-right))] sm:ps-[max(1.25rem,var(--safe-left))] sm:pe-[max(1.25rem,var(--safe-right))] ${
           hideMapPip
             ? "max-w-[1600px] pb-[max(1.5rem,calc(var(--safe-bottom)+1rem))] pt-4"
-            : "max-w-7xl pb-[max(6rem,calc(var(--safe-bottom)+5.5rem))] pt-5 sm:pt-7"
+            : "max-w-7xl pb-[max(8rem,calc(var(--safe-bottom)+7rem))] pt-5 sm:pt-7"
         }`}
       >
         {children}

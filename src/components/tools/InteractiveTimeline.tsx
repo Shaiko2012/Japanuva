@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { dailyItinerary, districts, type DistrictId } from "@/data/trip";
 import {
+  softEase,
   softEntranceProps,
   softExpandProps,
   softInteractiveProps,
@@ -110,7 +111,6 @@ export function InteractiveTimeline() {
             return (
               <motion.article
                 key={day.id}
-                layout="position"
                 {...softEntranceProps(reduceMotion, {
                   delay: softStagger(index, 0.05),
                   y: 10,
@@ -138,10 +138,7 @@ export function InteractiveTimeline() {
                         <StatusBadge status={day.accommodation.status} />
                         <motion.span
                           animate={{ rotate: open ? 180 : 0 }}
-                          transition={{
-                            duration: 0.28,
-                            ease: [0.22, 1, 0.36, 1],
-                          }}
+                          transition={{ duration: 0.22, ease: softEase }}
                           className="inline-flex"
                         >
                           <ChevronDown className="h-4 w-4 text-muted" />
@@ -164,7 +161,6 @@ export function InteractiveTimeline() {
                     {open && (
                       <motion.div
                         {...expandMotion}
-                        className="overflow-hidden"
                       >
                         <div className="mt-2 rounded-2xl border border-border bg-background/35 p-4">
                           <ul className="space-y-1.5">

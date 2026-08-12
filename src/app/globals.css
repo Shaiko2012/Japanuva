@@ -329,6 +329,7 @@ body::before {
     radial-gradient(rgba(245, 240, 232, 0.035) 0.6px, transparent 0.6px);
 }
 
+/* 1 col mobile → 3 equal cols md+ (no 2-col orphan under currency) */
 .dashboard-widget-grid {
   display: grid;
   gap: var(--space-gap-lg);
@@ -336,13 +337,7 @@ body::before {
   align-items: stretch;
 }
 
-@media (min-width: 640px) {
-  .dashboard-widget-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
   .dashboard-widget-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -370,6 +365,23 @@ body::before {
     inset 0 1px 0 rgba(255, 255, 255, 0.45),
     0 4px 14px rgba(10, 10, 10, 0.08);
   color: #0a0a0a;
+}
+
+/* Digits scale with column width so 3-digit days never clip on ~360px */
+.countdown-digit {
+  font-size: clamp(0.8rem, 2.6vw + 0.35rem, 1.5rem);
+}
+
+@media (min-width: 768px) {
+  .countdown-digit {
+    font-size: clamp(1.15rem, 0.7rem + 1.1vw, 1.65rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  .countdown-digit {
+    font-size: clamp(1.35rem, 0.85rem + 1.2vw, 1.85rem);
+  }
 }
 
 .dark .countdown-sign {

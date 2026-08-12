@@ -309,7 +309,6 @@ export function JrPassCalculator() {
             {comparisons.map((row, index) => (
               <motion.div
                 key={row.days}
-                layout
                 {...softEntranceProps(reduceMotion, {
                   delay: softStagger(index, 0.06),
                   y: 10,
