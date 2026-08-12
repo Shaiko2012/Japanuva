@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { CalendarRange, Pencil } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { tripMeta } from "@/data/trip";
 import { useFamilyStore } from "@/store/family";
 import { usePersonalTrip } from "@/hooks/usePersonalTrip";
+import { softEntranceProps, softStagger, useSoftEntrance } from "@/lib/motion";
 import {
   formatTripRangeHe,
   useTripMetaStore,
@@ -28,12 +29,12 @@ export function HeroBar() {
   const isPersonal = usePersonalTrip();
   const [editOpen, setEditOpen] = useState(false);
   const [calOpen, setCalOpen] = useState(false);
+  const reduceMotion = useReducedMotion();
+  const sectionEntrance = useSoftEntrance({ y: 10 });
 
   return (
     <motion.section
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45 }}
+      {...sectionEntrance}
       className="space-y-4 sm:space-y-5"
     >
       {!isPersonal && (
@@ -128,15 +129,36 @@ export function HeroBar() {
 
       {/* Logical order: Family → Currency → Weather/Koyo */}
       <div className="dashboard-widget-grid">
-        <GlassCard interactive className="flex h-full flex-col">
-          <FamilyCounter value={family} onChange={setFamily} />
-        </GlassCard>
-        <GlassCard interactive className="flex h-full flex-col">
-          <CurrencyConverter />
-        </GlassCard>
-        <GlassCard interactive className="flex h-full flex-col">
-          <WeatherWidget />
-        </GlassCard>
+        <motion.div
+          {...softEntranceProps(reduceMotion, {
+            delay: softStagger(0, 0.06),
+            y: 10,
+          })}
+        >
+          <GlassCard interactive className="flex h-full flex-col">
+            <FamilyCounter value={family} onChange={setFamily} />
+          </GlassCard>
+        </motion.div>
+        <motion.div
+          {...softEntranceProps(reduceMotion, {
+            delay: softStagger(1, 0.06),
+            y: 10,
+          })}
+        >
+          <GlassCard interactive className="flex h-full flex-col">
+            <CurrencyConverter />
+          </GlassCard>
+        </motion.div>
+        <motion.div
+          {...softEntranceProps(reduceMotion, {
+            delay: softStagger(2, 0.06),
+            y: 10,
+          })}
+        >
+          <GlassCard interactive className="flex h-full flex-col">
+            <WeatherWidget />
+          </GlassCard>
+        </motion.div>
       </div>
 
       <TripSetupWizard

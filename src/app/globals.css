@@ -131,6 +131,8 @@ html {
   scroll-behavior: smooth;
   scroll-padding-top: calc(6rem + var(--safe-top));
   overflow-x: clip;
+  /* Reserve scrollbar space so expand/collapse never flashes a layout shift */
+  scrollbar-gutter: stable;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }

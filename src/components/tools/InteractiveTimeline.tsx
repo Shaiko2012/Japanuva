@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   BedDouble,
   CalendarDays,
@@ -10,6 +10,7 @@ import {
   Filter,
 } from "lucide-react";
 import { dailyItinerary, districts, type DistrictId } from "@/data/trip";
+import { softEntranceProps, softStagger, softTransition } from "@/lib/motion";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { cn } from "@/lib/utils";
@@ -30,6 +31,7 @@ export function InteractiveTimeline() {
   const [city, setCity] = useState<DistrictId | "all">("all");
   const [tag, setTag] = useState<string>("all");
   const [openId, setOpenId] = useState<string | null>(dailyItinerary[0]?.id ?? null);
+  const reduceMotion = useReducedMotion();
 
   const days = useMemo(() => {
     return dailyItinerary.filter((d) => {
@@ -133,11 +135,11 @@ export function InteractiveTimeline() {
             return (
               <motion.article
                 key={day.id}
-                layout
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.98 }}
-                transition={{ delay: Math.min(index * 0.03, 0.2) }}
+                layout="position"
+                {...softEntranceProps(reduceMotion, {
+                  delay: softStagger(index, 0.05),
+                  y: 10,
+                })}
                 className="relative"
               >
                 <div className="absolute start-3.5 top-5 z-10 h-3 w-3 rounded-full border-2 border-accent bg-background shadow-[0_0_12px_rgba(255,42,95,0.55)]" />
@@ -181,9 +183,22 @@ export function InteractiveTimeline() {
                   <AnimatePresence initial={false}>
                     {open && (
                       <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
+                        initial={
+                          reduceMotion
+                            ? { opacity: 0 }
+                            : { height: 0, opacity: 0 }
+                        }
+                        animate={
+                          reduceMotion
+                            ? { opacity: 1 }
+                            : { height: "auto", opacity: 1 }
+                        }
+                        exit={
+                          reduceMotion
+                            ? { opacity: 0 }
+                            : { height: 0, opacity: 0 }
+                        }
+                        transition={softTransition()}
                         className="overflow-hidden"
                       >
                         <div className="mt-2 rounded-2xl border border-border bg-background/35 p-4">

@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   BedDouble,
   ExternalLink,
@@ -14,6 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { buildGoogleMapsOpenUrl } from "@/lib/maps";
+import { softEntranceProps } from "@/lib/motion";
 import { collectTripPins, pinToMapPlace, type TripPin } from "@/lib/tripPins";
 import { useItineraryEditor } from "@/store/itineraryEditor";
 import { useMapPip } from "@/store/mapPip";
@@ -50,6 +51,7 @@ export function GoogleMapPip() {
 
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
+  const reduceMotion = useReducedMotion();
 
   const days = useMemo(() => {
     if (!hydrated) return [];
@@ -97,9 +99,7 @@ export function GoogleMapPip() {
         {!open && (
           <motion.button
             type="button"
-            initial={{ opacity: 0, scale: 0.85, y: 12 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.85, y: 12 }}
+            {...softEntranceProps(reduceMotion, { y: 10 })}
             onClick={toggle}
             className="glow-accent fixed z-[70] flex min-h-11 items-center gap-2 rounded-full border border-accent/40 bg-accent px-4 py-3 text-sm font-semibold text-white shadow-2xl"
             style={{
@@ -120,10 +120,7 @@ export function GoogleMapPip() {
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: 24, scale: 0.94 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 18, scale: 0.94 }}
-            transition={{ type: "spring", stiffness: 320, damping: 28 }}
+            {...softEntranceProps(reduceMotion, { y: 12 })}
             className={cn(
               "glass-strong fixed z-[70] overflow-hidden rounded-2xl shadow-2xl",
               isLarge
@@ -194,9 +191,10 @@ export function GoogleMapPip() {
 
             <div
               className={cn(
-                "relative grid h-[calc(100%-44px)]",
+                "relative grid h-[calc(100%-44px)] min-h-0",
                 showPinList && isLarge
-                  ? "grid-cols-1 sm:grid-cols-[minmax(0,1fr)_minmax(0,11rem)]"
+                  ? // Mobile: map on top + scrollable list sheet; sm+: side list like desktop
+                    "grid-cols-1 grid-rows-[minmax(0,1fr)_minmax(8rem,42%)] sm:grid-cols-[minmax(0,1fr)_minmax(0,11rem)] sm:grid-rows-1"
                   : "grid-cols-1",
               )}
             >
@@ -210,7 +208,7 @@ export function GoogleMapPip() {
               </div>
 
               {showPinList && isLarge && (
-                <aside className="min-h-0 overflow-y-auto border-s border-border bg-surface-strong/95 p-2">
+                <aside className="min-h-0 overflow-y-auto overscroll-contain border-t border-border bg-surface-strong/95 p-2 sm:border-s sm:border-t-0">
                   <PinGroup
                     title="מלונות"
                     icon={<BedDouble className="h-3.5 w-3.5 text-accent" />}
@@ -230,25 +228,21 @@ export function GoogleMapPip() {
             </div>
 
             {showPinList && !isLarge && (
-              <div className="absolute inset-x-0 bottom-0 max-h-[42%] overflow-y-auto border-t border-border bg-surface-strong/95 p-2 backdrop-blur-md">
-                <div className="flex gap-1.5 overflow-x-auto pb-1">
-                  {pins.map((pin) => (
-                    <button
-                      key={pin.id}
-                      type="button"
-                      onClick={() => selectPin(pin)}
-                      className={cn(
-                        "shrink-0 rounded-full border px-2.5 py-1 text-[11px]",
-                        activePinId === pin.id
-                          ? "border-accent/45 bg-accent-soft text-accent"
-                          : "border-border text-muted",
-                      )}
-                    >
-                      {pin.kind === "hotel" ? "🏨 " : "📍 "}
-                      {pin.title}
-                    </button>
-                  ))}
-                </div>
+              <div className="absolute inset-x-0 bottom-0 max-h-[48%] overflow-y-auto overscroll-contain border-t border-border bg-surface-strong/95 p-2 backdrop-blur-md">
+                <PinGroup
+                  title="מלונות"
+                  icon={<BedDouble className="h-3.5 w-3.5 text-accent" />}
+                  pins={hotels}
+                  activePinId={activePinId}
+                  onSelect={selectPin}
+                />
+                <PinGroup
+                  title="אטרקציות"
+                  icon={<Sparkles className="h-3.5 w-3.5 text-info" />}
+                  pins={attractions}
+                  activePinId={activePinId}
+                  onSelect={selectPin}
+                />
               </div>
             )}
           </motion.div>
@@ -284,7 +278,7 @@ function PinGroup({
             type="button"
             onClick={() => onSelect(pin)}
             className={cn(
-              "w-full rounded-xl border px-2 py-1.5 text-right transition",
+              "w-full rounded-xl border px-2 py-2.5 text-right transition sm:py-1.5",
               activePinId === pin.id
                 ? "border-accent/45 bg-accent-soft"
                 : "border-border bg-background/30 hover:border-accent/30",

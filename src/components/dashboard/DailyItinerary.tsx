@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   BedDouble,
   Clock3,
@@ -12,11 +12,11 @@ import {
   type DistrictId,
 } from "@/data/trip";
 import { usePersonalTrip } from "@/hooks/usePersonalTrip";
+import { softEntranceProps, softStagger, softTransition } from "@/lib/motion";
 import { isBundledDemoItinerary } from "@/lib/demoDetect";
 import { useItineraryEditor } from "@/store/itineraryEditor";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { StatusBadge } from "@/components/ui/StatusBadge";
-import { TiltCard } from "@/components/ui/TiltCard";
 
 interface DailyItineraryProps {
   selectedDistrict: DistrictId | null;
@@ -58,6 +58,8 @@ export function DailyItinerary({ selectedDistrict }: DailyItineraryProps) {
       : dailyItinerary;
   }, [isPersonal, editorDays, selectedDistrict]);
 
+  const reduceMotion = useReducedMotion();
+
   return (
     <GlassCard className="h-full">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
@@ -81,24 +83,25 @@ export function DailyItinerary({ selectedDistrict }: DailyItineraryProps) {
         />
       </div>
 
-      <div className="max-h-[560px] space-y-3 overflow-y-auto pe-1">
+      <div className="max-h-[560px] space-y-3 overflow-y-auto pe-1 [scrollbar-gutter:stable]">
         <AnimatePresence mode="popLayout">
-          {days.map((day, index) => (
-            <motion.div
-              key={day.id}
-              layout
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.96 }}
-              transition={{ delay: Math.min(index * 0.03, 0.2) }}
-            >
-              <TiltCard>
+          {days.map((day, index) => {
+            const open = openId === day.id;
+            return (
+              <motion.div
+                key={day.id}
+                layout="position"
+                {...softEntranceProps(reduceMotion, {
+                  delay: softStagger(index, 0.05),
+                  y: 10,
+                })}
+              >
                 <article className="rounded-2xl border border-border bg-background/35 p-4 transition hover:border-accent/35">
                   <button
                     type="button"
                     className="w-full text-right"
                     onClick={() =>
-                      setOpenId(openId === day.id ? null : day.id)
+                      setOpenId(open ? null : day.id)
                     }
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
@@ -125,39 +128,61 @@ export function DailyItinerary({ selectedDistrict }: DailyItineraryProps) {
                     </div>
                   </button>
 
-                  {openId === day.id && (
-                    <div className="mt-3 space-y-2 border-t border-border pt-3">
-                      {day.activities.length === 0 ? (
-                        <p className="text-xs text-muted">אין אטרקציות עדיין</p>
-                      ) : (
-                        day.activities.map((activity) => (
-                          <div
-                            key={activity}
-                            className="flex items-start gap-2 text-sm"
-                          >
-                            <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
-                            {activity}
+                  <AnimatePresence initial={false}>
+                    {open && (
+                      <motion.div
+                        initial={
+                          reduceMotion
+                            ? { opacity: 0 }
+                            : { height: 0, opacity: 0 }
+                        }
+                        animate={
+                          reduceMotion
+                            ? { opacity: 1 }
+                            : { height: "auto", opacity: 1 }
+                        }
+                        exit={
+                          reduceMotion
+                            ? { opacity: 0 }
+                            : { height: 0, opacity: 0 }
+                        }
+                        transition={softTransition()}
+                        className="overflow-hidden"
+                      >
+                        <div className="mt-3 space-y-2 border-t border-border pt-3">
+                          {day.activities.length === 0 ? (
+                            <p className="text-xs text-muted">אין אטרקציות עדיין</p>
+                          ) : (
+                            day.activities.map((activity) => (
+                              <div
+                                key={activity}
+                                className="flex items-start gap-2 text-sm"
+                              >
+                                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+                                {activity}
+                              </div>
+                            ))
+                          )}
+                          <div className="flex flex-wrap gap-3 pt-2 text-xs text-muted">
+                            <span className="inline-flex items-center gap-1.5">
+                              <BedDouble className="h-3.5 w-3.5" />
+                              {day.accommodation.name || "ללא מלון"}
+                            </span>
+                            <span className="inline-flex items-center gap-1.5">
+                              <Clock3 className="h-3.5 w-3.5" />
+                              {day.transitMinutes > 0
+                                ? `${day.transitMinutes} דק׳ · ${day.transitLabel}`
+                                : day.transitLabel}
+                            </span>
                           </div>
-                        ))
-                      )}
-                      <div className="flex flex-wrap gap-3 pt-2 text-xs text-muted">
-                        <span className="inline-flex items-center gap-1.5">
-                          <BedDouble className="h-3.5 w-3.5" />
-                          {day.accommodation.name || "ללא מלון"}
-                        </span>
-                        <span className="inline-flex items-center gap-1.5">
-                          <Clock3 className="h-3.5 w-3.5" />
-                          {day.transitMinutes > 0
-                            ? `${day.transitMinutes} דק׳ · ${day.transitLabel}`
-                            : day.transitLabel}
-                        </span>
-                      </div>
-                    </div>
-                  )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </article>
-              </TiltCard>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </AnimatePresence>
         {days.length === 0 && (
           <p className="rounded-2xl border border-dashed border-border px-4 py-8 text-center text-sm text-muted">

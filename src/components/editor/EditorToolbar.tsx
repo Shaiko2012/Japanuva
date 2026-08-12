@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Check, Cloud, FileDown, Link2, RotateCcw, Save } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { softTransition } from "@/lib/motion";
 import { useItineraryEditor } from "@/store/itineraryEditor";
 import { useFamilyStore } from "@/store/family";
 import { useMapPip } from "@/store/mapPip";
@@ -214,7 +215,8 @@ export function EditorToolbar() {
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 8 }}
+            exit={{ opacity: 0, y: 6 }}
+            transition={softTransition()}
             className="absolute start-1/2 top-full z-20 mt-2 flex -translate-x-1/2 items-center gap-2 rounded-full border border-success/30 bg-success/15 px-3 py-1.5 text-xs text-success backdrop-blur-md"
           >
             <Check className="h-3.5 w-3.5" />

@@ -9,6 +9,7 @@ import { DayStrip, ItineraryPanelHeader } from "./DayStrip";
 import { AccommodationManager } from "./AccommodationManager";
 import { ActivitiesBuilder } from "./ActivitiesBuilder";
 import { EditorToolbarActions } from "./EditorToolbarActions";
+import { cn } from "@/lib/utils";
 
 function formatWeekdayDate(date: string) {
   return new Intl.DateTimeFormat("he-IL", {
@@ -34,7 +35,10 @@ export function ItineraryEditorPanel({ className }: { className?: string }) {
 
   return (
     <div
-      className={`relative z-20 flex h-full min-h-0 flex-col bg-surface-strong shadow-[2px_0_12px_rgba(0,0,0,0.06)] lg:shadow-[-2px_0_12px_rgba(0,0,0,0.06)] ${className ?? ""}`}
+      className={cn(
+        "relative z-20 flex h-full min-h-0 flex-col bg-surface-strong shadow-[2px_0_12px_rgba(0,0,0,0.06)] lg:shadow-[-2px_0_12px_rgba(0,0,0,0.06)]",
+        className,
+      )}
     >
       <ItineraryPanelHeader />
 

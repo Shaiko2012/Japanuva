@@ -158,8 +158,9 @@ function AnimateText({ show, text }: { show: boolean; text: string }) {
   if (!show) return null;
   return (
     <motion.p
-      initial={{ opacity: 0, y: 6 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
       className="mt-2 text-xs leading-5 text-muted"
     >
       {text}

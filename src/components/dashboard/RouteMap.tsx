@@ -1,11 +1,11 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { MapPinned, PictureInPicture2 } from "lucide-react";
 import { districts, type DistrictId } from "@/data/trip";
+import { softEntranceProps, softStagger } from "@/lib/motion";
 import { useMapPip } from "@/store/mapPip";
 import { cn } from "@/lib/utils";
-import { TiltCard } from "@/components/ui/TiltCard";
 import { GlassCard } from "@/components/ui/GlassCard";
 
 interface RouteMapProps {
@@ -17,6 +17,7 @@ export function RouteMap({ selected, onSelect }: RouteMapProps) {
   const open = useMapPip((s) => s.open);
   const toggle = useMapPip((s) => s.toggle);
   const openPip = useMapPip((s) => s.openPip);
+  const reduceMotion = useReducedMotion();
 
   return (
     <GlassCard className="h-full overflow-hidden p-0">
@@ -66,34 +67,34 @@ export function RouteMap({ selected, onSelect }: RouteMapProps) {
         {districts.map((district, index) => {
           const dimmed = selected !== null && selected !== district.id;
           return (
-            <TiltCard key={district.id}>
-              <motion.button
-                type="button"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05 * index }}
-                onClick={() => onSelect(district.id)}
-                className={cn(
-                  "w-full rounded-xl border p-3 text-right transition",
-                  selected === district.id
-                    ? "border-accent/50 bg-accent-soft"
-                    : "border-border bg-background/30 hover:border-accent/30",
-                  dimmed ? "opacity-45" : "opacity-100",
-                )}
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <span
-                    className="h-2.5 w-2.5 rounded-full"
-                    style={{ background: district.accent }}
-                  />
-                  <span className="font-semibold">{district.nameHe}</span>
-                </div>
-                <p className="mt-1 text-[11px] text-muted">{district.nameEn}</p>
-                <p className="mt-2 text-xs leading-5 text-muted">
-                  {district.highlight}
-                </p>
-              </motion.button>
-            </TiltCard>
+            <motion.button
+              key={district.id}
+              type="button"
+              {...softEntranceProps(reduceMotion, {
+                delay: softStagger(index, 0.06),
+                y: 10,
+              })}
+              onClick={() => onSelect(district.id)}
+              className={cn(
+                "w-full rounded-xl border p-3 text-right transition",
+                selected === district.id
+                  ? "border-accent/50 bg-accent-soft"
+                  : "border-border bg-background/30 hover:border-accent/30",
+                dimmed ? "opacity-45" : "opacity-100",
+              )}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ background: district.accent }}
+                />
+                <span className="font-semibold">{district.nameHe}</span>
+              </div>
+              <p className="mt-1 text-[11px] text-muted">{district.nameEn}</p>
+              <p className="mt-2 text-xs leading-5 text-muted">
+                {district.highlight}
+              </p>
+            </motion.button>
           );
         })}
       </div>

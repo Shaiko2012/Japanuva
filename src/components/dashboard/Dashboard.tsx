@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import type { DistrictId } from "@/data/trip";
+import { useSoftEntrance } from "@/lib/motion";
 import { useMapPip } from "@/store/mapPip";
 import { HeroBar } from "./HeroBar";
 import { RouteMap } from "./RouteMap";
@@ -12,6 +13,7 @@ export function Dashboard() {
   const selectedDistrict = useMapPip((s) => s.selectedDistrict);
   const focusDistrict = useMapPip((s) => s.focusDistrict);
   const [hydrated, setHydrated] = useState(false);
+  const entrance = useSoftEntrance({ delay: 0.08, y: 10 });
 
   useEffect(() => setHydrated(true), []);
 
@@ -24,9 +26,7 @@ export function Dashboard() {
       <HeroBar />
 
       <motion.section
-        initial={{ opacity: 0, y: 18 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.12, duration: 0.45 }}
+        {...entrance}
         className="grid min-w-0 gap-4 lg:grid-cols-2 lg:gap-5"
       >
         <RouteMap

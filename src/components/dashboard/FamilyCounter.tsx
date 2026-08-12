@@ -83,9 +83,10 @@ function CounterRow({
         <AnimatePresence mode="popLayout">
           <motion.span
             key={value}
-            initial={{ scale: 0.7, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.7, opacity: 0 }}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
             className="w-6 text-center font-[family-name:var(--font-quicksand)] text-lg font-bold tabular-nums text-foreground"
             aria-live="polite"
           >

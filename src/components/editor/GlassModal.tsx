@@ -2,8 +2,9 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { X } from "lucide-react";
+import { softEntranceProps, softTransition } from "@/lib/motion";
 
 interface ModalProps {
   open: boolean;
@@ -15,6 +16,7 @@ interface ModalProps {
 
 export function GlassModal({ open, title, onClose, children, wide }: ModalProps) {
   const [mounted, setMounted] = useState(false);
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     setMounted(true);
@@ -36,6 +38,8 @@ export function GlassModal({ open, title, onClose, children, wide }: ModalProps)
 
   if (!mounted) return null;
 
+  const panel = softEntranceProps(reduceMotion, { y: 12 });
+
   return createPortal(
     <AnimatePresence>
       {open && (
@@ -50,6 +54,7 @@ export function GlassModal({ open, title, onClose, children, wide }: ModalProps)
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
+          transition={softTransition()}
         >
           <button
             type="button"
@@ -61,9 +66,7 @@ export function GlassModal({ open, title, onClose, children, wide }: ModalProps)
             role="dialog"
             aria-modal="true"
             aria-label={title}
-            initial={{ y: 24, opacity: 0, scale: 0.98 }}
-            animate={{ y: 0, opacity: 1, scale: 1 }}
-            exit={{ y: 16, opacity: 0, scale: 0.98 }}
+            {...panel}
             className={`glass-strong relative z-10 max-h-[min(90dvh,90vh)] w-full overflow-y-auto rounded-3xl p-4 sm:p-6 ${
               wide ? "max-w-2xl" : "max-w-lg"
             }`}
