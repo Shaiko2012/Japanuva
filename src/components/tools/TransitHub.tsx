@@ -1,18 +1,27 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { CreditCard, Plane, WalletCards } from "lucide-react";
 import { airportOptions, suicaSteps } from "@/data/tools";
 import { formatNumber } from "@/lib/utils";
+import {
+  softEntranceProps,
+  softInteractiveProps,
+  softStagger,
+  softTransition,
+} from "@/lib/motion";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { SegmentedTabs } from "@/components/ui/SegmentedTabs";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { cn } from "@/lib/utils";
 
 export function TransitHub() {
   const [airport, setAirport] = useState<"ALL" | "HND" | "NRT">("ALL");
   const [step, setStep] = useState(0);
+  const reduceMotion = useReducedMotion();
+  const cardMotion = softInteractiveProps(reduceMotion);
 
   const options = useMemo(
     () =>
@@ -27,7 +36,7 @@ export function TransitHub() {
       <GlassCard strong>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            <span className="glow-accent flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-white">
+            <span className="glow-accent flex h-12 w-12 items-center justify-center rounded-2xl bg-nav-bg text-nav-fg">
               <CreditCard className="h-5 w-5" />
             </span>
             <div>
@@ -53,9 +62,14 @@ export function TransitHub() {
             {suicaSteps.map((item, index) => {
               const active = step === index;
               return (
-                <button
+                <motion.button
                   key={item.title}
                   type="button"
+                  {...softEntranceProps(reduceMotion, {
+                    delay: softStagger(index, 0.05),
+                    y: 8,
+                  })}
+                  {...cardMotion}
                   onClick={() => setStep(index)}
                   className={cn(
                     "w-full rounded-2xl border p-3 text-right transition",
@@ -69,8 +83,8 @@ export function TransitHub() {
                     {active && <StatusBadge tone="accent" label="פעיל" />}
                   </div>
                   <div className="mt-1 font-medium">{item.title}</div>
-                  <AnimateText show={active} text={item.detail} />
-                </button>
+                  <AnimateText show={active} text={item.detail} reduceMotion={reduceMotion} />
+                </motion.button>
               );
             })}
           </div>
@@ -89,30 +103,31 @@ export function TransitHub() {
               <Plane className="h-4 w-4 text-accent" />
               השוואת מעבר משדה התעופה
             </div>
-            <div className="flex gap-1.5">
-              {(["ALL", "HND", "NRT"] as const).map((key) => (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => setAirport(key)}
-                  className={cn(
-                    "rounded-full border px-2.5 py-1 text-xs",
-                    airport === key
-                      ? "border-accent/40 bg-accent-soft text-accent"
-                      : "border-border text-muted",
-                  )}
-                >
-                  {key === "ALL" ? "הכל" : key}
-                </button>
-              ))}
-            </div>
+            <SegmentedTabs
+              items={[
+                { id: "ALL", label: "הכל" },
+                { id: "HND", label: "HND" },
+                { id: "NRT", label: "NRT" },
+              ]}
+              value={airport}
+              onChange={setAirport}
+              layoutId="transit-airport-pill"
+              aria-label="סינון שדה תעופה"
+              size="sm"
+              className="rounded-full border border-border bg-background/35 p-0.5"
+            />
           </div>
 
           <div className="space-y-3">
-            {options.map((option) => (
+            {options.map((option, index) => (
               <motion.div
                 key={option.id}
                 layout
+                {...softEntranceProps(reduceMotion, {
+                  delay: softStagger(index, 0.05),
+                  y: 10,
+                })}
+                {...cardMotion}
                 className="rounded-2xl border border-border bg-background/30 p-4"
               >
                 <div className="flex flex-wrap items-start justify-between gap-2">
@@ -154,13 +169,20 @@ export function TransitHub() {
   );
 }
 
-function AnimateText({ show, text }: { show: boolean; text: string }) {
+function AnimateText({
+  show,
+  text,
+  reduceMotion,
+}: {
+  show: boolean;
+  text: string;
+  reduceMotion: boolean | null;
+}) {
   if (!show) return null;
   return (
     <motion.p
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+      {...softEntranceProps(reduceMotion, { y: 8 })}
+      transition={softTransition()}
       className="mt-2 text-xs leading-5 text-muted"
     >
       {text}

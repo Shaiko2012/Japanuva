@@ -14,7 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { buildGoogleMapsOpenUrl } from "@/lib/maps";
-import { softEntranceProps } from "@/lib/motion";
+import { softEntranceProps, softTapProps } from "@/lib/motion";
 import { collectTripPins, pinToMapPlace, type TripPin } from "@/lib/tripPins";
 import { useItineraryEditor } from "@/store/itineraryEditor";
 import { useMapPip } from "@/store/mapPip";
@@ -27,7 +27,7 @@ const MultiPinMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex h-full items-center justify-center bg-[#0b0f17] text-xs text-muted">
+      <div className="flex h-full items-center justify-center bg-[#eef1f6] text-xs text-muted dark:bg-[#1a1714]">
         טוען מפת Google...
       </div>
     ),
@@ -52,6 +52,7 @@ export function GoogleMapPip() {
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
   const reduceMotion = useReducedMotion();
+  const tapMotion = softTapProps(reduceMotion);
 
   const days = useMemo(() => {
     if (!hydrated) return [];
@@ -100,8 +101,9 @@ export function GoogleMapPip() {
           <motion.button
             type="button"
             {...softEntranceProps(reduceMotion, { y: 10 })}
+            {...tapMotion}
             onClick={toggle}
-            className="glow-accent fixed z-[70] flex min-h-11 items-center gap-2 rounded-full border border-accent/40 bg-accent px-4 py-3 text-sm font-semibold text-white shadow-2xl"
+            className="glow-accent fixed z-[70] flex min-h-11 items-center gap-2 rounded-full border border-nav-bg/40 bg-nav-bg px-4 py-3 text-sm font-bold text-nav-fg shadow-2xl"
             style={{
               bottom: "max(1.25rem, var(--safe-bottom))",
               insetInlineStart: "max(1.25rem, var(--safe-right))",

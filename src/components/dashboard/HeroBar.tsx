@@ -6,7 +6,14 @@ import { motion, useReducedMotion } from "framer-motion";
 import { tripMeta } from "@/data/trip";
 import { useFamilyStore } from "@/store/family";
 import { usePersonalTrip } from "@/hooks/usePersonalTrip";
-import { softEntranceProps, softStagger, useSoftEntrance } from "@/lib/motion";
+import {
+  heroCascadeDelay,
+  softEntranceProps,
+  softInteractiveProps,
+  softStagger,
+  softTapProps,
+  useSoftEntrance,
+} from "@/lib/motion";
 import {
   formatTripRangeHe,
   useTripMetaStore,
@@ -31,6 +38,8 @@ export function HeroBar() {
   const [calOpen, setCalOpen] = useState(false);
   const reduceMotion = useReducedMotion();
   const sectionEntrance = useSoftEntrance({ y: 10 });
+  const chipMotion = softInteractiveProps(reduceMotion);
+  const tapMotion = softTapProps(reduceMotion);
 
   return (
     <motion.section
@@ -38,49 +47,67 @@ export function HeroBar() {
       className="space-y-4 sm:space-y-5"
     >
       {!isPersonal && (
-        <div className="rounded-2xl border border-amber/35 bg-amber-soft px-3.5 py-2.5 text-sm text-wood">
+        <motion.div
+          {...softEntranceProps(reduceMotion, {
+            delay: heroCascadeDelay(0),
+            y: 8,
+          })}
+          className="rounded-full border border-yellow/40 bg-yellow-soft px-3.5 py-2.5 text-sm text-foreground"
+        >
           זהו <strong>פרויקט דוגמה</strong> עם נתונים מוכנים. כשתירשמו עם Google —
           המסלול האישי שלכם יתחיל <strong>ריק</strong> ותמלאו בעצמכם.
-        </div>
+        </motion.div>
       )}
 
-      <GlassCard strong className="overflow-hidden">
+      <GlassCard strong className="autumn-wash overflow-hidden">
         <div className="relative">
-          <div className="pointer-events-none absolute -end-10 -top-12 h-28 w-28 rounded-full bg-olive/12 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-14 -start-8 h-32 w-32 rounded-full bg-sky/14 blur-3xl" />
-          <div className="pointer-events-none absolute start-1/2 top-0 h-24 w-24 -translate-x-1/2 rounded-full bg-amber/10 blur-3xl" />
+          <div className="pointer-events-none absolute -end-8 -top-10 h-36 w-36 rounded-full bg-yellow/30 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-16 -start-6 h-32 w-32 rounded-full bg-yellow/15 blur-3xl" />
+          <div className="pointer-events-none absolute start-1/2 top-0 h-28 w-28 -translate-x-1/2 rounded-full bg-yellow/20 blur-3xl" />
 
           {/* Title primary; countdown secondary beside (md+) or below (mobile) */}
           <div className="relative flex min-w-0 flex-col gap-4 md:flex-row md:items-start md:gap-5">
             <div className="min-w-0 flex-1">
-              <p className="font-[family-name:var(--font-quicksand)] text-xs font-semibold uppercase tracking-[0.16em] text-wood">
-                {tripMeta.name}
-              </p>
-              <h1 className="fluid-title mt-1 font-[family-name:var(--font-quicksand)] font-bold tracking-tight text-foreground">
-                {tripMeta.titleHe}
-              </h1>
+              <motion.div
+                {...softEntranceProps(reduceMotion, {
+                  delay: heroCascadeDelay(1),
+                  y: 12,
+                })}
+              >
+                <p className="font-[family-name:var(--font-quicksand)] text-sm font-extrabold tracking-tight text-foreground sm:text-base">
+                  {tripMeta.name}
+                </p>
+                <h1 className="fluid-title mt-1.5 font-[family-name:var(--font-quicksand)] font-bold tracking-tight text-foreground/90">
+                  {tripMeta.titleHe}
+                </h1>
+              </motion.div>
 
               {/* Meta group: dates · status · edit */}
-              <div
+              <motion.div
+                {...softEntranceProps(reduceMotion, {
+                  delay: heroCascadeDelay(2),
+                  y: 10,
+                })}
                 className="mt-3 flex flex-wrap items-center gap-2"
                 role="group"
                 aria-label="פרטי הטיול"
               >
-                <button
+                <motion.button
                   type="button"
+                  {...chipMotion}
                   onClick={() => setCalOpen((v) => !v)}
                   aria-expanded={calOpen}
                   aria-controls="trip-date-calendar"
-                  className="inline-flex min-h-11 max-w-full items-center gap-2 rounded-full border border-border bg-parchment-deep/70 px-3.5 py-2 text-xs font-semibold text-foreground hover:border-olive/45 hover:bg-parchment-deep"
+                  className="inline-flex min-h-11 max-w-full items-center gap-2 rounded-full border border-border bg-surface-strong px-3.5 py-2 text-xs font-bold text-foreground shadow-[var(--card-shadow)] transition hover:border-yellow/50 hover:shadow-[var(--card-shadow-hover)]"
                 >
                   <CalendarRange
-                    className="h-3.5 w-3.5 shrink-0 text-olive"
+                    className="h-3.5 w-3.5 shrink-0 text-foreground"
                     aria-hidden
                   />
                   <span className="min-w-0 truncate">
                     {formatTripRangeHe(startDate, endDate)}
                   </span>
-                </button>
+                </motion.button>
 
                 <StatusBadge
                   tone={isPersonal ? "booked" : "pending"}
@@ -88,15 +115,16 @@ export function HeroBar() {
                   className="min-h-11 px-3 py-2"
                 />
 
-                <button
+                <motion.button
                   type="button"
+                  {...tapMotion}
                   onClick={() => setEditOpen(true)}
-                  className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-border px-3.5 py-2 text-xs font-medium text-muted hover:border-olive/40 hover:text-foreground"
+                  className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-border bg-surface-strong/80 px-3.5 py-2 text-xs font-semibold text-muted transition hover:border-foreground/25 hover:text-foreground"
                 >
                   <Pencil className="h-3.5 w-3.5 shrink-0" aria-hidden />
                   <span>עריכה</span>
-                </button>
-              </div>
+                </motion.button>
+              </motion.div>
 
               {calOpen && (
                 <div
@@ -111,18 +139,31 @@ export function HeroBar() {
                 </div>
               )}
 
-              <p className="mt-3 max-w-xl text-sm leading-6 text-muted">
-                לוח בקרה חמים לתכנון משפחתי: מסלול, תחבורה, תקציב ולוגיסטיקה
-                ליפן — באווירת סטודיו ג׳יבלי.
-              </p>
-              <p className="mt-1.5 text-xs font-medium text-muted">
-                {tripMeta.destination}
-              </p>
+              <motion.div
+                {...softEntranceProps(reduceMotion, {
+                  delay: heroCascadeDelay(3),
+                  y: 8,
+                })}
+              >
+                <p className="mt-3 max-w-xl text-sm leading-6 text-muted">
+                  לוח בקרה לתכנון משפחתי: מסלול, תחבורה, תקציב ולוגיסטיקה ליפן —
+                  הכל במקום אחד.
+                </p>
+                <p className="mt-1.5 text-xs font-semibold text-muted">
+                  {tripMeta.destination}
+                </p>
+              </motion.div>
             </div>
 
-            <div className="w-full min-w-0 shrink-0 md:w-[min(100%,13rem)] md:pt-1 lg:w-[14rem]">
+            <motion.div
+              {...softEntranceProps(reduceMotion, {
+                delay: heroCascadeDelay(2, 0.08, 0.08),
+                y: 14,
+              })}
+              className="w-full min-w-0 shrink-0 md:w-[min(100%,13rem)] md:pt-1 lg:w-[14rem]"
+            >
               <Countdown />
-            </div>
+            </motion.div>
           </div>
         </div>
       </GlassCard>
@@ -131,7 +172,7 @@ export function HeroBar() {
       <div className="dashboard-widget-grid">
         <motion.div
           {...softEntranceProps(reduceMotion, {
-            delay: softStagger(0, 0.06),
+            delay: heroCascadeDelay(4, 0.12, 0.07),
             y: 10,
           })}
         >
@@ -141,7 +182,7 @@ export function HeroBar() {
         </motion.div>
         <motion.div
           {...softEntranceProps(reduceMotion, {
-            delay: softStagger(1, 0.06),
+            delay: softStagger(1, 0.07, 0.5) + heroCascadeDelay(4, 0.12, 0.07),
             y: 10,
           })}
         >
@@ -151,7 +192,7 @@ export function HeroBar() {
         </motion.div>
         <motion.div
           {...softEntranceProps(reduceMotion, {
-            delay: softStagger(2, 0.06),
+            delay: softStagger(2, 0.07, 0.5) + heroCascadeDelay(4, 0.12, 0.07),
             y: 10,
           })}
         >

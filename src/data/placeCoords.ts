@@ -38,7 +38,19 @@ function coordsFromText(text?: string): { lat: number; lng: number } | null {
   if (!text?.trim()) return null;
   const parsed = parseGoogleMapsInput(text);
   if (parsed.lat == null || parsed.lng == null) return null;
-  return { lat: parsed.lat, lng: parsed.lng };
+  const lat = Number(parsed.lat);
+  const lng = Number(parsed.lng);
+  if (
+    !Number.isFinite(lat) ||
+    !Number.isFinite(lng) ||
+    lat < -90 ||
+    lat > 90 ||
+    lng < -180 ||
+    lng > 180
+  ) {
+    return null;
+  }
+  return { lat, lng };
 }
 
 export function resolveCoords(
@@ -52,13 +64,17 @@ export function resolveCoords(
     allowCityFallback?: boolean;
   },
 ): { lat: number; lng: number } | null {
+  const explicitLat = Number(explicit?.lat);
+  const explicitLng = Number(explicit?.lng);
   if (
-    explicit?.lat != null &&
-    explicit?.lng != null &&
-    !Number.isNaN(explicit.lat) &&
-    !Number.isNaN(explicit.lng)
+    Number.isFinite(explicitLat) &&
+    Number.isFinite(explicitLng) &&
+    explicitLat >= -90 &&
+    explicitLat <= 90 &&
+    explicitLng >= -180 &&
+    explicitLng <= 180
   ) {
-    return { lat: explicit.lat, lng: explicit.lng };
+    return { lat: explicitLat, lng: explicitLng };
   }
 
   for (const source of [explicit?.mapsLink, explicit?.location]) {

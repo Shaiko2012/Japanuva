@@ -10,10 +10,15 @@ import {
   Filter,
 } from "lucide-react";
 import { dailyItinerary, districts, type DistrictId } from "@/data/trip";
-import { softEntranceProps, softStagger, softTransition } from "@/lib/motion";
+import {
+  softEntranceProps,
+  softExpandProps,
+  softInteractiveProps,
+  softStagger,
+} from "@/lib/motion";
 import { GlassCard } from "@/components/ui/GlassCard";
+import { SegmentedTabs } from "@/components/ui/SegmentedTabs";
 import { StatusBadge } from "@/components/ui/StatusBadge";
-import { cn } from "@/lib/utils";
 
 function formatDateHe(dateStr: string) {
   return new Intl.DateTimeFormat("he-IL", {
@@ -32,6 +37,8 @@ export function InteractiveTimeline() {
   const [tag, setTag] = useState<string>("all");
   const [openId, setOpenId] = useState<string | null>(dailyItinerary[0]?.id ?? null);
   const reduceMotion = useReducedMotion();
+  const expandMotion = softExpandProps(reduceMotion);
+  const cardMotion = softInteractiveProps(reduceMotion);
 
   const days = useMemo(() => {
     return dailyItinerary.filter((d) => {
@@ -46,7 +53,7 @@ export function InteractiveTimeline() {
       <GlassCard strong>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            <span className="glow-accent flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-white">
+            <span className="glow-accent flex h-12 w-12 items-center justify-center rounded-2xl bg-nav-bg text-nav-fg">
               <CalendarDays className="h-5 w-5" />
             </span>
             <div>
@@ -67,64 +74,32 @@ export function InteractiveTimeline() {
           <Filter className="h-4 w-4 text-accent" />
           סינון מסלול
         </div>
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => setCity("all")}
-            className={cn(
-              "rounded-full border px-3 py-1.5 text-xs transition",
-              city === "all"
-                ? "border-accent/40 bg-accent-soft text-accent"
-                : "border-border text-muted hover:border-accent/30",
-            )}
-          >
-            כל האזורים
-          </button>
-          {districts.map((d) => (
-            <button
-              key={d.id}
-              type="button"
-              onClick={() => setCity(d.id)}
-              className={cn(
-                "rounded-full border px-3 py-1.5 text-xs transition",
-                city === d.id
-                  ? "border-accent/40 bg-accent-soft text-accent"
-                  : "border-border text-muted hover:border-accent/30",
-              )}
-            >
-              {d.nameHe}
-            </button>
-          ))}
-        </div>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => setTag("all")}
-            className={cn(
-              "rounded-full border px-3 py-1.5 text-xs transition",
-              tag === "all"
-                ? "border-accent/40 bg-accent-soft text-accent"
-                : "border-border text-muted hover:border-accent/30",
-            )}
-          >
-            כל התגיות
-          </button>
-          {allTags.map((t) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => setTag(t)}
-              className={cn(
-                "rounded-full border px-3 py-1.5 text-xs transition",
-                tag === t
-                  ? "border-accent/40 bg-accent-soft text-accent"
-                  : "border-border text-muted hover:border-accent/30",
-              )}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
+        <SegmentedTabs
+          items={[
+            { id: "all" as const, label: "כל האזורים" },
+            ...districts.map((d) => ({ id: d.id, label: d.nameHe })),
+          ]}
+          value={city}
+          onChange={setCity}
+          layoutId="timeline-city-pill"
+          aria-label="סינון לפי אזור"
+          equalWidth={false}
+          size="sm"
+          className="rounded-2xl border border-border bg-background/35 p-1"
+        />
+        <SegmentedTabs
+          items={[
+            { id: "all", label: "כל התגיות" },
+            ...allTags.map((t) => ({ id: t, label: t })),
+          ]}
+          value={tag}
+          onChange={setTag}
+          layoutId="timeline-tag-pill"
+          aria-label="סינון לפי תגית"
+          equalWidth={false}
+          size="sm"
+          className="mt-3 rounded-2xl border border-border bg-background/35 p-1"
+        />
       </GlassCard>
 
       <div className="relative space-y-3 pe-2">
@@ -142,10 +117,11 @@ export function InteractiveTimeline() {
                 })}
                 className="relative"
               >
-                <div className="absolute start-3.5 top-5 z-10 h-3 w-3 rounded-full border-2 border-accent bg-background shadow-[0_0_12px_rgba(255,42,95,0.55)]" />
+                <div className="absolute start-3.5 top-5 z-10 h-3 w-3 rounded-full border-2 border-accent bg-background shadow-[0_0_12px_var(--glow)]" />
                 <div className="ms-10">
-                  <button
+                  <motion.button
                     type="button"
+                    {...cardMotion}
                     onClick={() => setOpenId(open ? null : day.id)}
                     className="glass w-full rounded-2xl p-4 text-right transition hover:border-accent/35"
                   >
@@ -160,12 +136,16 @@ export function InteractiveTimeline() {
                       </div>
                       <div className="flex items-center gap-2">
                         <StatusBadge status={day.accommodation.status} />
-                        <ChevronDown
-                          className={cn(
-                            "h-4 w-4 text-muted transition",
-                            open && "rotate-180",
-                          )}
-                        />
+                        <motion.span
+                          animate={{ rotate: open ? 180 : 0 }}
+                          transition={{
+                            duration: 0.28,
+                            ease: [0.22, 1, 0.36, 1],
+                          }}
+                          className="inline-flex"
+                        >
+                          <ChevronDown className="h-4 w-4 text-muted" />
+                        </motion.span>
                       </div>
                     </div>
                     <div className="mt-3 flex flex-wrap gap-1.5">
@@ -178,27 +158,12 @@ export function InteractiveTimeline() {
                         </span>
                       ))}
                     </div>
-                  </button>
+                  </motion.button>
 
                   <AnimatePresence initial={false}>
                     {open && (
                       <motion.div
-                        initial={
-                          reduceMotion
-                            ? { opacity: 0 }
-                            : { height: 0, opacity: 0 }
-                        }
-                        animate={
-                          reduceMotion
-                            ? { opacity: 1 }
-                            : { height: "auto", opacity: 1 }
-                        }
-                        exit={
-                          reduceMotion
-                            ? { opacity: 0 }
-                            : { height: 0, opacity: 0 }
-                        }
-                        transition={softTransition()}
+                        {...expandMotion}
                         className="overflow-hidden"
                       >
                         <div className="mt-2 rounded-2xl border border-border bg-background/35 p-4">

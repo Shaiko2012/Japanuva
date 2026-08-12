@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useState, type FormEvent } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Cloud, LogIn, LogOut, Pencil, UserRound } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { GlassModal } from "@/components/editor/GlassModal";
@@ -11,6 +11,8 @@ import {
   useTripMetaStore,
 } from "@/store/tripMeta";
 import { useFamilyStore } from "@/store/family";
+import { SegmentedTabs } from "@/components/ui/SegmentedTabs";
+import { softTapProps } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 type AuthMode = "signin" | "signup";
@@ -76,6 +78,8 @@ export function AuthButton() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
   const [resetNotice, setResetNotice] = useState<string | null>(null);
+  const reduceMotion = useReducedMotion();
+  const tapMotion = softTapProps(reduceMotion);
 
   function resetFormMessages() {
     setLocalError(null);
@@ -203,14 +207,15 @@ export function AuthButton() {
 
   return (
     <>
-      <button
+      <motion.button
         type="button"
+        {...tapMotion}
         onClick={() => setOpen(true)}
         className={cn(
-          "flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1.5 text-xs font-semibold transition sm:gap-2 sm:px-3",
+          "flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1.5 text-xs font-bold transition sm:gap-2 sm:px-3",
           user
-            ? "border-accent/30 bg-accent-soft text-accent hover:border-accent/50"
-            : "glow-accent border-accent/40 bg-accent text-white hover:brightness-110",
+            ? "border-border bg-surface-strong text-foreground shadow-[var(--card-shadow)] hover:border-yellow/45 hover:shadow-[var(--card-shadow-hover)]"
+            : "glow-accent border-transparent bg-nav-bg text-nav-fg hover:brightness-110",
         )}
         aria-label={user ? "החשבון שלי" : "התחברות"}
       >
@@ -244,7 +249,7 @@ export function AuthButton() {
         ) : (
           <span className="whitespace-nowrap">התחברות</span>
         )}
-      </button>
+      </motion.button>
 
       <GlassModal
         open={open}
@@ -341,37 +346,20 @@ export function AuthButton() {
             </div>
           ) : (
             <div className="space-y-5">
-              <div
-                role="tablist"
+              <SegmentedTabs
+                items={[
+                  { id: "signin", label: "התחברות" },
+                  { id: "signup", label: "הרשמה" },
+                ]}
+                value={mode}
+                onChange={(id) => {
+                  setMode(id);
+                  resetFormMessages();
+                }}
+                layoutId="auth-mode-pill"
                 aria-label="מצב התחברות"
-                className="grid grid-cols-2 gap-1 rounded-2xl border border-border bg-background/35 p-1"
-              >
-                {(
-                  [
-                    ["signin", "התחברות"],
-                    ["signup", "הרשמה"],
-                  ] as const
-                ).map(([id, label]) => (
-                  <button
-                    key={id}
-                    type="button"
-                    role="tab"
-                    aria-selected={mode === id}
-                    onClick={() => {
-                      setMode(id);
-                      resetFormMessages();
-                    }}
-                    className={cn(
-                      "min-h-11 rounded-xl px-3 py-2.5 text-sm font-semibold transition",
-                      mode === id
-                        ? "bg-accent text-white shadow-sm"
-                        : "text-muted hover:text-foreground",
-                    )}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
+                className="rounded-2xl border border-border bg-background/35 p-1"
+              />
 
               <form onSubmit={handleEmailSubmit} className="space-y-3.5" noValidate>
                 <div>
@@ -457,7 +445,7 @@ export function AuthButton() {
                       type="button"
                       disabled={busy || !configured}
                       onClick={handleForgotPassword}
-                      className="min-h-11 rounded-lg px-2 text-sm text-accent hover:underline disabled:opacity-50"
+                      className="min-h-11 rounded-lg px-2 text-sm text-foreground hover:underline disabled:opacity-50"
                     >
                       שכחתי סיסמה
                     </button>
@@ -467,7 +455,7 @@ export function AuthButton() {
                 <button
                   type="submit"
                   disabled={busy || !configured}
-                  className="glow-accent inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-accent px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"
+                  className="glow-accent inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-nav-bg px-4 py-3 text-sm font-bold text-nav-fg disabled:opacity-50"
                 >
                   {busy
                     ? mode === "signup"
@@ -497,7 +485,7 @@ export function AuthButton() {
                 type="button"
                 disabled={busy || !configured}
                 onClick={handleGoogle}
-                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-border bg-background/35 px-4 py-3 text-sm font-semibold hover:border-accent/40 disabled:opacity-50"
+                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-border bg-background/35 px-4 py-3 text-sm font-bold hover:border-yellow/45 disabled:opacity-50"
               >
                 <LogIn className="h-4 w-4" aria-hidden />
                 {busy

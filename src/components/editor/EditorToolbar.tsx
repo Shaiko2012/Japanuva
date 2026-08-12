@@ -178,7 +178,7 @@ export function EditorToolbar() {
           type="button"
           onClick={handleSave}
           disabled={saving}
-          className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-accent px-3 py-2 text-xs font-medium text-white glow-accent sm:min-h-0 sm:text-sm disabled:opacity-60"
+          className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-nav-bg px-3 py-2 text-xs font-medium text-nav-fg glow-accent sm:min-h-0 sm:text-sm disabled:opacity-60"
         >
           {user ? <Cloud className="h-3.5 w-3.5" /> : <Save className="h-3.5 w-3.5" />}
           {saving ? "שומר..." : user ? "שמירה בענן" : "שמירת שינויים"}

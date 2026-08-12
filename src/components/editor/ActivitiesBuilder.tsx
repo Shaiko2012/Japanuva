@@ -45,6 +45,7 @@ import { geocodePlace } from "@/lib/geocode";
 import { formatNumber } from "@/lib/utils";
 import { PlaceSearchPicker } from "@/components/maps/PlaceSearchPicker";
 import { GlassCard } from "@/components/ui/GlassCard";
+import { KeypadField } from "@/components/ui/KeypadField";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import type { PlaceSearchResult } from "@/types/places";
 import { GlassModal } from "./GlassModal";
@@ -263,42 +264,38 @@ function ActivityFormFields({
             onChange={(e) =>
               setDraft({ ...draft, familyFriendly: e.target.checked })
             }
-            className="h-4 w-4 accent-[var(--terracotta)]"
+            className="h-4 w-4 accent-[var(--foreground)]"
           />
           מתאים למשפחה / ילדים
         </label>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
-        <label className="block text-xs text-muted">
-          משך (שעות)
-          <input
-            type="number"
-            step="0.5"
-            min={0.5}
-            className={inputClass}
-            value={draft.durationHours}
-            onChange={(e) =>
-              setDraft({
-                ...draft,
-                durationHours: Number(e.target.value) || 1,
-              })
-            }
-          />
-        </label>
-        <label className="block text-xs text-muted">
-          מחיר כרטיסים (¥)
-          <input
-            type="number"
-            className={inputClass}
-            value={draft.priceJpy}
-            onChange={(e) =>
-              setDraft({
-                ...draft,
-                priceJpy: Number(e.target.value) || 0,
-              })
-            }
-          />
-        </label>
+        <KeypadField
+          mode="number"
+          label="משך (שעות)"
+          value={draft.durationHours}
+          allowDecimal
+          maxDecimals={1}
+          min={0.5}
+          onChange={(durationHours) =>
+            setDraft({
+              ...draft,
+              durationHours: durationHours || 1,
+            })
+          }
+        />
+        <KeypadField
+          mode="number"
+          label="מחיר כרטיסים (¥)"
+          value={draft.priceJpy}
+          min={0}
+          onChange={(priceJpy) =>
+            setDraft({
+              ...draft,
+              priceJpy: priceJpy || 0,
+            })
+          }
+        />
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="block text-xs text-muted">
@@ -633,7 +630,7 @@ export function ActivitiesBuilder({
           <button
             type="button"
             onClick={save}
-            className="rounded-xl bg-accent px-4 py-2 text-sm font-medium text-white glow-accent"
+            className="rounded-xl bg-nav-bg px-4 py-2 text-sm font-medium text-nav-fg glow-accent"
           >
             {editingId ? "שמירת שינויים" : "הוספת אטרקציה"}
           </button>

@@ -3,17 +3,19 @@
 import { CloudMoon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
+import { softHover, softSpring, softTap } from "@/lib/motion";
 
 export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => setMounted(true), []);
 
   if (!mounted) {
     return (
-      <div className="h-11 w-11 rounded-full border border-border bg-surface" />
+      <div className="h-11 w-11 rounded-full border border-border bg-surface-strong shadow-[var(--card-shadow)]" />
     );
   }
 
@@ -22,21 +24,30 @@ export function ThemeToggle() {
   return (
     <motion.button
       type="button"
-      whileTap={{ scale: 0.92 }}
+      whileHover={reduceMotion ? undefined : softHover}
+      whileTap={reduceMotion ? undefined : softTap}
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      className="relative flex h-11 w-11 items-center justify-center rounded-full border border-border bg-surface text-foreground transition hover:border-olive/50 hover:bg-parchment-deep hover:text-olive"
+      className="relative flex h-11 w-11 items-center justify-center rounded-full border border-border bg-surface-strong text-foreground shadow-[var(--card-shadow)] transition hover:border-yellow/50 hover:shadow-[var(--card-shadow-hover)]"
       aria-label={isDark ? "מצב בהיר" : "מצב ערב"}
     >
       <motion.span
         key={isDark ? "moon" : "sun"}
-        initial={{ rotate: -40, opacity: 0, scale: 0.6 }}
-        animate={{ rotate: 0, opacity: 1, scale: 1 }}
-        transition={{ type: "spring", stiffness: 320, damping: 18 }}
+        initial={
+          reduceMotion
+            ? { opacity: 0 }
+            : { rotate: -40, opacity: 0, scale: 0.6 }
+        }
+        animate={
+          reduceMotion
+            ? { opacity: 1 }
+            : { rotate: 0, opacity: 1, scale: 1 }
+        }
+        transition={softSpring}
       >
         {isDark ? (
-          <CloudMoon className="h-4 w-4 text-amber" />
+          <CloudMoon className="h-4 w-4 text-yellow" />
         ) : (
-          <Sun className="h-4 w-4 text-amber" />
+          <Sun className="h-4 w-4 text-foreground" />
         )}
       </motion.span>
     </motion.button>

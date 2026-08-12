@@ -135,7 +135,7 @@ export function TripSetupWizard({
               type="button"
               disabled={!datesValid}
               onClick={saveDatesAndNext}
-              className="rounded-xl bg-accent px-4 py-2 text-sm font-medium text-white glow-accent disabled:opacity-40"
+              className="rounded-xl bg-nav-bg px-4 py-2 text-sm font-medium text-nav-fg glow-accent disabled:opacity-40"
             >
               המשך להרכב המשפחה
             </button>
@@ -165,7 +165,7 @@ export function TripSetupWizard({
             <button
               type="button"
               onClick={finish}
-              className="rounded-xl bg-accent px-4 py-2 text-sm font-medium text-white glow-accent"
+              className="rounded-xl bg-nav-bg px-4 py-2 text-sm font-medium text-nav-fg glow-accent"
             >
               שמירה והמשך
             </button>

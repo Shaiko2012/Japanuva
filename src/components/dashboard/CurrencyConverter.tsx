@@ -5,6 +5,7 @@ import { ArrowLeftRight, TrendingUp } from "lucide-react";
 import { tripMeta } from "@/data/trip";
 import { useTripMetaStore } from "@/store/tripMeta";
 import { cn, formatNumber } from "@/lib/utils";
+import { KeypadField } from "@/components/ui/KeypadField";
 
 const QUICK_JPY = [1000, 5000, 10000] as const;
 const FALLBACK_RATE = tripMeta.exchangeRateIlsToJpy;
@@ -181,30 +182,34 @@ export function CurrencyConverter() {
 
       <div className="ledger-frame min-w-0 rounded-2xl p-3">
         <div className="grid grid-cols-2 gap-2 sm:gap-3">
-          <label className="min-w-0 rounded-xl border border-border bg-surface/80 p-2.5 transition hover:border-olive/40 sm:p-3">
+          <div className="min-w-0 rounded-xl border border-border bg-surface/80 p-2.5 transition hover:border-olive/40 sm:p-3">
             <div className="text-xs font-semibold text-foreground/80">שקלים (₪)</div>
-            <input
-              type="number"
-              min={0}
-              step={50}
+            <KeypadField
+              mode="number"
+              bare
               value={ils}
-              onChange={(e) => setFromIls(Number(e.target.value))}
-              className="mt-1 w-full min-w-0 bg-transparent font-[family-name:var(--font-quicksand)] text-lg font-bold tabular-nums text-foreground outline-none sm:text-xl"
-              aria-label="סכום בשקלים"
-            />
-          </label>
-          <label className="min-w-0 rounded-xl border border-border bg-surface/80 p-2.5 transition hover:border-olive/40 sm:p-3">
-            <div className="text-xs font-semibold text-foreground/80">ין יפני (¥)</div>
-            <input
-              type="number"
               min={0}
-              step={100}
-              value={jpy}
-              onChange={(e) => setFromJpy(Number(e.target.value))}
-              className="mt-1 w-full min-w-0 bg-transparent font-[family-name:var(--font-quicksand)] text-lg font-bold tabular-nums text-foreground outline-none sm:text-xl"
-              aria-label="סכום בין יפני"
+              title="סכום בשקלים"
+              aria-label="סכום בשקלים"
+              onChange={setFromIls}
+              fieldClassName="mt-1 font-[family-name:var(--font-quicksand)] text-lg font-bold tabular-nums sm:text-xl"
+              prefix={<span className="text-sm text-muted">₪</span>}
             />
-          </label>
+          </div>
+          <div className="min-w-0 rounded-xl border border-border bg-surface/80 p-2.5 transition hover:border-olive/40 sm:p-3">
+            <div className="text-xs font-semibold text-foreground/80">ין יפני (¥)</div>
+            <KeypadField
+              mode="number"
+              bare
+              value={jpy}
+              min={0}
+              title="סכום בין יפני"
+              aria-label="סכום בין יפני"
+              onChange={setFromJpy}
+              fieldClassName="mt-1 font-[family-name:var(--font-quicksand)] text-lg font-bold tabular-nums sm:text-xl"
+              prefix={<span className="text-sm text-muted">¥</span>}
+            />
+          </div>
         </div>
       </div>
 
@@ -219,8 +224,8 @@ export function CurrencyConverter() {
               className={cn(
                 "min-h-11 rounded-full border px-3.5 py-2 text-xs font-semibold transition",
                 active
-                  ? "border-terracotta/50 bg-terracotta text-parchment shadow-[0_4px_12px_var(--glow)]"
-                  : "border-border bg-parchment-deep/60 text-muted hover:border-olive/45 hover:text-foreground",
+                  ? "border-nav-bg/50 bg-nav-bg text-nav-fg shadow-[0_4px_12px_var(--glow)]"
+                  : "border-border bg-parchment-deep/60 text-muted hover:border-yellow/45 hover:text-foreground",
               )}
             >
               ¥{formatNumber(amount)}
@@ -236,7 +241,7 @@ export function CurrencyConverter() {
         step={100}
         value={Math.min(20000, Math.max(500, ils))}
         onChange={(e) => setFromIls(Number(e.target.value))}
-        className="mt-auto h-1.5 w-full max-w-full cursor-pointer appearance-none rounded-full bg-foreground/10 accent-[var(--olive)]"
+        className="mt-auto h-1.5 w-full max-w-full cursor-pointer appearance-none rounded-full bg-foreground/10 accent-[var(--foreground)]"
         aria-label="סכום בשקלים"
       />
       <div className="flex min-w-0 flex-wrap justify-between gap-x-2 gap-y-1 text-[11px] text-muted">

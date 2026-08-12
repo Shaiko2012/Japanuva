@@ -1,10 +1,16 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { Luggage } from "lucide-react";
 import { luggageRoutes } from "@/data/tools";
 import { tripMeta } from "@/data/trip";
 import { formatNumber } from "@/lib/utils";
+import {
+  softEntranceProps,
+  softInteractiveProps,
+  softStagger,
+} from "@/lib/motion";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { StatusBadge } from "@/components/ui/StatusBadge";
@@ -14,6 +20,8 @@ export function LuggageEstimator() {
   const [routeId, setRouteId] = useState(luggageRoutes[0].id);
   const [bags, setBags] = useState(3);
   const [weight, setWeight] = useState(20);
+  const reduceMotion = useReducedMotion();
+  const cardMotion = softInteractiveProps(reduceMotion);
 
   const route = luggageRoutes.find((r) => r.id === routeId) ?? luggageRoutes[0];
 
@@ -30,7 +38,7 @@ export function LuggageEstimator() {
       <GlassCard strong>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            <span className="glow-accent flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-white">
+            <span className="glow-accent flex h-12 w-12 items-center justify-center rounded-2xl bg-nav-bg text-nav-fg">
               <Luggage className="h-5 w-5" />
             </span>
             <div>
@@ -50,10 +58,15 @@ export function LuggageEstimator() {
         <GlassCard>
           <h2 className="mb-3 text-sm font-semibold">בחירת מסלול</h2>
           <div className="space-y-2">
-            {luggageRoutes.map((item) => (
-              <button
+            {luggageRoutes.map((item, index) => (
+              <motion.button
                 key={item.id}
                 type="button"
+                {...softEntranceProps(reduceMotion, {
+                  delay: softStagger(index, 0.05),
+                  y: 8,
+                })}
+                {...cardMotion}
                 onClick={() => setRouteId(item.id)}
                 className={cn(
                   "w-full rounded-2xl border p-3 text-right transition",
@@ -68,7 +81,7 @@ export function LuggageEstimator() {
                 <div className="mt-1 text-xs text-muted">
                   בסיס ¥{formatNumber(item.baseJpy)} למזוודה · {item.days} יום
                 </div>
-              </button>
+              </motion.button>
             ))}
           </div>
         </GlassCard>
@@ -84,7 +97,7 @@ export function LuggageEstimator() {
               max={6}
               value={bags}
               onChange={(e) => setBags(Number(e.target.value))}
-              className="mt-2 h-2 w-full cursor-pointer appearance-none rounded-full bg-foreground/10 accent-[var(--terracotta)]"
+              className="mt-2 h-2 w-full cursor-pointer appearance-none rounded-full bg-foreground/10 accent-[var(--foreground)]"
             />
           </label>
 
@@ -96,11 +109,14 @@ export function LuggageEstimator() {
               max={30}
               value={weight}
               onChange={(e) => setWeight(Number(e.target.value))}
-              className="mt-2 h-2 w-full cursor-pointer appearance-none rounded-full bg-foreground/10 accent-[var(--terracotta)]"
+              className="mt-2 h-2 w-full cursor-pointer appearance-none rounded-full bg-foreground/10 accent-[var(--foreground)]"
             />
           </label>
 
-          <div className="rounded-2xl border border-accent/35 bg-accent-soft p-4">
+          <motion.div
+            {...softEntranceProps(reduceMotion, { y: 8 })}
+            className="rounded-2xl border border-accent/35 bg-accent-soft p-4"
+          >
             <div className="text-xs text-accent/80">אומדן כולל</div>
             <div className="mt-1 font-[family-name:var(--font-readex)] text-3xl font-bold tabular-nums text-accent">
               ¥{formatNumber(estimate.total)}
@@ -109,7 +125,7 @@ export function LuggageEstimator() {
               ≈ ₪{formatNumber(estimate.ils)} · ¥{formatNumber(estimate.perBag)}{" "}
               למזוודה
             </div>
-          </div>
+          </motion.div>
 
           <div className="mt-4">
             <ProgressBar

@@ -12,7 +12,7 @@ const MultiPinMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex h-full items-center justify-center bg-[#eef1f6] text-sm text-muted dark:bg-[#0b0f17]">
+      <div className="flex h-full items-center justify-center bg-[#eef1f6] text-sm text-muted dark:bg-[#1a1714]">
         טוען מפה...
       </div>
     ),
@@ -41,7 +41,7 @@ export function EditorMapPanel({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "editor-map-shell relative isolate overflow-hidden bg-[#eef1f6] dark:bg-[#0b0f17]",
+        "editor-map-shell relative isolate overflow-hidden bg-[#eef1f6] dark:bg-[#1a1714]",
         className,
       )}
     >

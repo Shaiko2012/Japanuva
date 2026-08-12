@@ -222,7 +222,7 @@ export const tipCards = [
     summary: "סיימו הצהרות 48 שעות לפני הנחיתה.",
     body: "מלאו לכל בני המשפחה, שמרו QR באלבום ייעודי, והדפיסו עותק אחד ליתר ביטחון.",
     href: "/vjw",
-    accent: "#c4451d",
+    accent: "#b8735a",
   },
   {
     id: "suica",
@@ -230,7 +230,7 @@ export const tipCards = [
     summary: "כרטיס אחד לכל נוסע — כולל ילדים.",
     body: "טענו מראש, בדקו תאימות לארנק דיגיטלי, והשאירו מזומן קטן למכונות ישנות.",
     href: "/transit",
-    accent: "#65897f",
+    accent: "#6a8f84",
   },
   {
     id: "taku",
@@ -254,7 +254,7 @@ export const tipCards = [
     summary: "הריצו את המחשבון לפני ההזמנה.",
     body: "מסלול טוקיו–קיוטו–אוסקה–טוקיו למשפחה לרוב מצדיק 7 או 14 ימים.",
     href: "/jr-pass",
-    accent: "#c4451d",
+    accent: "#b8735a",
   },
   {
     id: "koyo",

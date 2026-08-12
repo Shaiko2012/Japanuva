@@ -5,21 +5,29 @@ import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ChevronDown, Lightbulb, ArrowLeft } from "lucide-react";
 import { tipCards } from "@/data/tools";
-import { softEntranceProps, softStagger, softTransition } from "@/lib/motion";
+import {
+  softEntranceProps,
+  softExpandProps,
+  softInteractiveProps,
+  softStagger,
+  softTapProps,
+} from "@/lib/motion";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { StatusBadge } from "@/components/ui/StatusBadge";
-import { cn } from "@/lib/utils";
 
 export function TipsGrid() {
   const [openId, setOpenId] = useState<string | null>(null);
   const reduceMotion = useReducedMotion();
+  const expandMotion = softExpandProps(reduceMotion);
+  const cardMotion = softInteractiveProps(reduceMotion);
+  const linkTap = softTapProps(reduceMotion);
 
   return (
     <div className="space-y-4">
       <GlassCard strong>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            <span className="glow-accent flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-white">
+            <span className="glow-accent flex h-12 w-12 items-center justify-center rounded-2xl bg-nav-bg text-nav-fg">
               <Lightbulb className="h-5 w-5" />
             </span>
             <div>
@@ -45,6 +53,7 @@ export function TipsGrid() {
                 delay: softStagger(index, 0.06),
                 y: 10,
               })}
+              {...cardMotion}
               className="glass h-full rounded-2xl p-4"
             >
               <button
@@ -57,12 +66,13 @@ export function TipsGrid() {
                     className="mt-1 h-2.5 w-2.5 rounded-full"
                     style={{ background: card.accent }}
                   />
-                  <ChevronDown
-                    className={cn(
-                      "h-4 w-4 text-muted transition",
-                      open && "rotate-180",
-                    )}
-                  />
+                  <motion.span
+                    animate={{ rotate: open ? 180 : 0 }}
+                    transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                    className="inline-flex"
+                  >
+                    <ChevronDown className="h-4 w-4 text-muted" />
+                  </motion.span>
                 </div>
                 <h2 className="mt-3 text-lg font-semibold">{card.title}</h2>
                 <p className="mt-1 text-sm text-muted">{card.summary}</p>
@@ -71,34 +81,21 @@ export function TipsGrid() {
               <AnimatePresence initial={false}>
                 {open && (
                   <motion.div
-                    initial={
-                      reduceMotion
-                        ? { opacity: 0 }
-                        : { height: 0, opacity: 0 }
-                    }
-                    animate={
-                      reduceMotion
-                        ? { opacity: 1 }
-                        : { height: "auto", opacity: 1 }
-                    }
-                    exit={
-                      reduceMotion
-                        ? { opacity: 0 }
-                        : { height: 0, opacity: 0 }
-                    }
-                    transition={softTransition()}
+                    {...expandMotion}
                     className="overflow-hidden"
                   >
                     <p className="mt-3 border-t border-border pt-3 text-sm leading-6 text-foreground/90">
                       {card.body}
                     </p>
-                    <Link
-                      href={card.href}
-                      className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:underline"
-                    >
-                      עברו לכלי
-                      <ArrowLeft className="h-3.5 w-3.5" />
-                    </Link>
+                    <motion.div {...linkTap} className="inline-flex">
+                      <Link
+                        href={card.href}
+                        className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:underline"
+                      >
+                        עברו לכלי
+                        <ArrowLeft className="h-3.5 w-3.5" />
+                      </Link>
+                    </motion.div>
                   </motion.div>
                 )}
               </AnimatePresence>

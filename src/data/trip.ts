@@ -55,7 +55,7 @@ export const districts: District[] = [
     vibe: "רחובות עירוניים, גורדי שחקים ופארק ירוק",
     days: ["2027-10-05", "2027-10-06", "2027-10-07"],
     highlight: "בסיס משפחתי נוח עם תחבורה מצוינת",
-    accent: "#c4451d",
+    accent: "#b8735a",
   },
   {
     id: "shibuya",
@@ -64,7 +64,7 @@ export const districts: District[] = [
     vibe: "אנרגיה צעירה, קניות ואוכל רחוב",
     days: ["2027-10-08", "2027-10-09"],
     highlight: "יום קל עם ילדים סביב פארק יויוגי",
-    accent: "#65897f",
+    accent: "#6a8f84",
   },
   {
     id: "kyoto",
@@ -73,7 +73,7 @@ export const districts: District[] = [
     vibe: "מקדשים, עלווה סתיו ומסלולי הליכה",
     days: ["2027-10-11", "2027-10-12", "2027-10-13", "2027-10-14"],
     highlight: "שיא ה-Koyo — עלים אדומים באראשיאמה",
-    accent: "#c4451d",
+    accent: "#b8735a",
   },
   {
     id: "osaka",

@@ -23,7 +23,7 @@ function AvatarStack({
   const tone =
     kind === "adult"
       ? "border-olive/35 bg-olive-soft text-olive"
-      : "border-sky/40 bg-sky-soft text-sky";
+      : "border-[#E5D49A] bg-[#FBF3D4] text-[#A8944A]";
 
   return (
     <div className="flex items-center gap-1.5" aria-hidden>
@@ -66,7 +66,7 @@ function CounterRow({
   onInc: () => void;
 }) {
   return (
-    <div className="flex min-w-0 items-center justify-between gap-2 rounded-2xl border border-border bg-parchment-deep/50 px-3 py-2.5 transition hover:border-olive/35 sm:gap-3">
+    <div className="flex min-w-0 items-center justify-between gap-2 rounded-2xl border border-border bg-parchment-deep/50 px-3 py-2.5 transition hover:border-yellow/40 sm:gap-3">
       <div className="flex min-w-0 items-center gap-2 sm:gap-3">
         <AvatarStack count={value} kind={kind} />
         <span className="truncate text-sm font-medium text-foreground">{label}</span>
@@ -96,7 +96,7 @@ function CounterRow({
         <button
           type="button"
           onClick={onInc}
-          className="touch-target flex items-center justify-center rounded-full bg-terracotta text-parchment shadow-[0_3px_10px_var(--glow)] hover:brightness-105"
+          className="touch-target flex items-center justify-center rounded-full bg-nav-bg text-nav-fg shadow-[0_3px_10px_var(--glow)] transition hover:scale-105 hover:brightness-105"
           aria-label={`הוסף ${label}`}
         >
           <Plus className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden />

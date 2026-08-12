@@ -4,9 +4,15 @@ import { useEffect, useState } from "react";
 import { List, MapPinned } from "lucide-react";
 import { EditorMapPanel } from "./EditorMapPanel";
 import { ItineraryEditorPanel } from "./ItineraryEditorPanel";
+import { SegmentedTabs } from "@/components/ui/SegmentedTabs";
 import { cn } from "@/lib/utils";
 
 type MobilePane = "list" | "map";
+
+const MOBILE_PANES = [
+  { id: "list" as const, label: "רשימה", icon: List },
+  { id: "map" as const, label: "מפה", icon: MapPinned },
+];
 
 export function TripEditor() {
   const [hydrated, setHydrated] = useState(false);
@@ -33,35 +39,14 @@ export function TripEditor() {
         )}
       >
         {/* Mobile only: רשימה | מפה */}
-        <div
-          role="tablist"
+        <SegmentedTabs
+          items={MOBILE_PANES}
+          value={mobilePane}
+          onChange={setMobilePane}
+          layoutId="itinerary-view-pill"
           aria-label="תצוגת מסלול"
-          className="grid shrink-0 grid-cols-2 gap-1 border-b border-border bg-background/40 p-1.5 md:hidden"
-        >
-          {(
-            [
-              ["list", "רשימה", List],
-              ["map", "מפה", MapPinned],
-            ] as const
-          ).map(([id, label, Icon]) => (
-            <button
-              key={id}
-              type="button"
-              role="tab"
-              aria-selected={mobilePane === id}
-              onClick={() => setMobilePane(id)}
-              className={cn(
-                "touch-target inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl px-3 text-sm font-semibold transition",
-                mobilePane === id
-                  ? "bg-accent text-white shadow-sm"
-                  : "text-muted hover:text-foreground",
-              )}
-            >
-              <Icon className="h-4 w-4 shrink-0" aria-hidden />
-              {label}
-            </button>
-          ))}
-        </div>
+          className="shrink-0 border-b border-border bg-background/40 p-1.5 dark:bg-surface-strong/50 md:hidden"
+        />
 
         {/*
           Wrappers keep `hidden` off panel roots (project `cn` does not merge
@@ -80,11 +65,11 @@ export function TripEditor() {
         <div
           className={
             mobilePane === "map"
-              ? "relative z-0 min-h-0 min-w-0 flex-1"
+              ? "relative z-0 flex min-h-0 min-w-0 flex-1 flex-col"
               : "relative z-0 hidden min-h-0 min-w-0 md:block"
           }
         >
-          <EditorMapPanel className="h-full min-h-0" />
+          <EditorMapPanel className="h-full min-h-[280px] min-w-0 flex-1" />
         </div>
       </div>
     </div>

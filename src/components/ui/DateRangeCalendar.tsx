@@ -2,15 +2,27 @@
 
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { SegmentedTabs } from "@/components/ui/SegmentedTabs";
 import { cn } from "@/lib/utils";
 
 const WEEKDAYS = ["א", "ב", "ג", "ד", "ה", "ו", "ש"];
 
-interface DateRangeCalendarProps {
+type RangeProps = {
+  mode?: "range";
   startDate: string;
   endDate: string;
   onChange: (start: string, end: string) => void;
-}
+};
+
+type SingleProps = {
+  mode: "single";
+  value: string;
+  onChange: (iso: string) => void;
+};
+
+type DateRangeCalendarProps = (RangeProps | SingleProps) & {
+  className?: string;
+};
 
 function toIso(d: Date) {
   const y = d.getFullYear();
@@ -23,11 +35,11 @@ function parseIso(iso: string) {
   return new Date(`${iso}T12:00:00`);
 }
 
-export function DateRangeCalendar({
-  startDate,
-  endDate,
-  onChange,
-}: DateRangeCalendarProps) {
+export function DateRangeCalendar(props: DateRangeCalendarProps) {
+  const isSingle = props.mode === "single";
+  const startDate = isSingle ? props.value : props.startDate;
+  const endDate = isSingle ? props.value : props.endDate;
+
   const initial = parseIso(startDate || toIso(new Date()));
   const [view, setView] = useState(
     () => new Date(initial.getFullYear(), initial.getMonth(), 1),
@@ -64,23 +76,32 @@ export function DateRangeCalendar({
   }).format(view);
 
   function handleClick(iso: string) {
+    if (isSingle) {
+      props.onChange(iso);
+      return;
+    }
     if (picking === "start") {
       const nextEnd = endDate && endDate >= iso ? endDate : iso;
-      onChange(iso, nextEnd);
+      props.onChange(iso, nextEnd);
       setPicking("end");
       return;
     }
     if (iso < startDate) {
-      onChange(iso, startDate);
+      props.onChange(iso, startDate);
       setPicking("start");
       return;
     }
-    onChange(startDate, iso);
+    props.onChange(startDate, iso);
     setPicking("start");
   }
 
   return (
-    <div className="rounded-2xl border border-border bg-background/35 p-3">
+    <div
+      className={cn(
+        "rounded-2xl border border-border bg-background/35 p-3",
+        props.className,
+      )}
+    >
       <div className="mb-3 flex items-center justify-between gap-2">
         <button
           type="button"
@@ -92,7 +113,9 @@ export function DateRangeCalendar({
         >
           <ChevronRight className="h-4 w-4" />
         </button>
-        <div className="min-w-0 truncate text-center text-sm font-semibold">{monthLabel}</div>
+        <div className="min-w-0 truncate text-center text-sm font-semibold">
+          {monthLabel}
+        </div>
         <button
           type="button"
           className="flex h-11 w-11 items-center justify-center rounded-lg border border-border hover:border-accent/40 sm:h-8 sm:w-8 sm:p-1.5"
@@ -105,32 +128,20 @@ export function DateRangeCalendar({
         </button>
       </div>
 
-      <div className="mb-2 flex flex-wrap gap-2 text-[11px]">
-        <button
-          type="button"
-          onClick={() => setPicking("start")}
-          className={cn(
-            "min-h-11 rounded-full border px-2.5 py-2 sm:min-h-0 sm:py-1",
-            picking === "start"
-              ? "border-accent/40 bg-accent-soft text-accent"
-              : "border-border text-muted",
-          )}
-        >
-          לחצו על יום יציאה
-        </button>
-        <button
-          type="button"
-          onClick={() => setPicking("end")}
-          className={cn(
-            "min-h-11 rounded-full border px-2.5 py-2 sm:min-h-0 sm:py-1",
-            picking === "end"
-              ? "border-accent/40 bg-accent-soft text-accent"
-              : "border-border text-muted",
-          )}
-        >
-          לחצו על יום חזרה
-        </button>
-      </div>
+      {!isSingle && (
+        <SegmentedTabs
+          items={[
+            { id: "start", label: "לחצו על יום יציאה" },
+            { id: "end", label: "לחצו על יום חזרה" },
+          ]}
+          value={picking}
+          onChange={setPicking}
+          layoutId="calendar-picking-pill"
+          aria-label="בחירת יציאה או חזרה"
+          size="sm"
+          className="mb-2 rounded-2xl border border-border bg-surface/50 p-1"
+        />
+      )}
 
       <div className="grid grid-cols-7 gap-1 text-center text-[11px] text-muted">
         {WEEKDAYS.map((d) => (
@@ -142,11 +153,14 @@ export function DateRangeCalendar({
       <div className="grid grid-cols-7 gap-1">
         {cells.map((cell) => {
           const inRange =
+            !isSingle &&
             startDate &&
             endDate &&
             cell.iso >= startDate &&
             cell.iso <= endDate;
-          const edge = cell.iso === startDate || cell.iso === endDate;
+          const edge =
+            cell.iso === startDate || (!isSingle && cell.iso === endDate);
+          const selected = isSingle && cell.iso === startDate;
           return (
             <button
               key={`${cell.iso}-${cell.inMonth}`}
@@ -156,8 +170,9 @@ export function DateRangeCalendar({
                 "aspect-square rounded-xl text-sm transition",
                 !cell.inMonth && "opacity-35",
                 inRange && !edge && "bg-accent-soft text-accent",
-                edge && "bg-accent font-semibold text-white glow-accent",
-                !inRange && "hover:bg-foreground/5",
+                (edge || selected) &&
+                  "bg-nav-bg font-semibold text-nav-fg glow-accent",
+                !inRange && !selected && "hover:bg-foreground/5",
               )}
             >
               {cell.day}

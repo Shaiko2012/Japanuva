@@ -14,7 +14,9 @@ import {
 import { tripMeta } from "@/data/trip";
 import { formatNumber } from "@/lib/utils";
 import { PlaceSearchPicker } from "@/components/maps/PlaceSearchPicker";
+import { DateField } from "@/components/ui/DateField";
 import { GlassCard } from "@/components/ui/GlassCard";
+import { KeypadField } from "@/components/ui/KeypadField";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import type { PlaceSearchResult } from "@/types/places";
 import { GlassModal } from "./GlassModal";
@@ -117,28 +119,16 @@ export function AccommodationManager({
                 />
               </label>
               <div className="grid gap-3 sm:grid-cols-2">
-                <label className="block text-xs text-muted">
-                  צ׳ק־אין
-                  <input
-                    type="date"
-                    className={inputClass}
-                    value={draft.checkIn}
-                    onChange={(e) =>
-                      setDraft({ ...draft, checkIn: e.target.value })
-                    }
-                  />
-                </label>
-                <label className="block text-xs text-muted">
-                  צ׳ק־אאוט
-                  <input
-                    type="date"
-                    className={inputClass}
-                    value={draft.checkOut}
-                    onChange={(e) =>
-                      setDraft({ ...draft, checkOut: e.target.value })
-                    }
-                  />
-                </label>
+                <DateField
+                  label="צ׳ק־אין"
+                  value={draft.checkIn}
+                  onChange={(checkIn) => setDraft({ ...draft, checkIn })}
+                />
+                <DateField
+                  label="צ׳ק־אאוט"
+                  value={draft.checkOut}
+                  onChange={(checkOut) => setDraft({ ...draft, checkOut })}
+                />
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="block text-xs text-muted">
@@ -162,20 +152,18 @@ export function AccommodationManager({
                     )}
                   </select>
                 </label>
-                <label className="block text-xs text-muted">
-                  עלות ללילה (¥)
-                  <input
-                    type="number"
-                    className={inputClass}
-                    value={draft.costPerNightJpy}
-                    onChange={(e) =>
-                      setDraft({
-                        ...draft,
-                        costPerNightJpy: Number(e.target.value) || 0,
-                      })
-                    }
-                  />
-                </label>
+                <KeypadField
+                  mode="number"
+                  label="עלות ללילה (¥)"
+                  value={draft.costPerNightJpy}
+                  min={0}
+                  onChange={(costPerNightJpy) =>
+                    setDraft({
+                      ...draft,
+                      costPerNightJpy: costPerNightJpy || 0,
+                    })
+                  }
+                />
               </div>
               <label className="block text-xs text-muted">
                 קישור הזמנה
@@ -208,7 +196,7 @@ export function AccommodationManager({
                 <button
                   type="button"
                   onClick={save}
-                  className="rounded-xl bg-accent px-4 py-2 text-sm font-medium text-white glow-accent"
+                  className="rounded-xl bg-nav-bg px-4 py-2 text-sm font-medium text-nav-fg glow-accent"
                 >
                   שמירת מלון
                 </button>
@@ -323,28 +311,16 @@ export function AccommodationManager({
               />
             </label>
             <div className="grid gap-3 sm:grid-cols-2">
-              <label className="block text-xs text-muted">
-                צ׳ק־אין
-                <input
-                  type="date"
-                  className={inputClass}
-                  value={draft.checkIn}
-                  onChange={(e) =>
-                    setDraft({ ...draft, checkIn: e.target.value })
-                  }
-                />
-              </label>
-              <label className="block text-xs text-muted">
-                צ׳ק־אאוט
-                <input
-                  type="date"
-                  className={inputClass}
-                  value={draft.checkOut}
-                  onChange={(e) =>
-                    setDraft({ ...draft, checkOut: e.target.value })
-                  }
-                />
-              </label>
+              <DateField
+                label="צ׳ק־אין"
+                value={draft.checkIn}
+                onChange={(checkIn) => setDraft({ ...draft, checkIn })}
+              />
+              <DateField
+                label="צ׳ק־אאוט"
+                value={draft.checkOut}
+                onChange={(checkOut) => setDraft({ ...draft, checkOut })}
+              />
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="block text-xs text-muted">
@@ -368,20 +344,18 @@ export function AccommodationManager({
                   )}
                 </select>
               </label>
-              <label className="block text-xs text-muted">
-                עלות ללילה (¥)
-                <input
-                  type="number"
-                  className={inputClass}
-                  value={draft.costPerNightJpy}
-                  onChange={(e) =>
-                    setDraft({
-                      ...draft,
-                      costPerNightJpy: Number(e.target.value) || 0,
-                    })
-                  }
-                />
-              </label>
+              <KeypadField
+                mode="number"
+                label="עלות ללילה (¥)"
+                value={draft.costPerNightJpy}
+                min={0}
+                onChange={(costPerNightJpy) =>
+                  setDraft({
+                    ...draft,
+                    costPerNightJpy: costPerNightJpy || 0,
+                  })
+                }
+              />
             </div>
             <label className="block text-xs text-muted">
               קישור הזמנה
@@ -404,38 +378,30 @@ export function AccommodationManager({
               />
             </label>
             <div className="grid gap-3 sm:grid-cols-2">
-              <label className="block text-xs text-muted">
-                קו רוחב (lat)
-                <input
-                  type="number"
-                  step="0.0001"
-                  className={inputClass}
-                  value={draft.lat ?? ""}
-                  onChange={(e) =>
-                    setDraft({
-                      ...draft,
-                      lat: e.target.value ? Number(e.target.value) : undefined,
-                    })
-                  }
-                  placeholder="35.6955"
-                />
-              </label>
-              <label className="block text-xs text-muted">
-                קו אורך (lng)
-                <input
-                  type="number"
-                  step="0.0001"
-                  className={inputClass}
-                  value={draft.lng ?? ""}
-                  onChange={(e) =>
-                    setDraft({
-                      ...draft,
-                      lng: e.target.value ? Number(e.target.value) : undefined,
-                    })
-                  }
-                  placeholder="139.7014"
-                />
-              </label>
+              <KeypadField
+                mode="number"
+                label="קו רוחב (lat)"
+                value={draft.lat ?? 0}
+                allowDecimal
+                maxDecimals={4}
+                emptyLabel="35.6955"
+                formatDisplay={(v) =>
+                  draft.lat == null ? "בחרו ערך" : String(v)
+                }
+                onChange={(lat) => setDraft({ ...draft, lat })}
+              />
+              <KeypadField
+                mode="number"
+                label="קו אורך (lng)"
+                value={draft.lng ?? 0}
+                allowDecimal
+                maxDecimals={4}
+                emptyLabel="139.7014"
+                formatDisplay={(v) =>
+                  draft.lng == null ? "בחרו ערך" : String(v)
+                }
+                onChange={(lng) => setDraft({ ...draft, lng })}
+              />
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <button
@@ -448,7 +414,7 @@ export function AccommodationManager({
               <button
                 type="button"
                 onClick={save}
-                className="rounded-xl bg-accent px-4 py-2 text-sm font-medium text-white glow-accent"
+                className="rounded-xl bg-nav-bg px-4 py-2 text-sm font-medium text-nav-fg glow-accent"
               >
                 שמירת מלון
               </button>

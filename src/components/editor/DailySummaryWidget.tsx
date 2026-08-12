@@ -55,7 +55,7 @@ export function DailySummaryWidget() {
           onChange={(e) =>
             updateFoodEstimate(day.id, Number(e.target.value))
           }
-          className="mt-2 h-2 w-full cursor-pointer appearance-none rounded-full bg-foreground/10 accent-[var(--terracotta)]"
+          className="mt-2 h-2 w-full cursor-pointer appearance-none rounded-full bg-foreground/10 accent-[var(--foreground)]"
         />
       </label>
 

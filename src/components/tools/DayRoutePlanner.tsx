@@ -43,6 +43,7 @@ import { usePersonalTrip } from "@/hooks/usePersonalTrip";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { PlaceSearchPicker } from "@/components/maps/PlaceSearchPicker";
 import { GlassCard } from "@/components/ui/GlassCard";
+import { KeypadField } from "@/components/ui/KeypadField";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import type { PlaceSearchResult } from "@/types/places";
 
@@ -140,15 +141,12 @@ function SortableStop({
             placeholder="DisneySea / מלון / מסעדה"
           />
         </label>
-        <label className="text-xs text-muted">
-          שעת הגעה רצויה
-          <input
-            type="time"
-            className={inputClass}
-            value={stop.arriveBy}
-            onChange={(e) => onChange(stop.id, { arriveBy: e.target.value })}
-          />
-        </label>
+        <KeypadField
+          mode="time"
+          label="שעת הגעה רצויה"
+          value={stop.arriveBy}
+          onChange={(arriveBy) => onChange(stop.id, { arriveBy })}
+        />
       </div>
 
       <PlaceSearchPicker
@@ -207,7 +205,7 @@ function SortableStop({
           onChange={(e) =>
             onChange(stop.id, { stayMinutes: Number(e.target.value) })
           }
-          className="mt-2 h-2 w-full accent-[var(--terracotta)]"
+          className="mt-2 h-2 w-full accent-[var(--foreground)]"
         />
       </label>
     </div>
@@ -303,7 +301,7 @@ export function DayRoutePlanner() {
       <GlassCard strong>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            <span className="glow-accent flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-white">
+            <span className="glow-accent flex h-12 w-12 items-center justify-center rounded-2xl bg-nav-bg text-nav-fg">
               <Route className="h-5 w-5" />
             </span>
             <div>
@@ -407,7 +405,7 @@ export function DayRoutePlanner() {
               href={fullDayMapsUrl}
               target="_blank"
               rel="noreferrer"
-              className="mb-4 inline-flex w-full items-center justify-center gap-3 rounded-2xl border border-accent/40 bg-accent px-5 py-5 text-base font-bold text-white shadow-[0_8px_24px_rgba(255,42,95,0.28)] transition hover:brightness-110"
+              className="mb-4 inline-flex w-full items-center justify-center gap-3 rounded-2xl border border-nav-bg/40 bg-nav-bg px-5 py-5 text-base font-bold text-nav-fg shadow-[0_8px_24px_var(--glow)] transition hover:brightness-110"
             >
               <ExternalLink className="h-5 w-5" />
               פתיחה בגוגל · כל היום
@@ -467,7 +465,7 @@ export function DayRoutePlanner() {
                   href={leg.mapsDirUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-accent/40 bg-accent px-4 py-4 text-sm font-bold text-white shadow-[0_8px_24px_rgba(255,42,95,0.28)] transition hover:brightness-110"
+                  className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-nav-bg/40 bg-nav-bg px-4 py-4 text-sm font-bold text-nav-fg shadow-[0_8px_24px_var(--glow)] transition hover:brightness-110"
                 >
                   <ExternalLink className="h-4 w-4" />
                   פתיחת מסלול ב־Google Maps

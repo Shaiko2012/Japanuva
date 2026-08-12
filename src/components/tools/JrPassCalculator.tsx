@@ -16,7 +16,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { ArrowDown, GripVertical, Plus, Trash2, TrainFront } from "lucide-react";
 import {
   defaultJrRoute,
@@ -29,7 +29,14 @@ import {
 import { tripMeta } from "@/data/trip";
 import { useFamilyStore } from "@/store/family";
 import { formatNumber } from "@/lib/utils";
+import {
+  softEntranceProps,
+  softInteractiveProps,
+  softStagger,
+  softTapProps,
+} from "@/lib/motion";
 import { GlassCard } from "@/components/ui/GlassCard";
+import { KeypadField } from "@/components/ui/KeypadField";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 
@@ -134,6 +141,9 @@ export function JrPassCalculator() {
   );
   const [legs, setLegs] = useState<JrLeg[]>(defaultJrRoute);
   const [travelers, setTravelers] = useState(familyTotal);
+  const reduceMotion = useReducedMotion();
+  const cardMotion = softInteractiveProps(reduceMotion);
+  const tapMotion = softTapProps(reduceMotion);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
   );
@@ -177,7 +187,7 @@ export function JrPassCalculator() {
       <GlassCard strong>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            <span className="glow-accent flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-white">
+            <span className="glow-accent flex h-12 w-12 items-center justify-center rounded-2xl bg-nav-bg text-nav-fg">
               <TrainFront className="h-5 w-5" />
             </span>
             <div>
@@ -205,19 +215,21 @@ export function JrPassCalculator() {
         <GlassCard>
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-sm font-semibold">בונה מסלול</h2>
-            <label className="flex items-center gap-2 text-xs text-muted">
-              נוסעים
-              <input
-                type="number"
+            <div className="flex items-center gap-2 text-xs text-muted">
+              <span>נוסעים</span>
+              <KeypadField
+                mode="number"
+                value={travelers}
                 min={1}
                 max={10}
-                value={travelers}
-                onChange={(e) =>
-                  setTravelers(Math.min(10, Math.max(1, Number(e.target.value) || 1)))
+                title="נוסעים"
+                aria-label="נוסעים"
+                fieldClassName="mt-0 w-16 py-1.5"
+                onChange={(n) =>
+                  setTravelers(Math.min(10, Math.max(1, n || 1)))
                 }
-                className="w-16 rounded-lg border border-border bg-surface px-2 py-1.5 text-sm text-foreground"
               />
-            </label>
+            </div>
           </div>
 
           <DndContext
@@ -252,8 +264,9 @@ export function JrPassCalculator() {
             </SortableContext>
           </DndContext>
 
-          <button
+          <motion.button
             type="button"
+            {...tapMotion}
             onClick={() =>
               setLegs((prev) => [
                 ...prev,
@@ -268,7 +281,7 @@ export function JrPassCalculator() {
           >
             <Plus className="h-4 w-4" />
             הוסיפו קטע למסלול
-          </button>
+          </motion.button>
         </GlassCard>
 
         <GlassCard>
@@ -293,10 +306,15 @@ export function JrPassCalculator() {
           </div>
 
           <div className="space-y-3">
-            {comparisons.map((row) => (
+            {comparisons.map((row, index) => (
               <motion.div
                 key={row.days}
                 layout
+                {...softEntranceProps(reduceMotion, {
+                  delay: softStagger(index, 0.06),
+                  y: 10,
+                })}
+                {...cardMotion}
                 className={`rounded-2xl border p-4 ${
                   row.days === best.days && row.worthIt
                     ? "border-accent/45 bg-accent-soft"

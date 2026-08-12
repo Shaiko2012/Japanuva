@@ -1,38 +1,48 @@
 @import "tailwindcss";
 
-/* Spirited Away / Ghibli moodboard — sampled swatches */
+/* Japanuva · cream / mint / black */
 :root {
-  --background: #fef6e3;
-  --foreground: #2e241c;
-  --surface: rgba(255, 251, 242, 0.9);
-  --surface-strong: rgba(255, 250, 238, 0.96);
-  --border: #d9c8a8;
-  /* Darker muted for AA contrast on parchment (~5.5:1+) */
-  --muted: #564636;
-  --accent: #c4451d;
-  --accent-soft: rgba(196, 69, 29, 0.14);
-  --glow: rgba(196, 69, 29, 0.22);
-  --olive: #8e9665;
-  --olive-soft: rgba(142, 150, 101, 0.16);
-  --sky: #65897f;
-  --sky-soft: rgba(101, 137, 127, 0.18);
-  --amber: #d09132;
-  --amber-soft: rgba(208, 145, 50, 0.18);
-  --terracotta: #c4451d;
-  --apricot: #f2b86e;
-  --apricot-soft: rgba(242, 184, 110, 0.28);
-  --parchment: #fef6e3;
-  --parchment-deep: #f3e6c8;
-  --wood: #a67c28;
-  --espresso: #2e241c;
-  --success: #8e9665;
-  --warning: #d09132;
-  --info: #65897f;
-  --autumn-green: #8e9665;
-  --autumn-yellow: #d09132;
-  --autumn-red: #c4451d;
-  --card-shadow: 0 8px 28px rgba(46, 36, 28, 0.08), 0 2px 8px rgba(46, 36, 28, 0.04);
-  --radius-card: 1.25rem;
+  --background: #faf8f2;
+  --foreground: #0a0a0a;
+  --surface: rgba(255, 255, 255, 0.92);
+  --surface-strong: #ffffff;
+  --border: #e6e1d6;
+  --muted: #6b6560;
+  /* Primary CTAs & strong UI chrome */
+  --accent: #0a0a0a;
+  --accent-soft: rgba(10, 10, 10, 0.07);
+  --on-accent: #ffffff;
+  --glow: rgba(10, 10, 10, 0.14);
+  /* Mint highlight token (class name --yellow is historical; value is mint #ADEBB3) */
+  --yellow: #adebb3;
+  --yellow-soft: rgba(173, 235, 179, 0.28);
+  --olive: #1a1a1a;
+  --olive-soft: rgba(173, 235, 179, 0.18);
+  --sky: #5c6b73;
+  --sky-soft: rgba(92, 107, 115, 0.14);
+  /* Warm sun/gold for weather — not mint */
+  --amber: #c9a227;
+  --amber-soft: rgba(201, 162, 39, 0.22);
+  /* Legacy alias → ink (CTAs / strong chrome); prefer --accent / --foreground */
+  --terracotta: #0a0a0a;
+  --apricot: #8fd99a;
+  --apricot-soft: rgba(143, 217, 154, 0.24);
+  --parchment: #faf8f2;
+  --parchment-deep: #f0ebe3;
+  --wood: #3d3a36;
+  --espresso: #0a0a0a;
+  --nav-bg: #0a0a0a;
+  --nav-fg: #ffffff;
+  --success: #3d7a4a;
+  --warning: #c9a227;
+  --info: #5c6b73;
+  /* Semantic Koyo foliage (keep distinct from mint UI accent) */
+  --autumn-green: #3d7a4a;
+  --autumn-yellow: #d4a84b;
+  --autumn-red: #b86b4c;
+  --card-shadow: 0 8px 28px rgba(10, 10, 10, 0.06), 0 2px 8px rgba(10, 10, 10, 0.04);
+  --card-shadow-hover: 0 14px 36px rgba(10, 10, 10, 0.1), 0 4px 12px rgba(10, 10, 10, 0.05);
+  --radius-card: 1.5rem;
   --space-gap: clamp(0.75rem, 2.2vw, 0.875rem);
   --space-gap-lg: clamp(0.875rem, 2.5vw, 1.125rem);
   --nav-clearance: 0.75rem;
@@ -44,38 +54,47 @@
   --touch-min: 2.75rem; /* 44px */
 }
 
-/* Evening — deep indigo sky + terracotta lantern glow */
+/* Warm dark — soft charcoal + cream ink + mint accents (not neon / void black).
+   Filled CTAs should use bg-nav-bg / text-nav-fg (ink + white).
+   --accent is cream so text-accent / icons stay readable on charcoal. */
 .dark {
-  --background: #1a222c;
-  --foreground: #fef6e3;
-  --surface: rgba(36, 44, 56, 0.88);
-  --surface-strong: rgba(42, 52, 66, 0.95);
-  --border: #3d4a48;
-  /* Lighter muted for contrast on dark parchment */
-  --muted: #c9b8a0;
-  --accent: #d45630;
-  --accent-soft: rgba(212, 86, 48, 0.22);
-  --glow: rgba(224, 164, 66, 0.28);
-  --olive: #a3ab78;
-  --olive-soft: rgba(163, 171, 120, 0.2);
-  --sky: #7a9e96;
-  --sky-soft: rgba(122, 158, 150, 0.2);
-  --amber: #e0a442;
-  --amber-soft: rgba(224, 164, 66, 0.22);
-  --terracotta: #d45630;
-  --apricot: #e8c48a;
-  --apricot-soft: rgba(232, 196, 138, 0.22);
-  --parchment: #243040;
-  --parchment-deep: #1c2632;
-  --wood: #e0a442;
-  --espresso: #fef6e3;
-  --success: #a3ab78;
-  --warning: #e0a442;
-  --info: #7a9e96;
-  --autumn-green: #a3ab78;
-  --autumn-yellow: #e0a442;
-  --autumn-red: #d45630;
-  --card-shadow: 0 10px 32px rgba(0, 0, 0, 0.35), 0 2px 10px rgba(0, 0, 0, 0.2);
+  --background: #1a1714;
+  --foreground: #f5f0e8;
+  --surface: rgba(52, 47, 42, 0.9);
+  --surface-strong: #322e29;
+  --border: #4a443c;
+  --muted: #a89f94;
+  --accent: #f5f0e8;
+  --accent-soft: rgba(173, 235, 179, 0.16);
+  --on-accent: #141210;
+  --glow: rgba(173, 235, 179, 0.18);
+  --yellow: #adebb3;
+  --yellow-soft: rgba(173, 235, 179, 0.22);
+  --olive: #adebb3;
+  --olive-soft: rgba(173, 235, 179, 0.14);
+  --sky: #8a9aa3;
+  --sky-soft: rgba(138, 154, 163, 0.16);
+  --amber: #e0c04a;
+  --amber-soft: rgba(224, 192, 74, 0.16);
+  /* Dark: mint highlight alias (prefer --yellow / --accent for new UI) */
+  --terracotta: #adebb3;
+  --apricot: #8fd99a;
+  --apricot-soft: rgba(143, 217, 154, 0.16);
+  --parchment: #1a1714;
+  --parchment-deep: #26221e;
+  --wood: #e8e2d8;
+  --espresso: #f5f0e8;
+  /* Warm near-ink — polished chrome, not pure #000 void */
+  --nav-bg: #141210;
+  --nav-fg: #ffffff;
+  --success: #6bb87a;
+  --warning: #e0c04a;
+  --info: #8a9aa3;
+  --autumn-green: #6bb87a;
+  --autumn-yellow: #e0c04a;
+  --autumn-red: #d4896a;
+  --card-shadow: 0 8px 28px rgba(12, 10, 8, 0.35), 0 1px 0 rgba(245, 240, 232, 0.04);
+  --card-shadow-hover: 0 14px 36px rgba(12, 10, 8, 0.42), 0 1px 0 rgba(173, 235, 179, 0.08);
 }
 
 @theme inline {
@@ -87,7 +106,10 @@
   --color-muted: var(--muted);
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
+  --color-on-accent: var(--on-accent);
   --color-glow: var(--glow);
+  --color-yellow: var(--yellow);
+  --color-yellow-soft: var(--yellow-soft);
   --color-olive: var(--olive);
   --color-olive-soft: var(--olive-soft);
   --color-sky: var(--sky);
@@ -101,6 +123,8 @@
   --color-parchment-deep: var(--parchment-deep);
   --color-wood: var(--wood);
   --color-espresso: var(--espresso);
+  --color-nav-bg: var(--nav-bg);
+  --color-nav-fg: var(--nav-fg);
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-info: var(--info);
@@ -148,13 +172,13 @@ body {
   overflow-wrap: break-word;
 }
 
-/* Visible keyboard focus — keep Ghibli olive, skip mouse clicks */
+/* Visible keyboard focus — mint-tinted ink */
 :focus {
   outline: none;
 }
 
 :focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--olive) 75%, var(--espresso));
+  outline: 2px solid color-mix(in srgb, var(--yellow) 55%, var(--espresso));
   outline-offset: 2px;
 }
 
@@ -165,7 +189,7 @@ body {
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
-  outline-color: color-mix(in srgb, var(--terracotta) 70%, var(--olive));
+  outline-color: color-mix(in srgb, var(--yellow) 65%, var(--foreground));
   outline-offset: 1px;
 }
 
@@ -186,7 +210,7 @@ select:focus-visible {
   border-width: 0;
 }
 
-/* Soft parchment wash — moss / dusky teal / ochre */
+/* Soft cream page + subtle mint wash */
 body::before {
   content: "";
   position: fixed;
@@ -194,69 +218,115 @@ body::before {
   pointer-events: none;
   z-index: -1;
   background:
-    radial-gradient(ellipse 50% 42% at 92% 4%, rgba(101, 137, 127, 0.16), transparent 55%),
-    radial-gradient(ellipse 45% 38% at 6% 20%, rgba(142, 150, 101, 0.1), transparent 50%),
-    radial-gradient(ellipse 40% 30% at 50% 100%, rgba(208, 145, 50, 0.08), transparent 55%),
-    linear-gradient(180deg, #fef6e3 0%, #faf0d8 48%, #f3e6c8 100%);
+    radial-gradient(ellipse 48% 40% at 88% 6%, rgba(173, 235, 179, 0.18), transparent 58%),
+    radial-gradient(ellipse 40% 34% at 8% 18%, rgba(143, 217, 154, 0.1), transparent 52%),
+    radial-gradient(ellipse 42% 28% at 50% 100%, rgba(10, 10, 10, 0.03), transparent 55%),
+    linear-gradient(180deg, #faf8f2 0%, #f7f4ec 48%, #f0ebe3 100%);
 }
 
 .dark body::before {
   background:
-    radial-gradient(ellipse 48% 38% at 88% 8%, rgba(212, 86, 48, 0.14), transparent 55%),
-    radial-gradient(ellipse 42% 34% at 10% 22%, rgba(142, 150, 101, 0.1), transparent 50%),
-    radial-gradient(ellipse 40% 28% at 48% 100%, rgba(16, 22, 32, 0.92), transparent 60%),
-    linear-gradient(180deg, #141c28 0%, #1a222c 45%, #1c2632 100%);
+    radial-gradient(ellipse 52% 40% at 86% 6%, rgba(173, 235, 179, 0.09), transparent 58%),
+    radial-gradient(ellipse 44% 36% at 8% 20%, rgba(201, 162, 39, 0.05), transparent 52%),
+    radial-gradient(ellipse 48% 30% at 50% 100%, rgba(12, 10, 8, 0.35), transparent 62%),
+    linear-gradient(180deg, #151310 0%, #1a1714 42%, #221e1a 100%);
 }
 
 .glass {
   background: var(--surface);
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-card);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: var(--card-shadow);
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.25s ease,
-    transform 0.2s ease;
-}
-
-.glass-strong {
-  background: var(--surface-strong);
-  border: 1.5px solid var(--border);
+  border: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
   border-radius: var(--radius-card);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   box-shadow: var(--card-shadow);
   transition:
-    border-color 0.2s ease,
-    box-shadow 0.25s ease;
+    border-color 0.25s ease,
+    box-shadow 0.3s ease,
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.glass-strong {
+  background: var(--surface-strong);
+  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  border-radius: var(--radius-card);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--card-shadow);
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.3s ease,
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Dark cards: lifted charcoal surfaces, soft hairline borders, mint hover kiss */
+.dark .glass {
+  background: color-mix(in srgb, var(--surface-strong) 82%, transparent);
+  border-color: color-mix(in srgb, var(--border) 55%, transparent);
+  box-shadow:
+    var(--card-shadow),
+    inset 0 1px 0 rgba(245, 240, 232, 0.05);
+}
+
+.dark .glass-strong {
+  background: var(--surface-strong);
+  border-color: color-mix(in srgb, var(--border) 65%, transparent);
+  box-shadow:
+    var(--card-shadow),
+    inset 0 1px 0 rgba(245, 240, 232, 0.06);
+}
+
+.dark .glass-interactive:hover,
+.dark .glass-interactive:focus-within {
+  border-color: color-mix(in srgb, var(--yellow) 28%, var(--border));
+  box-shadow:
+    var(--card-shadow-hover),
+    inset 0 1px 0 rgba(173, 235, 179, 0.08);
 }
 
 .glass-interactive:hover,
 .glass-interactive:focus-within {
-  border-color: color-mix(in srgb, var(--olive) 45%, var(--border));
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--olive) 18%, transparent),
-    0 12px 32px rgba(46, 36, 28, 0.1),
-    var(--card-shadow);
+  border-color: color-mix(in srgb, var(--yellow) 35%, var(--border));
+  box-shadow: var(--card-shadow-hover);
+  transform: translateY(-2px) scale(1.01);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-interactive:hover,
+  .glass-interactive:focus-within {
+    transform: none;
+  }
 }
 
 .glow-accent {
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent),
-    0 6px 20px color-mix(in srgb, var(--accent) 22%, transparent);
+    0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent),
+    0 8px 22px color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 .glow-text {
   text-shadow: none;
 }
 
-/* Soft paper grain instead of cyber grid */
+/* Primary CTAs: always black ink + white label (both themes) */
+.btn-primary {
+  background: var(--nav-bg);
+  color: var(--nav-fg);
+}
+
+.text-on-accent {
+  color: var(--on-accent);
+}
+
+/* Soft paper grain */
 .grid-noise {
   background-image:
-    radial-gradient(rgba(46, 36, 28, 0.03) 0.6px, transparent 0.6px);
+    radial-gradient(rgba(10, 10, 10, 0.025) 0.6px, transparent 0.6px);
   background-size: 14px 14px;
+}
+
+.dark .grid-noise {
+  background-image:
+    radial-gradient(rgba(245, 240, 232, 0.035) 0.6px, transparent 0.6px);
 }
 
 .dashboard-widget-grid {
@@ -280,59 +350,125 @@ body::before {
 
 /* Fluid display type for hero / page titles on tall high-DPI phones */
 .fluid-title {
-  font-size: clamp(1.35rem, 1.05rem + 1.6vw, 1.875rem);
-  line-height: 1.2;
+  font-size: clamp(1.45rem, 1.1rem + 1.8vw, 2.15rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
 }
 
 @media (min-width: 640px) {
   .fluid-title {
-    font-size: clamp(1.6rem, 1.2rem + 1.4vw, 1.875rem);
+    font-size: clamp(1.75rem, 1.3rem + 1.6vw, 2.35rem);
   }
 }
 
-/* Cozy wooden-signpost countdown — apricot-warmed wood */
+/* Soft mint countdown / sign surfaces */
 .countdown-sign {
   background:
-    linear-gradient(145deg, #f5e4c4 0%, #edd6ae 55%, #e4c898 100%);
-  border: 1.5px solid #c9b089;
+    linear-gradient(145deg, #e8f8ea 0%, #adebb3 55%, #8fd99a 100%);
+  border: 1px solid color-mix(in srgb, #0a0a0a 12%, #adebb3);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.45),
-    0 4px 14px rgba(46, 36, 28, 0.1);
+    0 4px 14px rgba(10, 10, 10, 0.08);
+  color: #0a0a0a;
 }
 
 .dark .countdown-sign {
-  background: linear-gradient(145deg, #3a3228 0%, #2a2420 100%);
-  border-color: #5a4a3c;
+  background: linear-gradient(145deg, #2f3d32 0%, #243028 55%, #1e2822 100%);
+  border-color: color-mix(in srgb, var(--yellow) 28%, var(--border));
+  box-shadow:
+    inset 0 1px 0 rgba(173, 235, 179, 0.12),
+    0 4px 14px rgba(12, 10, 8, 0.28);
+  color: var(--foreground);
 }
 
-/* Vintage ledger frame for currency */
+/* Soft ledger frame for currency */
 .ledger-frame {
   background:
-    linear-gradient(180deg, rgba(243, 230, 200, 0.65), rgba(255, 250, 238, 0.4));
-  border: 1.5px solid var(--border);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+    linear-gradient(180deg, rgba(173, 235, 179, 0.08), rgba(255, 255, 255, 0.5));
+  border: 1px solid var(--border);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
 }
 
 .dark .ledger-frame {
-  background: linear-gradient(180deg, rgba(58, 50, 40, 0.5), rgba(36, 44, 56, 0.4));
+  background: linear-gradient(
+    180deg,
+    rgba(173, 235, 179, 0.08),
+    rgba(50, 46, 41, 0.55)
+  );
+  border-color: color-mix(in srgb, var(--border) 70%, transparent);
+  box-shadow: inset 0 1px 0 rgba(245, 240, 232, 0.05);
 }
 
-/* Autumn watercolor wash — moss / ochre / terracotta */
+/* Soft mint wash — hero / feature bands */
 .autumn-wash {
   background:
-    radial-gradient(ellipse 70% 60% at 15% 20%, rgba(142, 150, 101, 0.12), transparent 55%),
-    radial-gradient(ellipse 60% 50% at 85% 30%, rgba(208, 145, 50, 0.14), transparent 50%),
-    radial-gradient(ellipse 55% 55% at 55% 90%, rgba(196, 69, 29, 0.1), transparent 50%),
-    linear-gradient(165deg, rgba(255, 250, 238, 0.5), rgba(243, 230, 200, 0.35));
-  border-radius: 1rem;
+    radial-gradient(ellipse 70% 60% at 85% 20%, rgba(173, 235, 179, 0.22), transparent 55%),
+    radial-gradient(ellipse 55% 50% at 15% 80%, rgba(143, 217, 154, 0.12), transparent 50%),
+    linear-gradient(165deg, rgba(255, 255, 255, 0.65), rgba(250, 248, 242, 0.4));
+  border-radius: 1.5rem;
 }
 
 .dark .autumn-wash {
   background:
-    radial-gradient(ellipse 70% 60% at 15% 20%, rgba(163, 171, 120, 0.12), transparent 55%),
-    radial-gradient(ellipse 60% 50% at 85% 30%, rgba(224, 164, 66, 0.12), transparent 50%),
-    radial-gradient(ellipse 55% 55% at 55% 90%, rgba(212, 86, 48, 0.1), transparent 50%),
-    linear-gradient(165deg, rgba(36, 44, 56, 0.4), rgba(28, 38, 50, 0.3));
+    radial-gradient(ellipse 70% 60% at 85% 20%, rgba(173, 235, 179, 0.1), transparent 55%),
+    radial-gradient(ellipse 55% 50% at 15% 80%, rgba(143, 217, 154, 0.06), transparent 50%),
+    linear-gradient(165deg, rgba(50, 46, 41, 0.55), rgba(26, 23, 20, 0.4));
+}
+
+/* Centered black pill nav shell (desktop only) */
+.nav-pill-shell {
+  background: var(--nav-bg);
+  color: var(--nav-fg);
+  border-radius: 999px;
+  box-shadow:
+    0 10px 28px rgba(10, 10, 10, 0.18),
+    0 2px 8px rgba(10, 10, 10, 0.1);
+}
+
+.dark .nav-pill-shell {
+  background: color-mix(in srgb, var(--nav-bg) 92%, #2a2622);
+  border: 1px solid color-mix(in srgb, var(--yellow) 12%, transparent);
+  box-shadow:
+    0 12px 32px rgba(12, 10, 8, 0.45),
+    0 1px 0 rgba(245, 240, 232, 0.06),
+    inset 0 1px 0 rgba(173, 235, 179, 0.06);
+}
+
+/* Mobile dropdown: rounded card, not a pill/circle */
+.nav-mobile-menu {
+  background: var(--nav-bg);
+  color: var(--nav-fg);
+  border-radius: 1.5rem;
+  box-shadow:
+    0 14px 36px rgba(10, 10, 10, 0.22),
+    0 4px 12px rgba(10, 10, 10, 0.12);
+  max-height: min(70vh, 28rem);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.5rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.dark .nav-mobile-menu {
+  background: color-mix(in srgb, var(--nav-bg) 88%, #2a2622);
+  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  box-shadow:
+    0 16px 40px rgba(12, 10, 8, 0.5),
+    0 1px 0 rgba(245, 240, 232, 0.05);
+}
+
+.nav-pill-active {
+  background: var(--yellow);
+  color: #0a0a0a;
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(173, 235, 179, 0.35);
+}
+
+.dark .nav-pill-active {
+  box-shadow:
+    0 2px 10px rgba(173, 235, 179, 0.28),
+    0 0 0 1px rgba(173, 235, 179, 0.2);
 }
 
 ::-webkit-scrollbar {
@@ -345,7 +481,7 @@ body::before {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--olive) 45%, var(--border));
+  background: color-mix(in srgb, var(--foreground) 22%, var(--border));
   border-radius: 999px;
 }
 
@@ -356,6 +492,11 @@ body::before {
 
 .leaflet-container {
   font-family: var(--font-nunito), var(--font-heebo), sans-serif;
+  background: #eef1f6;
+}
+
+.dark .leaflet-container {
+  background: #1a1714;
 }
 
 /* Keep embedded itinerary map inside its column (Leaflet uses high z-index). */
@@ -365,6 +506,11 @@ body::before {
   overflow: hidden;
   height: 100%;
   min-height: 280px;
+  background: #eef1f6;
+}
+
+.dark .editor-map-shell {
+  background: #1a1714;
 }
 
 .editor-map-shell .leaflet-container {
@@ -386,9 +532,23 @@ body::before {
 }
 
 .leaflet-popup-content-wrapper {
-  border-radius: 16px;
-  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  border: 1px solid var(--border);
   box-shadow: var(--card-shadow);
   background: var(--surface-strong);
   color: var(--foreground);
+}
+
+.dark .leaflet-popup-content-wrapper {
+  border-color: color-mix(in srgb, var(--border) 65%, transparent);
+  box-shadow:
+    var(--card-shadow),
+    inset 0 1px 0 rgba(245, 240, 232, 0.05);
+}
+
+.dark .leaflet-bar a,
+.dark .leaflet-control-attribution {
+  background: color-mix(in srgb, var(--surface-strong) 92%, transparent);
+  color: var(--muted);
+  border-color: color-mix(in srgb, var(--border) 70%, transparent);
 }

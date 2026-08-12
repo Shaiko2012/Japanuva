@@ -22,9 +22,8 @@ const nunito = Nunito({
 const quicksand = Quicksand({
   variable: "--font-quicksand",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["500", "600", "700"],
 });
-
 export const metadata: Metadata = {
   title: "Japanuva · תכנון טיול משפחתי ליפן",
   description:
@@ -53,8 +52,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#FEF6E3" },
-    { media: "(prefers-color-scheme: dark)", color: "#1A222C" },
+    { media: "(prefers-color-scheme: light)", color: "#FAF8F2" },
+    { media: "(prefers-color-scheme: dark)", color: "#1A1714" },
   ],
   colorScheme: "light dark",
   width: "device-width",

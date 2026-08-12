@@ -1,7 +1,9 @@
 "use client";
 
 import { CalendarDays, Plus } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
 import { useItineraryEditor } from "@/store/itineraryEditor";
+import { tabPillMotion } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 export function DayStrip() {
@@ -9,9 +11,11 @@ export function DayStrip() {
   const selectedDayId = useItineraryEditor((s) => s.selectedDayId);
   const selectDay = useItineraryEditor((s) => s.selectDay);
   const addDay = useItineraryEditor((s) => s.addDay);
+  const reduceMotion = useReducedMotion();
+  const pillTransition = tabPillMotion(reduceMotion);
 
   return (
-    <div className="flex items-center gap-2 overflow-x-auto overscroll-x-contain pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="flex items-center gap-2 overflow-x-auto overscroll-x-contain px-3 py-3.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {days.map((day, index) => {
         const active = day.id === selectedDayId;
         return (
@@ -20,15 +24,23 @@ export function DayStrip() {
             type="button"
             onClick={() => selectDay(day.id)}
             className={cn(
-              "flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-semibold transition",
+              "relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-semibold transition-colors",
               active
-                ? "bg-accent text-white shadow-[0_0_0_3px_var(--accent-soft),0_4px_14px_var(--glow)]"
+                ? "text-background"
                 : "border border-border bg-surface text-muted hover:border-accent/40 hover:text-foreground",
             )}
             aria-label={`יום ${index + 1}`}
             aria-current={active ? "true" : undefined}
           >
-            {index + 1}
+            {active && (
+              <motion.span
+                layoutId="editor-day-pill"
+                className="absolute inset-0 rounded-full bg-foreground shadow-[0_0_0_3px_var(--accent-soft),0_4px_14px_color-mix(in_srgb,var(--foreground)_25%,transparent)]"
+                transition={pillTransition}
+                aria-hidden
+              />
+            )}
+            <span className="relative z-10">{index + 1}</span>
           </button>
         );
       })}

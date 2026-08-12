@@ -12,7 +12,12 @@ import {
   type DistrictId,
 } from "@/data/trip";
 import { usePersonalTrip } from "@/hooks/usePersonalTrip";
-import { softEntranceProps, softStagger, softTransition } from "@/lib/motion";
+import {
+  softEntranceProps,
+  softExpandProps,
+  softInteractiveProps,
+  softStagger,
+} from "@/lib/motion";
 import { isBundledDemoItinerary } from "@/lib/demoDetect";
 import { useItineraryEditor } from "@/store/itineraryEditor";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -59,13 +64,15 @@ export function DailyItinerary({ selectedDistrict }: DailyItineraryProps) {
   }, [isPersonal, editorDays, selectedDistrict]);
 
   const reduceMotion = useReducedMotion();
+  const expandMotion = softExpandProps(reduceMotion);
+  const cardMotion = softInteractiveProps(reduceMotion);
 
   return (
     <GlassCard className="h-full">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div>
           <div className="flex items-center gap-2 text-sm font-semibold">
-            <Sparkles className="h-4 w-4 text-amber" />
+            <Sparkles className="h-4 w-4 text-yellow" />
             {isPersonal ? "הימים שלכם" : "לוח זמנים לדוגמה · אוקטובר 2027"}
           </div>
           <p className="mt-1 text-xs text-muted">
@@ -95,6 +102,7 @@ export function DailyItinerary({ selectedDistrict }: DailyItineraryProps) {
                   delay: softStagger(index, 0.05),
                   y: 10,
                 })}
+                {...cardMotion}
               >
                 <article className="rounded-2xl border border-border bg-background/35 p-4 transition hover:border-accent/35">
                   <button
@@ -131,22 +139,7 @@ export function DailyItinerary({ selectedDistrict }: DailyItineraryProps) {
                   <AnimatePresence initial={false}>
                     {open && (
                       <motion.div
-                        initial={
-                          reduceMotion
-                            ? { opacity: 0 }
-                            : { height: 0, opacity: 0 }
-                        }
-                        animate={
-                          reduceMotion
-                            ? { opacity: 1 }
-                            : { height: "auto", opacity: 1 }
-                        }
-                        exit={
-                          reduceMotion
-                            ? { opacity: 0 }
-                            : { height: 0, opacity: 0 }
-                        }
-                        transition={softTransition()}
+                        {...expandMotion}
                         className="overflow-hidden"
                       >
                         <div className="mt-3 space-y-2 border-t border-border pt-3">
