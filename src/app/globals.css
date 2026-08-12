@@ -32,9 +32,15 @@
   --autumn-red: #c4451d;
   --card-shadow: 0 8px 28px rgba(46, 36, 28, 0.08), 0 2px 8px rgba(46, 36, 28, 0.04);
   --radius-card: 1.25rem;
-  --space-gap: 0.875rem; /* 14px */
-  --space-gap-lg: 1rem; /* 16px */
+  --space-gap: clamp(0.75rem, 2.2vw, 0.875rem);
+  --space-gap-lg: clamp(0.875rem, 2.5vw, 1.125rem);
   --nav-clearance: 0.75rem;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --page-pad-x: max(0.75rem, var(--safe-left), var(--safe-right));
+  --touch-min: 2.75rem; /* 44px */
 }
 
 /* Evening — deep indigo sky + terracotta lantern glow */
@@ -109,9 +115,22 @@
   box-sizing: border-box;
 }
 
+img,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+iframe {
+  max-width: 100%;
+}
+
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 6rem;
+  scroll-padding-top: calc(6rem + var(--safe-top));
+  overflow-x: clip;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
@@ -120,6 +139,9 @@ body {
   font-family: var(--font-nunito), var(--font-heebo), sans-serif;
   line-height: 1.65;
   min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: clip;
+  overflow-wrap: break-word;
 }
 
 /* Soft parchment wash — moss / dusky teal / ochre */
@@ -198,13 +220,31 @@ body::before {
 .dashboard-widget-grid {
   display: grid;
   gap: var(--space-gap);
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 640px) {
+  .dashboard-widget-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (min-width: 1024px) {
   .dashboard-widget-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: var(--space-gap-lg);
+  }
+}
+
+/* Fluid display type for hero / page titles on tall high-DPI phones */
+.fluid-title {
+  font-size: clamp(1.35rem, 1.05rem + 1.6vw, 1.875rem);
+  line-height: 1.2;
+}
+
+@media (min-width: 640px) {
+  .fluid-title {
+    font-size: clamp(1.6rem, 1.2rem + 1.4vw, 1.875rem);
   }
 }
 

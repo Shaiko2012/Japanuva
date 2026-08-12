@@ -11,7 +11,7 @@ export function DayStrip() {
   const addDay = useItineraryEditor((s) => s.addDay);
 
   return (
-    <div className="flex items-center gap-2 overflow-x-auto pb-1">
+    <div className="flex items-center gap-2 overflow-x-auto overscroll-x-contain pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {days.map((day, index) => {
         const active = day.id === selectedDayId;
         return (
@@ -20,7 +20,7 @@ export function DayStrip() {
             type="button"
             onClick={() => selectDay(day.id)}
             className={cn(
-              "flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold transition",
+              "flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-semibold transition",
               active
                 ? "bg-accent text-white shadow-[0_0_0_3px_var(--accent-soft),0_4px_14px_var(--glow)]"
                 : "border border-border bg-surface text-muted hover:border-accent/40 hover:text-foreground",
@@ -35,7 +35,7 @@ export function DayStrip() {
       <button
         type="button"
         onClick={() => addDay()}
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-dashed border-border text-muted hover:border-accent/40 hover:text-accent"
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-dashed border-border text-muted hover:border-accent/40 hover:text-accent"
         aria-label="הוסף יום"
       >
         <Plus className="h-4 w-4" />

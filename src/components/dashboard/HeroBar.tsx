@@ -51,22 +51,24 @@ export function HeroBar() {
 
           {/* dir=ltr: countdown visual-left, title/meta visual-right */}
           <div
-            className="relative flex flex-col gap-3 sm:flex-row sm:items-stretch sm:gap-4"
+            className="relative flex min-w-0 flex-col gap-3 sm:flex-row sm:items-stretch sm:gap-4"
             dir="ltr"
           >
-            <div className="w-full shrink-0 sm:w-[12.5rem] sm:self-stretch lg:w-[14rem]">
+            <div className="w-full min-w-0 shrink-0 sm:w-[min(100%,12.5rem)] sm:self-stretch lg:w-[14rem]">
               <Countdown />
             </div>
 
-            <div className="min-w-0 flex-1" dir="rtl">
+            <div className="min-w-0 flex-1 overflow-hidden" dir="rtl">
               <div className="flex flex-wrap items-center justify-end gap-1.5">
                 <button
                   type="button"
                   onClick={() => setEditOpen(true)}
-                  className="inline-flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-[11px] font-medium text-muted hover:border-olive/40 hover:text-foreground"
+                  className="inline-flex min-h-11 items-center gap-1 rounded-full border border-border px-3 py-2 text-[11px] font-medium text-muted hover:border-olive/40 hover:text-foreground sm:min-h-0 sm:py-1"
                 >
-                  <Pencil className="h-3 w-3" />
-                  שינוי תאריכים / משפחה
+                  <Pencil className="h-3 w-3 shrink-0" />
+                  <span className="max-w-[11rem] truncate sm:max-w-none">
+                    שינוי תאריכים / משפחה
+                  </span>
                 </button>
                 <StatusBadge
                   tone={isPersonal ? "booked" : "pending"}
@@ -75,15 +77,17 @@ export function HeroBar() {
                 <button
                   type="button"
                   onClick={() => setCalOpen((v) => !v)}
-                  className="inline-flex items-center gap-2 rounded-full border border-border bg-parchment-deep/70 px-3 py-1 text-xs font-semibold text-foreground hover:border-olive/45 hover:bg-parchment-deep"
+                  className="inline-flex min-h-11 max-w-full items-center gap-2 rounded-full border border-border bg-parchment-deep/70 px-3 py-2 text-xs font-semibold text-foreground hover:border-olive/45 hover:bg-parchment-deep sm:min-h-0 sm:py-1"
                 >
-                  <CalendarRange className="h-3.5 w-3.5 text-olive" />
-                  {formatTripRangeHe(startDate, endDate)}
+                  <CalendarRange className="h-3.5 w-3.5 shrink-0 text-olive" />
+                  <span className="min-w-0 truncate">
+                    {formatTripRangeHe(startDate, endDate)}
+                  </span>
                 </button>
               </div>
 
               {calOpen && (
-                <div className="ms-auto mt-3 max-w-md">
+                <div className="ms-auto mt-3 w-full max-w-md min-w-0">
                   <DateRangeCalendar
                     startDate={startDate}
                     endDate={endDate}
@@ -92,11 +96,11 @@ export function HeroBar() {
                 </div>
               )}
 
-              <div className="mt-2.5 text-right">
+              <div className="mt-2.5 min-w-0 text-right">
                 <p className="font-[family-name:var(--font-quicksand)] text-xs font-semibold uppercase tracking-[0.16em] text-olive">
                   {tripMeta.name}
                 </p>
-                <h1 className="mt-1 font-[family-name:var(--font-quicksand)] text-2xl font-bold leading-tight tracking-tight text-foreground sm:text-3xl">
+                <h1 className="fluid-title mt-1 font-[family-name:var(--font-quicksand)] font-bold tracking-tight text-foreground">
                   {tripMeta.titleHe}
                 </h1>
                 <p className="mt-2 ms-auto max-w-xl text-sm leading-6 text-muted">

@@ -113,7 +113,7 @@ export function EditorToolbar() {
 
   function handleShare() {
     const payload = {
-      name: "Konnichimap Itinerary",
+      name: "Japanuva Itinerary",
       days: days.length,
       updatedAt: new Date().toISOString(),
     };
@@ -132,7 +132,7 @@ export function EditorToolbar() {
     });
     const blob = new Blob(
       [
-        "Konnichimap · Trip Editor Export\n",
+        "Japanuva · Trip Editor Export\n",
         `Generated: ${new Date().toLocaleString("he-IL")}\n\n`,
         lines.join("\n\n"),
       ],
@@ -141,16 +141,16 @@ export function EditorToolbar() {
     const href = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = href;
-    a.download = "konnichimap-itinerary.txt";
+    a.download = "japanuva-itinerary.txt";
     a.click();
     URL.revokeObjectURL(href);
     flash("קובץ יומן יוצא (טקסט / PDF-ready)");
   }
 
   return (
-    <div className="glass-strong relative flex flex-wrap items-center justify-between gap-3 rounded-2xl p-3 sm:p-4">
-      <div>
-        <h1 className="font-[family-name:var(--font-readex)] text-xl font-bold sm:text-2xl">
+    <div className="glass-strong relative flex min-w-0 flex-wrap items-center justify-between gap-3 rounded-2xl p-3 sm:p-4">
+      <div className="min-w-0">
+        <h1 className="fluid-title font-[family-name:var(--font-readex)] font-bold">
           עריכת הטיול
         </h1>
         <p className="mt-1 text-xs text-muted sm:text-sm">
@@ -158,7 +158,7 @@ export function EditorToolbar() {
         </p>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex max-w-full min-w-0 flex-wrap items-center gap-2">
         <StatusBadge
           tone={dirty ? "pending" : "booked"}
           label={dirty ? "שינויים לא שמורים" : "הכל שמור"}
@@ -177,7 +177,7 @@ export function EditorToolbar() {
           type="button"
           onClick={handleSave}
           disabled={saving}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-accent px-3 py-2 text-xs font-medium text-white glow-accent sm:text-sm disabled:opacity-60"
+          className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-accent px-3 py-2 text-xs font-medium text-white glow-accent sm:min-h-0 sm:text-sm disabled:opacity-60"
         >
           {user ? <Cloud className="h-3.5 w-3.5" /> : <Save className="h-3.5 w-3.5" />}
           {saving ? "שומר..." : user ? "שמירה בענן" : "שמירת שינויים"}
@@ -186,7 +186,7 @@ export function EditorToolbar() {
           type="button"
           onClick={() => void handleResetTrip()}
           disabled={saving}
-          className="inline-flex items-center gap-1.5 rounded-xl border border-warning/35 bg-warning/10 px-3 py-2 text-xs text-warning sm:text-sm"
+          className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-warning/35 bg-warning/10 px-3 py-2 text-xs text-warning sm:min-h-0 sm:text-sm"
         >
           <RotateCcw className="h-3.5 w-3.5" />
           איפוס טיול
@@ -194,7 +194,7 @@ export function EditorToolbar() {
         <button
           type="button"
           onClick={handleShare}
-          className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface px-3 py-2 text-xs sm:text-sm"
+          className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-border bg-surface px-3 py-2 text-xs sm:min-h-0 sm:text-sm"
         >
           <Link2 className="h-3.5 w-3.5" />
           שיתוף קישור
@@ -202,7 +202,7 @@ export function EditorToolbar() {
         <button
           type="button"
           onClick={handleExport}
-          className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface px-3 py-2 text-xs sm:text-sm"
+          className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-border bg-surface px-3 py-2 text-xs sm:min-h-0 sm:text-sm"
         >
           <FileDown className="h-3.5 w-3.5" />
           ייצוא ל־PDF

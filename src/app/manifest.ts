@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Konnichimap · טיול ליפן",
-    short_name: "Konnichimap",
+    name: "Japanuva · טיול ליפן",
+    short_name: "Japanuva",
     description:
       "אפליקציית תכנון אינטראקטיבית לטיול משפחתי ליפן — מסלול, JR Pass, Suica ולוגיסטיקה.",
     start_url: "/",

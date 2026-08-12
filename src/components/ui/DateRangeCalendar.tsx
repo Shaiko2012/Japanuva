@@ -84,7 +84,7 @@ export function DateRangeCalendar({
       <div className="mb-3 flex items-center justify-between gap-2">
         <button
           type="button"
-          className="rounded-lg border border-border p-1.5 hover:border-accent/40"
+          className="flex h-11 w-11 items-center justify-center rounded-lg border border-border hover:border-accent/40 sm:h-8 sm:w-8 sm:p-1.5"
           onClick={() =>
             setView(new Date(view.getFullYear(), view.getMonth() - 1, 1))
           }
@@ -92,10 +92,10 @@ export function DateRangeCalendar({
         >
           <ChevronRight className="h-4 w-4" />
         </button>
-        <div className="text-sm font-semibold">{monthLabel}</div>
+        <div className="min-w-0 truncate text-center text-sm font-semibold">{monthLabel}</div>
         <button
           type="button"
-          className="rounded-lg border border-border p-1.5 hover:border-accent/40"
+          className="flex h-11 w-11 items-center justify-center rounded-lg border border-border hover:border-accent/40 sm:h-8 sm:w-8 sm:p-1.5"
           onClick={() =>
             setView(new Date(view.getFullYear(), view.getMonth() + 1, 1))
           }
@@ -105,12 +105,12 @@ export function DateRangeCalendar({
         </button>
       </div>
 
-      <div className="mb-2 flex gap-2 text-[11px]">
+      <div className="mb-2 flex flex-wrap gap-2 text-[11px]">
         <button
           type="button"
           onClick={() => setPicking("start")}
           className={cn(
-            "rounded-full border px-2.5 py-1",
+            "min-h-11 rounded-full border px-2.5 py-2 sm:min-h-0 sm:py-1",
             picking === "start"
               ? "border-accent/40 bg-accent-soft text-accent"
               : "border-border text-muted",
@@ -122,7 +122,7 @@ export function DateRangeCalendar({
           type="button"
           onClick={() => setPicking("end")}
           className={cn(
-            "rounded-full border px-2.5 py-1",
+            "min-h-11 rounded-full border px-2.5 py-2 sm:min-h-0 sm:py-1",
             picking === "end"
               ? "border-accent/40 bg-accent-soft text-accent"
               : "border-border text-muted",

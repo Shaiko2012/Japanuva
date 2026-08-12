@@ -66,16 +66,16 @@ function CounterRow({
   onInc: () => void;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-parchment-deep/50 px-3 py-2.5 transition hover:border-olive/35">
-      <div className="flex min-w-0 items-center gap-3">
+    <div className="flex min-w-0 items-center justify-between gap-2 rounded-2xl border border-border bg-parchment-deep/50 px-3 py-2.5 transition hover:border-olive/35 sm:gap-3">
+      <div className="flex min-w-0 items-center gap-2 sm:gap-3">
         <AvatarStack count={value} kind={kind} />
-        <span className="text-sm font-medium text-foreground">{label}</span>
+        <span className="truncate text-sm font-medium text-foreground">{label}</span>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex shrink-0 items-center gap-2">
         <button
           type="button"
           onClick={onDec}
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-surface text-muted hover:border-olive/40 hover:text-foreground"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-surface text-muted hover:border-olive/40 hover:text-foreground sm:h-8 sm:w-8"
           aria-label={`הפחת ${label}`}
         >
           <Minus className="h-3.5 w-3.5" />
@@ -94,7 +94,7 @@ function CounterRow({
         <button
           type="button"
           onClick={onInc}
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-terracotta text-parchment shadow-[0_3px_10px_var(--glow)] hover:brightness-105"
+          className="flex h-11 w-11 items-center justify-center rounded-full bg-terracotta text-parchment shadow-[0_3px_10px_var(--glow)] hover:brightness-105 sm:h-8 sm:w-8"
           aria-label={`הוסף ${label}`}
         >
           <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />

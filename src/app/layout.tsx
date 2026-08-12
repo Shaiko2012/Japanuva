@@ -26,14 +26,14 @@ const quicksand = Quicksand({
 });
 
 export const metadata: Metadata = {
-  title: "Konnichimap · תכנון טיול משפחתי ליפן",
+  title: "Japanuva · תכנון טיול משפחתי ליפן",
   description:
     "אפליקציית תכנון אינטראקטיבית לטיול משפחתי ליפן באוקטובר 2027 — מסלול, JR Pass, Suica ולוגיסטיקה.",
-  applicationName: "Konnichimap",
+  applicationName: "Japanuva",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Konnichimap",
+    title: "Japanuva",
   },
   formatDetection: {
     telephone: false,
@@ -59,6 +59,7 @@ export const viewport: Viewport = {
   colorScheme: "light dark",
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

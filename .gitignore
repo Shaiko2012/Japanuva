@@ -20,6 +20,12 @@
 # production
 /build
 
+# Android / Bubblewrap TWA (project lives in android/)
+/android/.gradle/
+/android/build/
+/android/app/build/
+/.gradle/
+
 # misc
 .DS_Store
 *.pem

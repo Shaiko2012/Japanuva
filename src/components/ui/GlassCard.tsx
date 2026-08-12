@@ -19,7 +19,7 @@ export function GlassCard({
       className={cn(
         strong ? "glass-strong" : "glass",
         interactive && "glass-interactive",
-        "rounded-[1.25rem] p-3 sm:p-4",
+        "rounded-[1.25rem] p-3 sm:p-4 min-w-0 max-w-full",
         className,
       )}
     >

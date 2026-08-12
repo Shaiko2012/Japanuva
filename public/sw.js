@@ -1,5 +1,5 @@
-/* Konnichimap service worker — shell cache + network-first APIs */
-const CACHE_VERSION = "konnichimap-v1";
+/* Japanuva service worker — shell cache + network-first APIs */
+const CACHE_VERSION = "japanuva-v1";
 const SHELL_CACHE = `${CACHE_VERSION}-shell`;
 const PRECACHE_URLS = ["/", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png"];
 
@@ -20,7 +20,7 @@ self.addEventListener("activate", (event) => {
       .then((keys) =>
         Promise.all(
           keys
-            .filter((key) => key.startsWith("konnichimap-") && key !== SHELL_CACHE)
+            .filter((key) => key.startsWith("japanuva-") && key !== SHELL_CACHE)
             .map((key) => caches.delete(key)),
         ),
       )

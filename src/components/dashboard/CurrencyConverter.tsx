@@ -154,22 +154,22 @@ export function CurrencyConverter() {
   }
 
   return (
-    <div className="flex h-full flex-col space-y-3">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-          <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-amber-soft text-wood">
+    <div className="flex h-full min-w-0 flex-col space-y-3">
+      <div className="flex min-w-0 items-start justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-2 text-sm font-semibold text-foreground">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-amber-soft text-wood">
             <ArrowLeftRight className="h-3.5 w-3.5" strokeWidth={2.25} />
           </span>
-          המרת מטבע
+          <span className="min-w-0">המרת מטבע</span>
         </div>
-        <div className="text-end">
+        <div className="min-w-0 max-w-[55%] text-end sm:max-w-none">
           <div className="text-[11px] font-medium text-muted">
             {loading ? <span>טוען שער…</span> : <span>1 ₪ ≈ {rate} ¥</span>}
           </div>
           {history && (
             <RateSparkline values={history} className="mt-1 justify-end" />
           )}
-          <p className="mt-1 max-w-[11rem] text-[10px] leading-4 text-muted">
+          <p className="mt-1 max-w-full text-[10px] leading-4 text-muted sm:max-w-[11rem] sm:ms-auto">
             {loading
               ? "מתחבר לשער חי…"
               : `${sourceLabelHe(source, isFallback)}${
@@ -179,9 +179,9 @@ export function CurrencyConverter() {
         </div>
       </div>
 
-      <div className="ledger-frame rounded-2xl p-3">
-        <div className="grid grid-cols-2 gap-3">
-          <label className="rounded-xl border border-border bg-surface/80 p-3 transition hover:border-olive/40">
+      <div className="ledger-frame min-w-0 rounded-2xl p-3">
+        <div className="grid grid-cols-2 gap-2 sm:gap-3">
+          <label className="min-w-0 rounded-xl border border-border bg-surface/80 p-2.5 transition hover:border-olive/40 sm:p-3">
             <div className="text-xs font-medium text-muted">שקלים (₪)</div>
             <input
               type="number"
@@ -189,10 +189,10 @@ export function CurrencyConverter() {
               step={50}
               value={ils}
               onChange={(e) => setFromIls(Number(e.target.value))}
-              className="mt-1 w-full bg-transparent font-[family-name:var(--font-quicksand)] text-xl font-bold tabular-nums text-foreground outline-none"
+              className="mt-1 w-full min-w-0 bg-transparent font-[family-name:var(--font-quicksand)] text-lg font-bold tabular-nums text-foreground outline-none sm:text-xl"
             />
           </label>
-          <label className="rounded-xl border border-border bg-surface/80 p-3 transition hover:border-olive/40">
+          <label className="min-w-0 rounded-xl border border-border bg-surface/80 p-2.5 transition hover:border-olive/40 sm:p-3">
             <div className="text-xs font-medium text-muted">ין יפני (¥)</div>
             <input
               type="number"
@@ -200,7 +200,7 @@ export function CurrencyConverter() {
               step={100}
               value={jpy}
               onChange={(e) => setFromJpy(Number(e.target.value))}
-              className="mt-1 w-full bg-transparent font-[family-name:var(--font-quicksand)] text-xl font-bold tabular-nums text-foreground outline-none"
+              className="mt-1 w-full min-w-0 bg-transparent font-[family-name:var(--font-quicksand)] text-lg font-bold tabular-nums text-foreground outline-none sm:text-xl"
             />
           </label>
         </div>
@@ -215,7 +215,7 @@ export function CurrencyConverter() {
               type="button"
               onClick={() => setFromJpy(amount)}
               className={cn(
-                "rounded-full border px-3 py-1 text-xs font-semibold transition",
+                "min-h-11 rounded-full border px-3 py-2 text-xs font-semibold transition sm:min-h-0 sm:py-1",
                 active
                   ? "border-terracotta/50 bg-terracotta text-parchment shadow-[0_4px_12px_var(--glow)]"
                   : "border-border bg-parchment-deep/60 text-muted hover:border-olive/45 hover:text-foreground",
@@ -234,12 +234,12 @@ export function CurrencyConverter() {
         step={100}
         value={Math.min(20000, Math.max(500, ils))}
         onChange={(e) => setFromIls(Number(e.target.value))}
-        className="mt-auto h-1.5 w-full cursor-pointer appearance-none rounded-full bg-foreground/10 accent-[var(--olive)]"
+        className="mt-auto h-1.5 w-full max-w-full cursor-pointer appearance-none rounded-full bg-foreground/10 accent-[var(--olive)]"
         aria-label="סכום בשקלים"
       />
-      <div className="flex justify-between text-[11px] text-muted">
+      <div className="flex min-w-0 flex-wrap justify-between gap-x-2 gap-y-1 text-[11px] text-muted">
         <span>בחירה מהירה או הקלדה</span>
-        <span className="tabular-nums font-medium text-foreground/80">
+        <span className="min-w-0 break-all tabular-nums font-medium text-foreground/80">
           ≈ ₪{formatNumber(ils)} / ¥{formatNumber(jpy)}
         </span>
       </div>

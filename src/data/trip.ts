@@ -34,7 +34,7 @@ export interface DayPlan {
 }
 
 export const tripMeta = {
-  name: "Konnichimap",
+  name: "Japanuva",
   titleHe: "טיול משפחתי ליפן",
   startDate: "2027-10-05",
   endDate: "2027-10-19",

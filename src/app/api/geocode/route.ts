@@ -27,7 +27,7 @@ export async function GET(request: Request) {
       headers: {
         Accept: "application/json",
         "Accept-Language": "he,en",
-        "User-Agent": "Konnichimap/1.0 (family trip planner)",
+        "User-Agent": "Japanuva/1.0 (family trip planner)",
       },
       next: { revalidate: 86400 },
     });

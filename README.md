@@ -1,4 +1,4 @@
-# Konnichimap
+# Japanuva
 
 אפליקציית תכנון טיול משפחתי ליפן (אוקטובר 2027) עם ממשק RTL בעברית ואסתטיקת Neo-Tokyo.
 
@@ -52,17 +52,17 @@ npm run start
 ```
 
 2. פתחו Chrome → DevTools → **Application**:
-   - Manifest: `Konnichimap · טיול ליפן`, theme `#FEF6E3`
+   - Manifest: `Japanuva · טיול ליפן`, theme `#FEF6E3`
    - Service Workers: `/sw.js` פעיל
 3. להתקנה מקומית נוחה יותר: `npx next start` אחרי build, או `npm run dev -- --experimental-https` לבדיקת HTTPS (ה־SW עדיין כבוי ב־dev בכוונה).
 4. במובייל / Chrome: Install / «הוסף למסך הבית» אחרי deploy ל־HTTPS.
 
 ### APK (Android) אחרי deploy
 
-ראו הוראות מלאות ב־[`docs/apk.md`](docs/apk.md). בקצרה, אחרי ש־`https://YOUR_DOMAIN` חי:
+ראו הוראות מלאות ב־[`docs/apk.md`](docs/apk.md). פרויקט ה־TWA נמצא ב־`android/` (לא ב־`app/` בשורש, כדי שלא יתנגש עם Next.js App Router ב־`src/app`). בקצרה, אחרי ש־`https://YOUR_DOMAIN` חי:
 
 ```bash
 npm i -g @bubblewrap/cli
-bubblewrap init --manifest https://YOUR_DOMAIN/manifest.webmanifest
+cd android
 bubblewrap build
 ```

@@ -26,7 +26,7 @@ export function OnboardingGate() {
       open={open}
       allowSkip={false}
       onFinished={() => setOpen(false)}
-      title="ברוכים הבאים ל־Konnichimap"
+      title="ברוכים הבאים ל־Japanuva"
     />
   );
 }

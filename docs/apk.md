@@ -1,8 +1,8 @@
 # APK via Bubblewrap (TWA)
 
-Konnichimap is a Progressive Web App. After you **deploy** the site (for example on [Vercel](https://vercel.com)), you can wrap the live HTTPS URL as an Android Trusted Web Activity (TWA) and produce an APK/AAB with [Bubblewrap](https://github.com/GoogleChromeLabs/bubblewrap).
+Japanuva is a Progressive Web App. After you **deploy** the site (for example on [Vercel](https://vercel.com)), you can wrap the live HTTPS URL as an Android Trusted Web Activity (TWA) and produce an APK/AAB with [Bubblewrap](https://github.com/GoogleChromeLabs/bubblewrap).
 
-There is no production domain in this repo yet — replace `YOUR_DOMAIN` everywhere below (e.g. `konnichimap.vercel.app`).
+There is no production domain in this repo yet — replace `YOUR_DOMAIN` everywhere below (e.g. `japanuva.vercel.app`).
 
 ## Prerequisites
 
@@ -27,9 +27,9 @@ Answer the prompts (package id, app name, signing key, etc.). Suggested values:
 
 | Prompt | Suggestion |
 | --- | --- |
-| Application name | Konnichimap |
-| Short name | Konnichimap |
-| Package ID | `app.konnichimap.twa` (or your own reverse-DNS id) |
+| Application name | Japanuva |
+| Short name | Japanuva |
+| Package ID | `app.vercel.japanuva.twa` (or your own reverse-DNS id) |
 | Host | `YOUR_DOMAIN` |
 | Theme color | `#FEF6E3` |
 | Background color | `#FEF6E3` |
@@ -38,13 +38,21 @@ Answer the prompts (package id, app name, signing key, etc.). Suggested values:
 
 Bubblewrap creates a local Android project that launches your PWA in Chrome Custom Tabs / TWA mode.
 
-## Build the APK
+This repo already has the generated TWA project under **`android/`** (kept out of the Next.js root so it does not conflict with `src/app`). Run Bubblewrap commands from that folder:
 
 ```bash
+cd android
 bubblewrap build
 ```
 
-Outputs typically land under the Bubblewrap project folder (APK and/or AAB). Install on a device with:
+## Build the APK
+
+```bash
+cd android
+bubblewrap build
+```
+
+Outputs typically land under `android/` (APK and/or AAB). Install on a device with:
 
 ```bash
 adb install path/to/app-release-signed.apk

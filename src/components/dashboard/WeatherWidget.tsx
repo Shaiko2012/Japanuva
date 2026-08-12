@@ -54,12 +54,12 @@ function KoyoGauge({ value }: { value: number }) {
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between text-xs">
-        <span className="flex items-center gap-1.5 font-medium text-muted">
-          <Leaf className="h-3.5 w-3.5 text-autumn-green" strokeWidth={2.25} />
+      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-xs">
+        <span className="flex min-w-0 items-center gap-1.5 font-medium text-muted">
+          <Leaf className="h-3.5 w-3.5 shrink-0 text-autumn-green" strokeWidth={2.25} />
           שיא עלווה סתיו (Koyo)
         </span>
-        <span className={cn("font-bold tabular-nums", statusColor)}>
+        <span className={cn("shrink-0 font-bold tabular-nums", statusColor)}>
           {pct}% · {status}
         </span>
       </div>
@@ -78,7 +78,7 @@ function KoyoGauge({ value }: { value: number }) {
           transition={{ duration: 0.85, ease: "easeOut" }}
         >
           <div
-            className="h-full w-full min-w-[12rem] rounded-full"
+            className="h-full w-full rounded-full"
             style={{
               background:
                 "linear-gradient(to left, var(--autumn-green) 0%, var(--autumn-yellow) 48%, var(--autumn-red) 100%)",
@@ -139,15 +139,15 @@ export function WeatherWidget() {
   const SkyIcon = sky.Icon;
 
   return (
-    <div className="autumn-wash -m-1 flex h-full flex-col space-y-3 p-2.5 sm:p-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-          <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-sky-soft text-sky">
+    <div className="autumn-wash flex h-full min-w-0 flex-col space-y-3 p-1 sm:p-1.5">
+      <div className="flex min-w-0 items-center justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-2 text-sm font-semibold text-foreground">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-sky-soft text-sky">
             <SkyIcon className="h-3.5 w-3.5" strokeWidth={2.25} />
           </span>
-          מזג אוויר ו-Koyo
+          <span className="min-w-0">מזג אוויר ו-Koyo</span>
         </div>
-        <span className="text-xs font-medium text-muted">
+        <span className="shrink-0 text-xs font-medium text-muted">
           {weather?.monthLabel ?? weatherTips.monthHint}
         </span>
       </div>
@@ -166,7 +166,7 @@ export function WeatherWidget() {
 
       {showStats ? (
         <>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid min-w-0 grid-cols-3 gap-1.5 sm:gap-2">
             <div className="rounded-2xl border border-border bg-surface/75 p-2.5 text-center">
               <Sun className="mx-auto mb-1 h-4 w-4 text-amber" strokeWidth={2.25} />
               <div className="font-[family-name:var(--font-quicksand)] text-lg font-bold tabular-nums text-foreground">

@@ -73,7 +73,7 @@ export function EditorToolbarActions({ compact }: { compact?: boolean }) {
   }
 
   return (
-    <div className="relative flex flex-wrap items-center gap-2">
+    <div className="relative flex min-w-0 flex-wrap items-center gap-2">
       {dirty && (
         <span className="text-[11px] text-warning">שינויים לא שמורים</span>
       )}
@@ -82,7 +82,7 @@ export function EditorToolbarActions({ compact }: { compact?: boolean }) {
         onClick={() => void handleSave()}
         disabled={saving}
         className={cn(
-          "inline-flex items-center gap-1 rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs text-foreground hover:border-accent/40",
+          "inline-flex min-h-11 items-center gap-1 rounded-lg border border-border bg-surface px-3 py-2 text-xs text-foreground hover:border-accent/40 sm:min-h-0 sm:px-2.5 sm:py-1.5",
           compact && "ms-auto",
         )}
       >
@@ -92,7 +92,7 @@ export function EditorToolbarActions({ compact }: { compact?: boolean }) {
       <button
         type="button"
         onClick={() => void handleReset()}
-        className="inline-flex items-center gap-1 rounded-lg border border-border px-2.5 py-1.5 text-xs text-muted hover:text-warning"
+        className="inline-flex min-h-11 items-center gap-1 rounded-lg border border-border px-3 py-2 text-xs text-muted hover:text-warning sm:min-h-0 sm:px-2.5 sm:py-1.5"
         title="איפוס טיול"
       >
         <RotateCcw className="h-3.5 w-3.5" />

@@ -101,7 +101,11 @@ export function GoogleMapPip() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.85, y: 12 }}
             onClick={toggle}
-            className="glow-accent fixed bottom-5 start-5 z-[70] flex items-center gap-2 rounded-full border border-accent/40 bg-accent px-4 py-3 text-sm font-semibold text-white shadow-2xl"
+            className="glow-accent fixed z-[70] flex min-h-11 items-center gap-2 rounded-full border border-accent/40 bg-accent px-4 py-3 text-sm font-semibold text-white shadow-2xl"
+            style={{
+              bottom: "max(1.25rem, var(--safe-bottom))",
+              insetInlineStart: "max(1.25rem, var(--safe-right))",
+            }}
             aria-label="פתח מפת Google"
           >
             <MapPinned className="h-4 w-4" />
@@ -122,11 +126,14 @@ export function GoogleMapPip() {
             transition={{ type: "spring", stiffness: 320, damping: 28 }}
             className={cn(
               "glass-strong fixed z-[70] overflow-hidden rounded-2xl shadow-2xl",
-              "bottom-5 start-5",
               isLarge
-                ? "h-[min(72vh,640px)] w-[min(96vw,720px)]"
-                : "h-[280px] w-[min(94vw,380px)]",
+                ? "h-[min(72dvh,640px)] w-[min(calc(100vw-1.5rem-var(--safe-left)-var(--safe-right)),720px)]"
+                : "h-[min(42dvh,280px)] w-[min(calc(100vw-1.5rem-var(--safe-left)-var(--safe-right)),380px)]",
             )}
+            style={{
+              bottom: "max(1.25rem, var(--safe-bottom))",
+              insetInlineStart: "max(0.75rem, var(--safe-right))",
+            }}
           >
             <div className="flex items-center justify-between gap-2 border-b border-border bg-surface-strong/90 px-3 py-2">
               <div className="min-w-0">
@@ -144,7 +151,7 @@ export function GoogleMapPip() {
                   type="button"
                   onClick={togglePinList}
                   className={cn(
-                    "flex h-8 w-8 items-center justify-center rounded-lg border text-muted hover:border-accent/40 hover:text-accent",
+                    "flex h-11 w-11 items-center justify-center rounded-lg border text-muted hover:border-accent/40 hover:text-accent sm:h-8 sm:w-8",
                     showPinList
                       ? "border-accent/40 bg-accent-soft text-accent"
                       : "border-border",
@@ -157,7 +164,7 @@ export function GoogleMapPip() {
                   href={openUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted hover:border-accent/40 hover:text-accent"
+                  className="flex h-11 w-11 items-center justify-center rounded-lg border border-border text-muted hover:border-accent/40 hover:text-accent sm:h-8 sm:w-8"
                   aria-label="פתח ב־Google Maps"
                 >
                   <ExternalLink className="h-3.5 w-3.5" />
@@ -165,7 +172,7 @@ export function GoogleMapPip() {
                 <button
                   type="button"
                   onClick={() => setSize(isLarge ? "mini" : "large")}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted hover:border-accent/40 hover:text-accent"
+                  className="flex h-11 w-11 items-center justify-center rounded-lg border border-border text-muted hover:border-accent/40 hover:text-accent sm:h-8 sm:w-8"
                   aria-label={isLarge ? "מזער" : "הגדל"}
                 >
                   {isLarge ? (
@@ -177,7 +184,7 @@ export function GoogleMapPip() {
                 <button
                   type="button"
                   onClick={closePip}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted hover:border-accent/40 hover:text-accent"
+                  className="flex h-11 w-11 items-center justify-center rounded-lg border border-border text-muted hover:border-accent/40 hover:text-accent sm:h-8 sm:w-8"
                   aria-label="סגור מפה"
                 >
                   <X className="h-3.5 w-3.5" />
@@ -189,7 +196,7 @@ export function GoogleMapPip() {
               className={cn(
                 "relative grid h-[calc(100%-44px)]",
                 showPinList && isLarge
-                  ? "grid-cols-[minmax(0,1fr)_200px]"
+                  ? "grid-cols-1 sm:grid-cols-[minmax(0,1fr)_minmax(0,11rem)]"
                   : "grid-cols-1",
               )}
             >

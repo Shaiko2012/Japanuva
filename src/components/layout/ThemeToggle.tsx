@@ -13,7 +13,7 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <div className="h-9 w-9 rounded-full border border-border bg-surface" />
+      <div className="h-11 w-11 rounded-full border border-border bg-surface" />
     );
   }
 
@@ -24,7 +24,7 @@ export function ThemeToggle() {
       type="button"
       whileTap={{ scale: 0.92 }}
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      className="relative flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface text-foreground transition hover:border-olive/50 hover:bg-parchment-deep hover:text-olive"
+      className="relative flex h-11 w-11 items-center justify-center rounded-full border border-border bg-surface text-foreground transition hover:border-olive/50 hover:bg-parchment-deep hover:text-olive"
       aria-label={isDark ? "מצב בהיר" : "מצב ערב"}
     >
       <motion.span

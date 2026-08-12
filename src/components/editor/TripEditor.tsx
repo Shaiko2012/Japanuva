@@ -23,8 +23,8 @@ export function TripEditor() {
       <div
         className={cn(
           "relative isolate overflow-hidden rounded-2xl border border-border bg-surface-strong shadow-[var(--card-shadow)]",
-          "flex min-h-[calc(100vh-9rem)] flex-col",
-          "lg:grid lg:max-h-[calc(100vh-9rem)] lg:grid-cols-[minmax(380px,440px)_minmax(0,1fr)] lg:grid-rows-1 lg:flex-none",
+          "flex min-h-[calc(100dvh-9rem)] flex-col",
+          "lg:grid lg:max-h-[calc(100dvh-9rem)] lg:grid-cols-[minmax(0,440px)_minmax(0,1fr)] lg:grid-rows-1 lg:flex-none",
         )}
       >
         <ItineraryEditorPanel className="relative z-20 min-h-0 shrink-0 lg:min-h-0 lg:overflow-hidden" />

@@ -40,14 +40,22 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/80 bg-parchment/90 px-3 py-2.5 backdrop-blur-xl sm:px-5">
-      <div className="mx-auto flex max-w-7xl items-center gap-3">
-        <Link href="/" className="group flex min-w-0 shrink-0 items-center gap-2.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-olive text-parchment shadow-[0_4px_12px_color-mix(in_srgb,var(--olive)_40%,transparent)]">
+    <header
+      className="sticky top-0 z-50 border-b border-border/80 bg-parchment/90 backdrop-blur-xl"
+      style={{
+        paddingTop: "max(0.625rem, var(--safe-top))",
+        paddingBottom: "0.625rem",
+        paddingInlineStart: "max(0.75rem, var(--safe-left))",
+        paddingInlineEnd: "max(0.75rem, var(--safe-right))",
+      }}
+    >
+      <div className="mx-auto flex max-w-7xl min-w-0 items-center gap-2 sm:gap-3">
+        <Link href="/" className="group flex min-w-0 shrink items-center gap-2 sm:gap-2.5">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-olive text-parchment shadow-[0_4px_12px_color-mix(in_srgb,var(--olive)_40%,transparent)] sm:h-9 sm:w-9">
             <Leaf className="h-4 w-4" strokeWidth={2.25} />
           </span>
           <span className="flex min-w-0 flex-col leading-snug">
-            <span className="font-[family-name:var(--font-quicksand)] text-base font-bold tracking-tight text-foreground">
+            <span className="truncate font-[family-name:var(--font-quicksand)] text-base font-bold tracking-tight text-foreground">
               {tripMeta.name}
             </span>
             <span className="hidden truncate text-[10px] text-muted sm:block">
@@ -56,7 +64,7 @@ export function Navbar() {
           </span>
         </Link>
 
-        <nav className="hidden min-w-0 flex-1 overflow-x-auto lg:block">
+        <nav className="hidden min-w-0 flex-1 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] lg:block [&::-webkit-scrollbar]:hidden">
           <ul className="flex items-center justify-center gap-1.5">
             {navItems.map((item) => {
               const Icon = iconMap[item.icon];
@@ -66,11 +74,11 @@ export function Navbar() {
                   : pathname.startsWith(item.href);
 
               return (
-                <li key={item.href}>
+                <li key={item.href} className="shrink-0">
                   <Link
                     href={item.href}
                     className={cn(
-                      "relative flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs transition sm:text-sm",
+                      "relative flex min-h-11 items-center gap-1.5 rounded-full px-3 py-2 text-xs transition sm:min-h-0 sm:py-1.5 sm:text-sm",
                       active
                         ? "text-espresso"
                         : "text-muted hover:bg-parchment-deep hover:text-foreground",
@@ -94,12 +102,12 @@ export function Navbar() {
           </ul>
         </nav>
 
-        <div className="ms-auto flex items-center gap-2">
+        <div className="ms-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
           <AuthButton />
           <ThemeToggle />
           <button
             type="button"
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface text-foreground lg:hidden"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-surface text-foreground lg:hidden"
             onClick={() => setOpen((v) => !v)}
             aria-label="תפריט ניווט"
             aria-expanded={open}
@@ -125,14 +133,14 @@ export function Navbar() {
                     href={item.href}
                     onClick={() => setOpen(false)}
                     className={cn(
-                      "flex items-center gap-2 rounded-2xl px-3 py-2.5 text-sm transition",
+                      "flex min-h-11 items-center gap-2 rounded-2xl px-3 py-2.5 text-sm transition",
                       active
                         ? "border border-border bg-parchment-deep font-semibold text-foreground"
                         : "text-muted hover:bg-parchment-deep/70 hover:text-foreground",
                     )}
                   >
-                    <Icon className="h-4 w-4" />
-                    <span className="font-medium">{item.label}</span>
+                    <Icon className="h-4 w-4 shrink-0" />
+                    <span className="min-w-0 font-medium">{item.label}</span>
                   </Link>
                 </li>
               );

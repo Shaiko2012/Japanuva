@@ -258,7 +258,10 @@ export function CloudSync() {
   if (!configured || !user) return null;
 
   return (
-    <div className="pointer-events-none fixed bottom-5 end-5 z-[65]">
+    <div className="pointer-events-none fixed z-[65]" style={{
+      bottom: "max(1.25rem, var(--safe-bottom))",
+      insetInlineEnd: "max(1.25rem, var(--safe-left))",
+    }}>
       <div className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-border bg-surface-strong/95 px-3 py-1.5 text-[11px] text-muted shadow-lg backdrop-blur-md">
         {status === "syncing" ? (
           <LoaderCircle className="h-3.5 w-3.5 animate-spin text-accent" />

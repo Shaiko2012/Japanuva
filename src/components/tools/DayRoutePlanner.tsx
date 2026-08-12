@@ -307,7 +307,7 @@ export function DayRoutePlanner() {
               <Route className="h-5 w-5" />
             </span>
             <div>
-              <h1 className="font-[family-name:var(--font-readex)] text-2xl font-bold">
+              <h1 className="fluid-title font-[family-name:var(--font-readex)] font-bold">
                 מסלול ליום
               </h1>
               <p className="mt-1 text-sm text-muted">

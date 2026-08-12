@@ -27,7 +27,7 @@ export function Dashboard() {
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.12, duration: 0.45 }}
-        className="grid gap-3 xl:grid-cols-2 xl:gap-4"
+        className="grid min-w-0 gap-3 lg:grid-cols-2 lg:gap-4"
       >
         <RouteMap
           selected={hydrated ? selectedDistrict : null}

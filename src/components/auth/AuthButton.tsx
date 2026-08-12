@@ -69,7 +69,7 @@ export function AuthButton() {
 
   if (loading) {
     return (
-      <div className="h-10 w-10 animate-pulse rounded-full border border-border bg-surface" />
+      <div className="h-11 w-11 animate-pulse rounded-full border border-border bg-surface" />
     );
   }
 
@@ -79,7 +79,7 @@ export function AuthButton() {
         type="button"
         onClick={() => setOpen(true)}
         className={cn(
-          "flex items-center gap-2 rounded-full border border-border bg-surface px-2.5 py-1.5 text-xs font-medium transition hover:border-accent/40 hover:text-accent",
+          "flex min-h-11 items-center gap-2 rounded-full border border-border bg-surface px-2.5 py-1.5 text-xs font-medium transition hover:border-accent/40 hover:text-accent",
           user && "border-accent/30 bg-accent-soft text-accent",
         )}
         aria-label={user ? "חשבון Google" : "התחברות"}
