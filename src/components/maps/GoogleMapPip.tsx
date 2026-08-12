@@ -193,12 +193,12 @@ export function GoogleMapPip() {
               className={cn(
                 "relative grid h-[calc(100%-44px)] min-h-0",
                 showPinList && isLarge
-                  ? // Mobile: map on top + scrollable list sheet; sm+: side list like desktop
-                    "grid-cols-1 grid-rows-[minmax(0,1fr)_minmax(8rem,42%)] sm:grid-cols-[minmax(0,1fr)_minmax(0,11rem)] sm:grid-rows-1"
+                  ? // Narrow: map + list stacked; sm+: map | fixed-width attractions side list
+                    "grid-cols-1 grid-rows-[minmax(0,1fr)_minmax(8rem,42%)] sm:grid-cols-[minmax(0,1fr)_11rem] sm:grid-rows-[minmax(0,1fr)]"
                   : "grid-cols-1",
               )}
             >
-              <div className="relative min-h-0">
+              <div className="relative min-h-0 min-w-0">
                 <MultiPinMap
                   pins={pins}
                   activePinId={activePinId}
@@ -208,7 +208,7 @@ export function GoogleMapPip() {
               </div>
 
               {showPinList && isLarge && (
-                <aside className="min-h-0 overflow-y-auto overscroll-contain border-t border-border bg-surface-strong/95 p-2 sm:border-s sm:border-t-0">
+                <aside className="min-h-0 min-w-0 overflow-y-auto overscroll-contain border-t border-border bg-surface-strong/95 p-2 sm:border-s sm:border-t-0">
                   <PinGroup
                     title="מלונות"
                     icon={<BedDouble className="h-3.5 w-3.5 text-accent" />}

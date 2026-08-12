@@ -28,14 +28,15 @@ export function TripEditor() {
         className={cn(
           "relative isolate overflow-hidden rounded-2xl border border-border bg-surface-strong shadow-[var(--card-shadow)]",
           "flex max-h-[calc(100dvh-9rem)] min-h-[calc(100dvh-9rem)] flex-col",
-          "lg:grid lg:grid-cols-[minmax(0,440px)_minmax(0,1fr)] lg:grid-rows-1 lg:flex-none",
+          // md+: side-by-side list | map (mobile keeps tabs below)
+          "md:grid md:grid-cols-[minmax(280px,440px)_minmax(0,1fr)] md:grid-rows-1 md:flex-none",
         )}
       >
-        {/* Mobile: tabs so list & map are both reachable (desktop keeps side-by-side). */}
+        {/* Mobile only: רשימה | מפה */}
         <div
           role="tablist"
           aria-label="תצוגת מסלול"
-          className="grid shrink-0 grid-cols-2 gap-1 border-b border-border bg-background/40 p-1.5 lg:hidden"
+          className="grid shrink-0 grid-cols-2 gap-1 border-b border-border bg-background/40 p-1.5 md:hidden"
         >
           {(
             [
@@ -63,22 +64,25 @@ export function TripEditor() {
         </div>
 
         {/*
-          Wrappers avoid display-class clashes (project `cn` does not merge Tailwind).
-          `lg:contents` lets children become the desktop grid items.
+          Wrappers keep `hidden` off panel roots (project `cn` does not merge
+          Tailwind display utilities — ItineraryEditorPanel always sets `flex`).
+          Mobile: show one pane via tabs. md+: both panes always visible as grid items.
         */}
         <div
-          className={cn(
-            "min-h-0 flex-1 overflow-hidden",
-            mobilePane !== "list" && "hidden lg:contents",
-          )}
+          className={
+            mobilePane === "list"
+              ? "min-h-0 min-w-0 flex-1 overflow-hidden"
+              : "hidden min-h-0 min-w-0 overflow-hidden md:block"
+          }
         >
           <ItineraryEditorPanel className="relative z-20 h-full min-h-0 overflow-hidden" />
         </div>
         <div
-          className={cn(
-            "relative z-0 min-h-0 flex-1",
-            mobilePane !== "map" && "hidden lg:contents",
-          )}
+          className={
+            mobilePane === "map"
+              ? "relative z-0 min-h-0 min-w-0 flex-1"
+              : "relative z-0 hidden min-h-0 min-w-0 md:block"
+          }
         >
           <EditorMapPanel className="h-full min-h-0" />
         </div>
