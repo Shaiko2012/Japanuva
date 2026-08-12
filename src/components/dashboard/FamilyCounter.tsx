@@ -27,7 +27,7 @@ function AvatarStack({
       : "border-[#E5D49A] bg-[#FBF3D4] text-[#A8944A]";
 
   return (
-    <div className="flex min-w-0 shrink items-center" aria-hidden>
+    <div className="flex shrink-0 items-center" aria-hidden>
       {Array.from({ length: shown }).map((_, i) => (
         <span
           key={`${kind}-${i}`}
@@ -73,10 +73,10 @@ function CounterRow({
   onInc: () => void;
 }) {
   return (
-    <div className="flex min-w-0 items-center justify-between gap-2 rounded-2xl border border-border bg-parchment-deep/50 px-2.5 py-2.5 transition hover:border-yellow/40 sm:gap-3 sm:px-3">
-      <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
+    <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-2 gap-y-2 rounded-2xl border border-border bg-parchment-deep/50 px-2.5 py-2.5 transition hover:border-yellow/40 sm:gap-x-3 sm:px-3">
+      <div className="flex items-center gap-2">
         <AvatarStack count={value} kind={kind} />
-        <span className="min-w-0 truncate text-sm font-medium text-foreground">
+        <span className="whitespace-nowrap text-sm font-medium text-foreground">
           {label}
         </span>
       </div>

@@ -213,6 +213,7 @@ export function AuthButton() {
         onClick={() => setOpen(true)}
         className={cn(
           "flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1.5 text-xs font-bold transition sm:gap-2 sm:px-3",
+          "max-[419px]:h-11 max-[419px]:w-11 max-[419px]:justify-center max-[419px]:px-0",
           user
             ? "border-border bg-surface-strong text-foreground shadow-[var(--card-shadow)] hover:border-yellow/45 hover:shadow-[var(--card-shadow-hover)]"
             : "glow-accent border-transparent bg-nav-bg text-nav-fg hover:brightness-110",
@@ -247,7 +248,9 @@ export function AuthButton() {
             {user.displayName || user.email || "החשבון שלי"}
           </span>
         ) : (
-          <span className="whitespace-nowrap">התחברות</span>
+          <span className="hidden whitespace-nowrap min-[420px]:inline">
+            התחברות
+          </span>
         )}
       </motion.button>
 

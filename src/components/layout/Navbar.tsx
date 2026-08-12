@@ -56,11 +56,11 @@ export function Navbar() {
       style={{
         paddingTop: "max(0.75rem, var(--safe-top))",
         paddingBottom: "0.75rem",
-        paddingInlineStart: "max(0.75rem, var(--safe-left))",
-        paddingInlineEnd: "max(0.75rem, var(--safe-right))",
+        paddingLeft: "max(0.85rem, var(--safe-left))",
+        paddingRight: "max(0.85rem, var(--safe-right))",
       }}
     >
-      <div className="mx-auto flex max-w-7xl min-w-0 items-center gap-2 sm:gap-3">
+      <div className="mx-auto flex max-w-7xl min-w-0 items-center gap-1.5 sm:gap-3">
         <Link
           href="/"
           className="group flex min-h-11 shrink-0 items-center gap-2.5 rounded-2xl sm:gap-3"
@@ -130,13 +130,13 @@ export function Navbar() {
           </div>
         </nav>
 
-        <div className="ms-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
+        <div className="ms-auto flex min-w-0 shrink-0 items-center gap-1 sm:gap-2">
           <AuthButton />
           <ThemeToggle />
           <motion.button
             type="button"
             {...menuBtnTap}
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-surface-strong text-foreground shadow-[var(--card-shadow)] transition hover:scale-[1.03] hover:shadow-[var(--card-shadow-hover)] lg:hidden"
+            className="relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border bg-surface-strong text-foreground shadow-[var(--card-shadow)] transition hover:scale-[1.03] hover:shadow-[var(--card-shadow-hover)] lg:hidden"
             onClick={() => setOpen((v) => !v)}
             aria-label="תפריט ניווט"
             aria-expanded={open}

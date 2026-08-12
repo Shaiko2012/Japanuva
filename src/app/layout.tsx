@@ -5,6 +5,7 @@ import { AuthProvider } from "@/components/providers/AuthProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { CloudSync } from "@/components/auth/CloudSync";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
+import { SmoothScroll } from "@/components/providers/SmoothScroll";
 import "./globals.css";
 
 const heebo = Heebo({
@@ -76,9 +77,11 @@ export default function RootLayout({
       <body className="min-h-full font-sans">
         <ThemeProvider>
           <AuthProvider>
-            <AppShell>{children}</AppShell>
-            <CloudSync />
-            <ServiceWorkerRegister />
+            <SmoothScroll>
+              <AppShell>{children}</AppShell>
+              <CloudSync />
+              <ServiceWorkerRegister />
+            </SmoothScroll>
           </AuthProvider>
         </ThemeProvider>
       </body>

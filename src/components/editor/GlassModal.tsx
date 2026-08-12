@@ -133,11 +133,11 @@ export function GlassModal({ open, title, onClose, children, wide }: ModalProps)
             aria-modal="true"
             aria-label={title}
             variants={panelVariants}
-            className={`glass-strong relative z-10 max-h-[min(90dvh,90vh)] w-full overflow-y-auto rounded-3xl p-4 sm:p-6 ${
+            className={`glass-strong relative z-10 flex max-h-[min(90dvh,90vh)] w-full flex-col overflow-hidden rounded-3xl ${
               wide ? "max-w-2xl" : "max-w-lg"
             }`}
           >
-            <div className="mb-4 flex items-center justify-between gap-3">
+            <div className="flex shrink-0 items-center justify-between gap-3 px-4 pt-4 sm:px-6 sm:pt-6">
               <h2 className="font-[family-name:var(--font-readex)] text-xl font-bold">
                 {title}
               </h2>
@@ -150,7 +150,9 @@ export function GlassModal({ open, title, onClose, children, wide }: ModalProps)
                 <X className="h-4 w-4" />
               </button>
             </div>
-            {children}
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-4 pt-4 sm:px-6 sm:pb-6 me-1.5 [scrollbar-gutter:stable]">
+              {children}
+            </div>
           </motion.div>
         </motion.div>
       )}
