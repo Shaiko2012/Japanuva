@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import {
   DndContext,
   PointerSensor,
@@ -112,7 +112,7 @@ function ActivityFormFields({
         title: title || draft.title,
         location,
         mapsLink: buildMapsOpenUrl({
-          name: location,
+          name: title || (location && !location.match(/^-?\d+\.\d+\s*,/) ? location : undefined),
           address: location,
           lat,
           lng,
@@ -133,7 +133,12 @@ function ActivityFormFields({
       ...draft,
       title: draft.title || place.name,
       location: place.address || place.name,
-      mapsLink: place.mapsLink,
+      mapsLink: buildMapsOpenUrl({
+        name: place.name,
+        address: place.address,
+        lat: place.lat,
+        lng: place.lng,
+      }),
       lat: place.lat,
       lng: place.lng,
       descriptionHe:
@@ -470,8 +475,10 @@ function SortableActivity({
 
 export function ActivitiesBuilder({
   variant = "default",
+  renderItinerary,
 }: {
   variant?: "default" | "itinerary";
+  renderItinerary?: (parts: { cta: ReactNode; list: ReactNode }) => ReactNode;
 }) {
   const day = useItineraryEditor(selectSelectedDay);
   const addActivity = useItineraryEditor((s) => s.addActivity);
@@ -524,41 +531,53 @@ export function ActivitiesBuilder({
     setOpen(false);
   }
 
+  const itineraryCta = (
+    <button
+      type="button"
+      onClick={openCreate}
+      className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-yellow/45 bg-yellow-soft/50 px-4 py-3.5 text-sm font-semibold text-foreground transition hover:border-yellow/70 hover:bg-yellow-soft"
+    >
+      הוסף אטרקציה
+      <span className="text-lg leading-none">+</span>
+    </button>
+  );
+
+  const itineraryList = (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={onDragEnd}
+    >
+      <SortableContext
+        items={day.activities.map((a) => a.id)}
+        strategy={verticalListSortingStrategy}
+      >
+        <div className="space-y-2">
+          {day.activities.map((activity) => (
+            <SortableActivity
+              key={activity.id}
+              activity={activity}
+              onEdit={() => openEdit(activity)}
+              onRemove={() => removeActivity(day.id, activity.id)}
+              compact
+            />
+          ))}
+        </div>
+      </SortableContext>
+    </DndContext>
+  );
+
   return (
     <>
       {variant === "itinerary" ? (
-        <div className="flex min-h-0 flex-col">
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={onDragEnd}
-          >
-            <SortableContext
-              items={day.activities.map((a) => a.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              <div className="space-y-2 pb-4">
-                {day.activities.map((activity) => (
-                  <SortableActivity
-                    key={activity.id}
-                    activity={activity}
-                    onEdit={() => openEdit(activity)}
-                    onRemove={() => removeActivity(day.id, activity.id)}
-                    compact
-                  />
-                ))}
-              </div>
-            </SortableContext>
-          </DndContext>
-
-          <button
-            type="button"
-            onClick={openCreate}
-            className="sticky bottom-0 mt-auto w-full rounded-xl bg-foreground px-4 py-3.5 text-sm font-semibold text-background transition hover:opacity-90"
-          >
-            הוסיפו פעילות ליום זה
-          </button>
-        </div>
+        renderItinerary ? (
+          renderItinerary({ cta: itineraryCta, list: itineraryList })
+        ) : (
+          <div className="space-y-3">
+            {itineraryCta}
+            {itineraryList}
+          </div>
+        )
       ) : (
         <GlassCard>
           <div className="mb-3 flex items-center justify-between gap-2">

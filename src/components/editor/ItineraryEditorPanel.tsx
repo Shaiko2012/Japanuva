@@ -36,13 +36,14 @@ export function ItineraryEditorPanel({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "relative z-20 flex h-full min-h-0 flex-col bg-surface-strong shadow-[2px_0_12px_rgba(0,0,0,0.06)] lg:shadow-[-2px_0_12px_rgba(0,0,0,0.06)]",
+        "relative z-20 flex flex-col bg-surface-strong shadow-[2px_0_12px_rgba(0,0,0,0.06)] lg:shadow-[-2px_0_12px_rgba(0,0,0,0.06)]",
+        "max-md:h-auto md:h-full md:min-h-0",
         className,
       )}
     >
       <ItineraryPanelHeader />
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div className="flex flex-col max-md:overflow-visible md:min-h-0 md:flex-1 md:overflow-hidden">
         <div className="shrink-0 space-y-3 border-b border-border px-4 py-4">
           <DayStrip />
           <p className="text-sm font-medium text-foreground">
@@ -51,12 +52,23 @@ export function ItineraryEditorPanel({ className }: { className?: string }) {
           <EditorToolbarActions compact />
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
-          <AccommodationManager variant="itinerary" />
-          <div className="mt-4">
-            <ActivitiesBuilder variant="itinerary" />
-          </div>
-        </div>
+        <ActivitiesBuilder
+          variant="itinerary"
+          renderItinerary={({ cta, list }) => (
+            <>
+              <div className="shrink-0 space-y-3 px-4 pt-4">
+                <AccommodationManager variant="itinerary" />
+                {cta}
+              </div>
+              <div
+                className="px-4 pb-4 pt-3 max-md:overflow-visible md:min-h-0 md:flex-1 md:overflow-y-auto"
+                data-lenis-prevent
+              >
+                {list}
+              </div>
+            </>
+          )}
+        />
       </div>
     </div>
   );

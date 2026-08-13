@@ -33,9 +33,10 @@ export function TripEditor() {
       <div
         className={cn(
           "relative isolate overflow-hidden rounded-2xl border border-border bg-surface-strong shadow-[var(--card-shadow)]",
-          "flex max-h-[calc(100dvh-9rem)] min-h-[calc(100dvh-9rem)] flex-col",
-          // md+: side-by-side list | map (mobile keeps tabs below)
-          "md:grid md:grid-cols-[minmax(280px,440px)_minmax(0,1fr)] md:grid-rows-1 md:flex-none",
+          "flex flex-col",
+          // Mobile: card grows with content so Add attraction isn't clipped.
+          // md+: fixed viewport with internal scroll + side-by-side map.
+          "md:grid md:max-h-[calc(100dvh-9rem)] md:min-h-[calc(100dvh-9rem)] md:grid-cols-[minmax(280px,440px)_minmax(0,1fr)] md:grid-rows-1",
         )}
       >
         {/* Mobile only: רשימה | מפה */}
@@ -56,11 +57,11 @@ export function TripEditor() {
         <div
           className={
             mobilePane === "list"
-              ? "min-h-0 min-w-0 flex-1 overflow-hidden"
+              ? "min-w-0 max-md:overflow-visible md:min-h-0 md:flex-1 md:overflow-hidden"
               : "hidden min-h-0 min-w-0 overflow-hidden md:block"
           }
         >
-          <ItineraryEditorPanel className="relative z-20 h-full min-h-0 overflow-hidden" />
+          <ItineraryEditorPanel className="relative z-20 max-md:h-auto max-md:overflow-visible md:h-full md:min-h-0 md:overflow-hidden" />
         </div>
         <div
           className={

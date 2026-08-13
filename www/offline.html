@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Japanuva</title>
+    <style>
+      :root {
+        --bg: #faf8f2;
+        --ink: #0a0a0a;
+        --mint: #adebb3;
+        --muted: #6b6560;
+      }
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: Nunito, Heebo, system-ui, sans-serif;
+      }
+      main {
+        box-sizing: border-box;
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: max(1.5rem, env(safe-area-inset-top)) 1.5rem
+          max(2rem, env(safe-area-inset-bottom));
+        text-align: center;
+      }
+      .mark {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background: var(--mint);
+        display: grid;
+        place-items: center;
+        margin-bottom: 1.25rem;
+      }
+      svg {
+        width: 44px;
+        height: 44px;
+      }
+      h1 {
+        font-size: 1.35rem;
+        margin: 0 0 0.5rem;
+      }
+      p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.6;
+        max-width: 22rem;
+      }
+      button {
+        margin-top: 1.5rem;
+        min-height: 48px;
+        padding: 0.75rem 1.4rem;
+        border: 0;
+        border-radius: 999px;
+        background: var(--ink);
+        color: #fff;
+        font-weight: 700;
+        font-size: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="mark" aria-hidden="true">
+        <svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+          <g fill="#0A0A0A" transform="translate(64 64) scale(0.66) translate(-64 -76)">
+            <path d="M18 34h92l5 12H13z" />
+            <rect x="24" y="48" width="80" height="7" rx="1" />
+            <rect x="36" y="48" width="11" height="70" rx="1.5" />
+            <rect x="81" y="48" width="11" height="70" rx="1.5" />
+            <rect x="36" y="84" width="56" height="8" rx="1" />
+          </g>
+        </svg>
+      </div>
+      <h1>אין חיבור לרשת</h1>
+      <p>Japanuva צריך אינטרנט כדי לטעון את האתר. בדקו את החיבור ונסו שוב.</p>
+      <button type="button" id="retry">ניסיון חוזר</button>
+    </main>
+    <script>
+      document.getElementById("retry").addEventListener("click", function () {
+        window.location.href = "https://japanuva.vercel.app";
+      });
+    </script>
+  </body>
+</html>

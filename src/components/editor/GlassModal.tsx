@@ -150,7 +150,10 @@ export function GlassModal({ open, title, onClose, children, wide }: ModalProps)
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-4 pt-4 sm:px-6 sm:pb-6 me-1.5 [scrollbar-gutter:stable]">
+            <div
+              data-lenis-prevent
+              className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-4 pt-4 sm:px-6 sm:pb-6 me-1.5 [scrollbar-gutter:stable]"
+            >
               {children}
             </div>
           </motion.div>

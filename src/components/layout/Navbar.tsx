@@ -5,12 +5,12 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   CalendarDays,
+  ChevronLeft,
   CreditCard,
   FileCheck2,
   LayoutDashboard,
   Lightbulb,
   Luggage,
-  Leaf,
   Menu,
   PenSquare,
   Route,
@@ -20,6 +20,7 @@ import {
 import { useState } from "react";
 import { navItems, tripMeta } from "@/data/trip";
 import { cn } from "@/lib/utils";
+import { LogoMark } from "@/components/brand/LogoMark";
 import {
   navPillTransition,
   softLogoHover,
@@ -68,12 +69,12 @@ export function Navbar() {
         >
           {/* RTL: mark at inline-start, then Quicksand wordmark */}
           <motion.span
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#ADEBB3] text-[#0A0A0A] sm:h-11 sm:w-11"
+            className="flex h-10 w-10 shrink-0 overflow-hidden rounded-full sm:h-11 sm:w-11"
             aria-hidden
             whileHover={reduceMotion ? undefined : softLogoHover}
             whileTap={reduceMotion ? undefined : softTap}
           >
-            <Leaf className="h-[18px] w-[18px] sm:h-5 sm:w-5" strokeWidth={2.35} />
+            <LogoMark className="h-full w-full" />
           </motion.span>
           <span className="flex flex-col leading-none">
             <span className="whitespace-nowrap font-[family-name:var(--font-quicksand)] text-[15px] font-bold tracking-tight text-foreground sm:text-lg">
@@ -86,7 +87,10 @@ export function Navbar() {
         </Link>
 
         <nav className="hidden min-w-0 flex-1 lg:block">
-          <div className="nav-pill-shell mx-auto w-fit max-w-full overflow-x-auto overscroll-x-contain px-1.5 py-1.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div
+            data-lenis-prevent-horizontal
+            className="nav-pill-shell mx-auto w-fit max-w-full overflow-x-auto overscroll-x-contain px-1.5 py-1.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
             <ul className="flex items-center gap-0.5">
               {navItems.map((item) => {
                 const Icon = iconMap[item.icon];
@@ -177,7 +181,7 @@ export function Navbar() {
             className="mx-auto w-full max-w-7xl overflow-hidden lg:hidden"
           >
             <div className="nav-mobile-menu mt-3">
-              <ul className="flex flex-col gap-0.5">
+              <ul className="flex flex-col">
                 {navItems.map((item) => {
                   const Icon = iconMap[item.icon];
                   const active =
@@ -186,29 +190,45 @@ export function Navbar() {
                       : pathname.startsWith(item.href);
 
                   return (
-                    <li key={item.href} className="relative">
+                    <li key={item.href}>
                       <Link
                         href={item.href}
                         onClick={() => setOpen(false)}
                         className={cn(
-                          "relative flex min-h-11 items-center gap-2 rounded-full px-3.5 py-2.5 text-sm transition",
+                          "relative flex min-h-12 items-center gap-3 rounded-xl px-2.5 py-2 text-[15px] transition",
                           active
                             ? "font-bold text-[#0A0A0A]"
-                            : "text-white/80 hover:text-white",
+                            : "font-medium text-foreground/80 hover:bg-foreground/[0.04] hover:text-foreground",
                         )}
                       >
                         {active && (
                           <motion.span
                             layoutId="nav-pill-mobile"
-                            className="nav-pill-active absolute inset-0"
+                            className="nav-pill-active absolute inset-0 rounded-xl"
                             transition={navPillTransition}
                             aria-hidden
                           />
                         )}
-                        <Icon className="relative z-10 h-4 w-4 shrink-0" />
-                        <span className="relative z-10 min-w-0 font-semibold">
+                        <span
+                          className={cn(
+                            "relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
+                            active
+                              ? "bg-black/10 text-[#0A0A0A]"
+                              : "bg-olive-soft text-olive",
+                          )}
+                        >
+                          <Icon className="h-4 w-4" strokeWidth={2.2} />
+                        </span>
+                        <span className="relative z-10 min-w-0 flex-1">
                           {item.label}
                         </span>
+                        <ChevronLeft
+                          className={cn(
+                            "relative z-10 h-4 w-4 shrink-0",
+                            active ? "text-[#0A0A0A]/55" : "text-muted",
+                          )}
+                          aria-hidden
+                        />
                       </Link>
                     </li>
                   );

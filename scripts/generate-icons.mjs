@@ -1,87 +1,103 @@
 /**
- * Generate Japanuva PWA / favicon PNGs from the mint + leaf SVG mark.
+ * Generate Japanuva PWA / favicon PNGs from the mint + torii mark.
  * Usage: node scripts/generate-icons.mjs
  */
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const publicDir = join(__dirname, "..", "public");
+const root = join(__dirname, "..");
+const publicDir = join(root, "public");
+const appDir = join(root, "src", "app");
 
 const MINT = "#ADEBB3";
 const INK = "#0A0A0A";
 
-/** Lucide leaf paths in 24x24 viewBox */
-function leafGroup(strokeWidth, scale, rotate = -12) {
-  const cx = 12;
-  const cy = 12;
-  return `
-    <g
-      fill="none"
-      stroke="${INK}"
-      stroke-width="${strokeWidth}"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      transform="translate(256 256) scale(${scale}) rotate(${rotate}) translate(${-cx} ${-cy})"
-    >
-      <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
-      <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
-    </g>`;
-}
-
-/** Full-bleed mint square with centered leaf (OS may round corners). */
-function squareIconSvg(leafScale = 11.5, stroke = 2.35) {
+/** Same geometry as LogoMark.tsx — ink torii on mint disc. */
+function toriiMarkSvg(size, { circle = true, roundedSquare = false } = {}) {
+  const s = size / 128;
+  const bg = circle
+    ? `<circle cx="64" cy="64" r="64" fill="${MINT}"/>`
+    : roundedSquare
+      ? `<rect width="128" height="128" rx="24" fill="${MINT}"/>`
+      : `<rect width="128" height="128" fill="${MINT}"/>`;
   return Buffer.from(`<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <rect width="512" height="512" fill="${MINT}"/>
-  ${leafGroup(stroke, leafScale)}
+<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 128 128">
+  ${bg}
+  <g fill="${INK}" transform="translate(64 64) scale(0.66) translate(-64 -76)">
+    <path d="M18 34h92l5 12H13z"/>
+    <rect x="24" y="48" width="80" height="7" rx="1"/>
+    <rect x="36" y="48" width="11" height="70" rx="1.5"/>
+    <rect x="81" y="48" width="11" height="70" rx="1.5"/>
+    <rect x="36" y="84" width="56" height="8" rx="1"/>
+  </g>
 </svg>`);
 }
 
-/** Circular mark on transparent (favicon / optional reuse). */
-function circleIconSvg(leafScale = 11.2, stroke = 2.4) {
-  return Buffer.from(`<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <circle cx="256" cy="256" r="256" fill="${MINT}"/>
-  ${leafGroup(stroke, leafScale)}
-</svg>`);
+function pngToIco(pngBuffer, size = 32) {
+  const header = Buffer.alloc(6);
+  header.writeUInt16LE(0, 0);
+  header.writeUInt16LE(1, 2);
+  header.writeUInt16LE(1, 4);
+  const entry = Buffer.alloc(16);
+  entry.writeUInt8(size >= 256 ? 0 : size, 0);
+  entry.writeUInt8(size >= 256 ? 0 : size, 1);
+  entry.writeUInt8(0, 2);
+  entry.writeUInt8(0, 3);
+  entry.writeUInt16LE(1, 4);
+  entry.writeUInt16LE(32, 6);
+  entry.writeUInt32LE(pngBuffer.length, 8);
+  entry.writeUInt32LE(22, 12);
+  return Buffer.concat([header, entry, pngBuffer]);
 }
 
-/** Maskable: mint bleed + smaller leaf in safe zone (~80%). */
-function maskableIconSvg() {
-  return Buffer.from(`<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <rect width="512" height="512" fill="${MINT}"/>
-  ${leafGroup(2.2, 8.8)}
-</svg>`);
+async function png(svg, size) {
+  return sharp(svg).resize(size, size).png({ compressionLevel: 9 }).toBuffer();
 }
 
-async function png(svg, size, outName) {
-  const buf = await sharp(svg).resize(size, size).png({ compressionLevel: 9 }).toBuffer();
-  const out = join(publicDir, outName);
-  writeFileSync(out, buf);
-  console.log(`wrote ${outName} (${size}x${size}, ${buf.length} bytes)`);
+async function writePng(svg, size, dir, name) {
+  const buf = await png(svg, size);
+  writeFileSync(join(dir, name), buf);
+  console.log(`wrote ${name} (${size}x${size})`);
+  return buf;
 }
 
 async function main() {
-  const square = squareIconSvg();
-  const circle = circleIconSvg();
-  const maskable = maskableIconSvg();
+  const circle = toriiMarkSvg(512, { circle: true });
+  const square = toriiMarkSvg(512, { circle: false });
+  const maskable = toriiMarkSvg(512, { circle: false });
 
-  await png(square, 192, "icon-192.png");
-  await png(square, 512, "icon-512.png");
-  await png(maskable, 512, "icon-512-maskable.png");
-  await png(square, 180, "apple-touch-icon.png");
-  await png(circle, 32, "favicon-32.png");
+  await writePng(square, 192, publicDir, "icon-192.png");
+  await writePng(square, 512, publicDir, "icon-512.png");
+  await writePng(maskable, 512, publicDir, "icon-512-maskable.png");
+  const apple = await writePng(circle, 180, publicDir, "apple-touch-icon.png");
+  const fav32 = await writePng(circle, 32, publicDir, "favicon-32.png");
 
-  // Also refresh public/icon.svg as square app icon source
-  writeFileSync(
-    join(publicDir, "icon.svg"),
-    squareIconSvg().toString("utf8").replace('width="512" height="512" ', ""),
-  );
-  console.log("wrote icon.svg");
+  writeFileSync(join(appDir, "apple-icon.png"), apple);
+  writeFileSync(join(appDir, "icon.png"), apple);
+
+  const ico = pngToIco(fav32, 32);
+  writeFileSync(join(publicDir, "favicon.ico"), ico);
+  writeFileSync(join(appDir, "favicon.ico"), ico);
+  console.log("wrote favicon.ico");
+
+  const logoSvg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Japanuva">
+  <circle cx="64" cy="64" r="64" fill="${MINT}"/>
+  <g fill="${INK}" transform="translate(64 64) scale(0.66) translate(-64 -76)">
+    <path d="M18 34h92l5 12H13z"/>
+    <rect x="24" y="48" width="80" height="7" rx="1"/>
+    <rect x="36" y="48" width="11" height="70" rx="1.5"/>
+    <rect x="81" y="48" width="11" height="70" rx="1.5"/>
+    <rect x="36" y="84" width="56" height="8" rx="1"/>
+  </g>
+</svg>
+`;
+  writeFileSync(join(publicDir, "logo.svg"), logoSvg);
+  writeFileSync(join(publicDir, "icon.svg"), logoSvg);
+  console.log("wrote logo.svg and icon.svg");
 }
 
 main().catch((err) => {

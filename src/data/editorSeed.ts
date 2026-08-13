@@ -26,7 +26,7 @@ export const seedEditorDays: EditorDay[] = [
     activities: [
       {
         id: "a-1",
-        title: "נחיתה ב־Haneda",
+        title: "נחיתה ב־Narita",
         descriptionHe: "איסוף מזוודות, Suica, והעברה לשינג'וקו.",
         category: "transit",
         timeSlot: "afternoon",
@@ -34,9 +34,9 @@ export const seedEditorDays: EditorDay[] = [
         ticketStatus: "free_entry",
         durationHours: 2,
         priceJpy: 2500,
-        location: "HND",
-        lat: 35.5494,
-        lng: 139.7798,
+        location: "NRT",
+        lat: 35.772,
+        lng: 140.3929,
       },
       {
         id: "a-2",

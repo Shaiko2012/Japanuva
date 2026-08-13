@@ -7,10 +7,7 @@ import {
   Clock3,
   Sparkles,
 } from "lucide-react";
-import {
-  dailyItinerary,
-  type DistrictId,
-} from "@/data/trip";
+import { dailyItinerary, type DistrictId } from "@/data/trip";
 import { usePersonalTrip } from "@/hooks/usePersonalTrip";
 import {
   softEntranceProps,
@@ -23,10 +20,6 @@ import { useItineraryEditor } from "@/store/itineraryEditor";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 
-interface DailyItineraryProps {
-  selectedDistrict: DistrictId | null;
-}
-
 function formatDateHe(dateStr: string) {
   return new Intl.DateTimeFormat("he-IL", {
     weekday: "short",
@@ -35,7 +28,7 @@ function formatDateHe(dateStr: string) {
   }).format(new Date(`${dateStr}T12:00:00`));
 }
 
-export function DailyItinerary({ selectedDistrict }: DailyItineraryProps) {
+export function DailyItinerary() {
   const isPersonal = usePersonalTrip();
   const editorDays = useItineraryEditor((s) => s.days);
   const [openId, setOpenId] = useState<string | null>(null);
@@ -58,10 +51,8 @@ export function DailyItinerary({ selectedDistrict }: DailyItineraryProps) {
         transitLabel: "לפי המסלול שלכם",
       }));
     }
-    return selectedDistrict
-      ? dailyItinerary.filter((d) => d.districtId === selectedDistrict)
-      : dailyItinerary;
-  }, [isPersonal, editorDays, selectedDistrict]);
+    return dailyItinerary;
+  }, [isPersonal, editorDays]);
 
   const reduceMotion = useReducedMotion();
   const expandMotion = softExpandProps(reduceMotion);
@@ -90,7 +81,10 @@ export function DailyItinerary({ selectedDistrict }: DailyItineraryProps) {
         />
       </div>
 
-      <div className="max-h-[560px] space-y-3 overflow-y-auto pe-1 [scrollbar-gutter:stable]">
+      <div
+        data-lenis-prevent
+        className="max-h-[560px] space-y-3 overflow-y-auto pe-1 [scrollbar-gutter:stable]"
+      >
         <AnimatePresence mode="popLayout">
           {days.map((day, index) => {
             const open = openId === day.id;

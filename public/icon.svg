@@ -1,16 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" fill="#ADEBB3"/>
-  
-    <g
-      fill="none"
-      stroke="#0A0A0A"
-      stroke-width="2.35"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      transform="translate(256 256) scale(11.5) rotate(-12) translate(-12 -12)"
-    >
-      <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
-      <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
-    </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Japanuva">
+  <circle cx="64" cy="64" r="64" fill="#ADEBB3"/>
+  <g fill="#0A0A0A" transform="translate(64 64) scale(0.66) translate(-64 -76)">
+    <path d="M18 34h92l5 12H13z"/>
+    <rect x="24" y="48" width="80" height="7" rx="1"/>
+    <rect x="36" y="48" width="11" height="70" rx="1.5"/>
+    <rect x="81" y="48" width="11" height="70" rx="1.5"/>
+    <rect x="36" y="84" width="56" height="8" rx="1"/>
+  </g>
 </svg>

@@ -20,11 +20,23 @@
 # production
 /build
 
-# Android / Bubblewrap TWA (project lives in android/)
+# Android / Capacitor
 /android/.gradle/
 /android/build/
 /android/app/build/
+/android/app/release/
+/android/captures/
+/android/local.properties
+/android/capacitor-cordova-android-plugins/build/
 /.gradle/
+/android-twa-bubblewrap/
+
+# Signed artifacts / keys — never commit
+*.apk
+*.aab
+*.idsig
+*.keystore
+android.keystore
 
 # misc
 .DS_Store

@@ -38,7 +38,8 @@ npm run dev
 - Zustand (מצב מקומי)
 - Firebase Auth + Firestore (ענן)
 - Leaflet + Google tiles (מפת PiP)
-- PWA (manifest + service worker) — מוכן ל־Bubblewrap/TWA
+- PWA (manifest + service worker)
+- Capacitor Android shell that loads the live Vercel site
 
 ## PWA (התקנה בטלפון)
 
@@ -61,10 +62,9 @@ npm run start
 
 ### APK (Android) אחרי deploy
 
-ראו הוראות מלאות ב־[`docs/apk.md`](docs/apk.md). פרויקט ה־TWA נמצא ב־`android/` (לא ב־`app/` בשורש, כדי שלא יתנגש עם Next.js App Router ב־`src/app`). בקצרה, אחרי ש־`https://YOUR_DOMAIN` חי:
+האתר נשאר ב־Vercel. אפליקציית Android היא WebView מלא (Capacitor) בלי Chrome ובלי שורת כתובת. הוראות: [`docs/apk.md`](docs/apk.md).
 
 ```bash
-npm i -g @bubblewrap/cli
-cd android
-bubblewrap build
+npm run cap:sync
+npm run cap:open
 ```

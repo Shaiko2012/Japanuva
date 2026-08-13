@@ -81,7 +81,7 @@ export function AccommodationManager({
           <button
             type="button"
             onClick={openModal}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-background/30 px-4 py-3 text-sm text-muted transition hover:border-accent/35 hover:text-foreground"
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-yellow/45 bg-yellow-soft/50 px-4 py-3 text-sm font-semibold text-foreground transition hover:border-yellow/70 hover:bg-yellow-soft"
           >
             הוסף לינה
             <span className="text-lg leading-none">+</span>

@@ -34,7 +34,7 @@ import {
   type TransitMode,
 } from "@/data/dayRoute";
 import { geocodePlace } from "@/lib/geocode";
-import { buildMapsDayRouteUrl, parseGoogleMapsInput } from "@/lib/mapsParse";
+import { buildMapsDayRouteUrl, isBareCoordQuery, parseGoogleMapsInput } from "@/lib/mapsParse";
 import {
   fetchTransitLeg,
   type TransitLegEstimate,
@@ -44,8 +44,14 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { PlaceSearchPicker } from "@/components/maps/PlaceSearchPicker";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { KeypadField } from "@/components/ui/KeypadField";
+import { SegmentedTabs } from "@/components/ui/SegmentedTabs";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import type { PlaceSearchResult } from "@/types/places";
+
+const STAY_UNITS = [
+  { id: "minutes" as const, label: "דקות" },
+  { id: "hours" as const, label: "שעות" },
+];
 
 const inputClass =
   "mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-accent/50";
@@ -64,6 +70,7 @@ function SortableStop({
   canRemove: boolean;
 }) {
   const [resolving, setResolving] = useState(false);
+  const [stayUnit, setStayUnit] = useState<"minutes" | "hours">("minutes");
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: stop.id });
 
@@ -86,10 +93,16 @@ function SortableStop({
         }
       }
 
+      const searchLabel =
+        parsed.titleHint ||
+        (!isBareCoordQuery(address) ? address.split(",")[0]?.trim() : "") ||
+        "";
+
       onChange(stop.id, {
         address,
         mapsLink: parsed.mapsLink,
         name: stop.name || parsed.titleHint || stop.name,
+        searchName: searchLabel || stop.searchName,
         lat,
         lng,
       });
@@ -156,6 +169,7 @@ function SortableStop({
         onSelect={(place: PlaceSearchResult) =>
           onChange(stop.id, {
             name: stop.name || place.name,
+            searchName: place.name,
             address: place.address || place.name,
             mapsLink: place.mapsLink,
             lat: place.lat,
@@ -175,6 +189,7 @@ function SortableStop({
                 address: e.target.value,
                 lat: undefined,
                 lng: undefined,
+                searchName: undefined,
               })
             }
             placeholder="הדביקו קישור מפות או כתבו כתובת"
@@ -194,20 +209,46 @@ function SortableStop({
           </span>
         )}
       </label>
-      <label className="mt-2 block text-xs text-muted">
-        זמן שהייה (דקות): {stop.stayMinutes}
-        <input
-          type="range"
-          min={15}
-          max={600}
-          step={15}
-          value={stop.stayMinutes}
-          onChange={(e) =>
-            onChange(stop.id, { stayMinutes: Number(e.target.value) })
+      <div className="mt-2">
+        <div className="mb-1.5 flex items-center justify-between gap-2">
+          <span className="text-xs text-muted">זמן שהייה</span>
+          <SegmentedTabs
+            items={STAY_UNITS}
+            value={stayUnit}
+            onChange={setStayUnit}
+            layoutId={`stay-unit-${stop.id}`}
+            aria-label="יחידת זמן שהייה"
+            size="sm"
+            className="w-[9.5rem] rounded-full border border-border bg-surface p-0.5"
+          />
+        </div>
+        <KeypadField
+          mode="number"
+          fieldClassName="mt-0"
+          value={
+            stayUnit === "hours"
+              ? Math.round((stop.stayMinutes / 60) * 10) / 10
+              : stop.stayMinutes
           }
-          className="mt-2 h-2 w-full accent-[var(--foreground)]"
+          allowDecimal={stayUnit === "hours"}
+          maxDecimals={stayUnit === "hours" ? 1 : 0}
+          min={stayUnit === "hours" ? 0.5 : 1}
+          max={stayUnit === "hours" ? 24 : 1440}
+          suffix={
+            <span className="text-xs text-muted">
+              {stayUnit === "hours" ? "ש׳" : "דק׳"}
+            </span>
+          }
+          aria-label={
+            stayUnit === "hours" ? "זמן שהייה בשעות" : "זמן שהייה בדקות"
+          }
+          onChange={(n) => {
+            const minutes =
+              stayUnit === "hours" ? Math.round(n * 60) : Math.round(n);
+            onChange(stop.id, { stayMinutes: Math.max(1, minutes) });
+          }}
         />
-      </label>
+      </div>
     </div>
   );
 }
@@ -415,63 +456,32 @@ export function DayRoutePlanner() {
           <div className="space-y-3">
             {loadingLegs && legs.length === 0 && (
               <p className="rounded-2xl border border-border bg-background/30 p-4 text-center text-sm text-muted">
-                מחשב מסלולי תחבורה…
+                מכין קישורי מפות…
               </p>
             )}
-            {legs.map((leg, i) => (
-              <div
-                key={`${leg.fromId}-${leg.toId}-${leg.durationMinutes}`}
-                className="rounded-2xl border border-border bg-background/30 p-4"
-              >
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="text-xs text-muted">
-                    {stops[i]?.name || `תחנה ${i + 1}`} →{" "}
-                    {stops[i + 1]?.name || `תחנה ${i + 2}`}
-                  </div>
-                  {leg.source === "google" && (
-                    <span className="rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-medium text-success">
-                      Google Maps
-                    </span>
-                  )}
-                  {leg.source === "estimate" && (
-                    <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-medium text-amber-600 dark:text-amber-400">
-                      הערכה לפי מרחק
-                    </span>
-                  )}
-                  {leg.source === "missing_coords" && (
-                    <span className="rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-medium text-accent">
-                      חסר מיקום
-                    </span>
-                  )}
-                </div>
-                <div className="mt-1 font-semibold">
-                  {leg.source === "missing_coords" ? "—" : leg.modeLabelHe}
-                </div>
-                <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-                  <div className="rounded-lg border border-border px-2 py-2">
-                    <div className="text-muted">תחנות</div>
-                    <div className="font-medium">{leg.platformHint}</div>
-                  </div>
-                  <div className="rounded-lg border border-border px-2 py-2">
-                    <div className="text-muted">קו</div>
-                    <div className="font-medium">{leg.lineHint}</div>
-                  </div>
-                </div>
-                <p className="mt-2 text-xs text-muted">
-                  איפה קונים: {leg.buyWhere}
-                </p>
-                <p className="mt-1 text-xs text-muted">{leg.notes}</p>
+            {legs.map((leg, i) => {
+              const from = stops[i]?.name || `תחנה ${i + 1}`;
+              const to = stops[i + 1]?.name || `תחנה ${i + 2}`;
+              return (
                 <a
+                  key={`${leg.fromId}-${leg.toId}-${i}`}
                   href={leg.mapsDirUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-nav-bg/40 bg-nav-bg px-4 py-4 text-sm font-bold text-nav-fg shadow-[0_8px_24px_var(--glow)] transition hover:brightness-110"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-nav-bg/40 bg-nav-bg px-4 py-4 text-sm font-bold text-nav-fg shadow-[0_8px_24px_var(--glow)] transition hover:brightness-110"
                 >
-                  <ExternalLink className="h-4 w-4" />
-                  פתיחת מסלול ב־Google Maps
+                  <ExternalLink className="h-4 w-4 shrink-0" />
+                  <span className="min-w-0 text-center">
+                    פתיחה במפות
+                    {(stops[i]?.name || stops[i + 1]?.name) && (
+                      <span className="mt-0.5 block text-xs font-medium text-nav-fg/75">
+                        {from} → {to}
+                      </span>
+                    )}
+                  </span>
                 </a>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </GlassCard>
       </div>

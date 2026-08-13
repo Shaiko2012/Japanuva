@@ -1,9 +1,13 @@
+import { isBareCoordQuery } from "@/lib/mapsParse";
+
 export type TransitMode = "walk" | "metro" | "jr" | "bus" | "taxi";
 
 export interface RouteStop {
   id: string;
   name: string;
   address: string;
+  /** Official place name from search — used when opening Google Maps. */
+  searchName?: string;
   mapsLink?: string;
   lat?: number;
   lng?: number;
@@ -11,11 +15,17 @@ export interface RouteStop {
   stayMinutes: number;
 }
 
+function firstMapsLabel(...values: Array<string | undefined>) {
+  for (const value of values) {
+    const trimmed = value?.trim() ?? "";
+    if (trimmed && !isBareCoordQuery(trimmed)) return trimmed;
+  }
+  return "";
+}
+
 export function stopMapsPoint(stop: RouteStop) {
   return {
-    label: stop.address || stop.name,
-    lat: stop.lat,
-    lng: stop.lng,
+    label: firstMapsLabel(stop.searchName, stop.address, stop.name),
   };
 }
 
@@ -45,6 +55,7 @@ export const demoDayRouteStops: RouteStop[] = [
   createStop({
     id: "demo-1",
     name: "מלון בשינג'וקו",
+    searchName: "Hotel Gracery Shinjuku",
     address: "Hotel Gracery Shinjuku, Tokyo",
     lat: 35.6955,
     lng: 139.7014,
@@ -54,16 +65,18 @@ export const demoDayRouteStops: RouteStop[] = [
   createStop({
     id: "demo-2",
     name: "Tokyo DisneySea",
+    searchName: "Tokyo DisneySea",
     address: "1-13 Maihama, Urayasu, Chiba",
     lat: 35.6264,
     lng: 139.885,
-    mapsLink: "https://www.google.com/maps/search/?api=1&query=35.6264%2C139.885",
+    mapsLink: "https://www.google.com/maps/search/?api=1&query=Tokyo%20DisneySea",
     arriveBy: "10:00",
     stayMinutes: 420,
   }),
   createStop({
     id: "demo-3",
     name: "חזרה למלון",
+    searchName: "Hotel Gracery Shinjuku",
     address: "Hotel Gracery Shinjuku, Tokyo",
     lat: 35.6955,
     lng: 139.7014,

@@ -79,9 +79,7 @@ export function parseGoogleMapsInput(input: string): {
     if (lat != null && lng != null) {
       const placeLabel =
         titleHint ||
-        (query && !/^-?\d+\.\d+\s*,\s*-?\d+\.\d+$/.test(query.trim())
-          ? query
-          : undefined);
+        (query && !isBareCoordQuery(query) ? query : undefined);
       mapsLink = buildMapsOpenUrl({
         name: placeLabel,
         lat,
@@ -101,6 +99,10 @@ export function parseGoogleMapsInput(input: string): {
   };
 }
 
+export function isBareCoordQuery(value: string) {
+  return /^-?\d+\.\d+\s*,\s*-?\d+\.\d+$/.test(value.trim());
+}
+
 export function buildMapsSearchUrl(query: string) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
@@ -115,9 +117,9 @@ export function buildMapsOpenUrl(options: {
 }): string {
   const name = options.name?.trim();
   const address = options.address?.trim();
-  const label = address || name || "";
+  const label = name || address || "";
 
-  if (options.placeId && label) {
+  if (options.placeId && label && !isBareCoordQuery(label)) {
     const params = new URLSearchParams({
       api: "1",
       query: label,
@@ -126,7 +128,7 @@ export function buildMapsOpenUrl(options: {
     return `https://www.google.com/maps/search/?${params.toString()}`;
   }
 
-  if (label && !/^-?\d+\.\d+\s*,\s*-?\d+\.\d+$/.test(label)) {
+  if (label && !isBareCoordQuery(label)) {
     return buildMapsSearchUrl(label);
   }
 
@@ -141,6 +143,10 @@ export function formatMapsLocation(
   label: string,
   coords?: { lat?: number; lng?: number },
 ): string {
+  const trimmed = label.trim();
+  if (trimmed && !isBareCoordQuery(trimmed)) {
+    return trimmed;
+  }
   if (
     coords?.lat != null &&
     coords?.lng != null &&
@@ -148,10 +154,6 @@ export function formatMapsLocation(
     !Number.isNaN(coords.lng)
   ) {
     return `${coords.lat},${coords.lng}`;
-  }
-  const trimmed = label.trim();
-  if (trimmed && !/^-?\d+\.\d+\s*,\s*-?\d+\.\d+$/.test(trimmed)) {
-    return trimmed;
   }
   return trimmed || "Tokyo, Japan";
 }

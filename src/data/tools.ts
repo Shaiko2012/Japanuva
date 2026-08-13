@@ -62,7 +62,7 @@ export const suicaSteps = [
   {
     title: "הנפקה בשדה / במכונה",
     detail:
-      "ב-HND/NRT או בתחנות JR — מכונות כחולות. אפשר גם Apple/Google Wallet בחלק מהמכשירים.",
+      "ב-NRT או בתחנות JR — מכונות כחולות. אפשר גם Apple/Google Wallet בחלק מהמכשירים.",
   },
   {
     title: "טעינה ראשונית",
@@ -77,33 +77,6 @@ export const suicaSteps = [
 ];
 
 export const airportOptions = [
-  {
-    id: "hnd-monorail",
-    airport: "HND",
-    name: "Tokyo Monorail → JR",
-    minutes: 35,
-    costJpy: 660,
-    familyNote: "נוח עם מזוודות קטנות, מעבר ב-Hamamatsucho",
-    score: 88,
-  },
-  {
-    id: "hnd-keikyu",
-    airport: "HND",
-    name: "Keikyu → Shinagawa",
-    minutes: 28,
-    costJpy: 420,
-    familyNote: "מהיר וזול לשינג'וקו/שיבויה דרך JR",
-    score: 92,
-  },
-  {
-    id: "hnd-limousine",
-    airport: "HND",
-    name: "Airport Limousine Bus",
-    minutes: 50,
-    costJpy: 1300,
-    familyNote: "ישירות למלון — אידיאלי עם ילדים ומזוודות",
-    score: 85,
-  },
   {
     id: "nrt-skyler",
     airport: "NRT",
@@ -149,16 +122,16 @@ export const luggageRoutes = [
     days: 1,
   },
   {
-    id: "osa-hnd",
+    id: "osa-nrt",
     from: "מלון באוסקה",
-    to: "Haneda (דלפק)",
+    to: "Narita (דלפק)",
     baseJpy: 2800,
     days: 2,
   },
   {
-    id: "tyo-hnd",
+    id: "tyo-nrt",
     from: "מלון בטוקיו",
-    to: "Haneda",
+    to: "Narita",
     baseJpy: 2300,
     days: 1,
   },
@@ -180,7 +153,7 @@ export const vjwChecklist = [
   {
     id: "flight",
     title: "פרטי טיסה וכניסה",
-    detail: "מספר טיסה, תאריך נחיתה, ונמל (HND/NRT).",
+    detail: "מספר טיסה, תאריך נחיתה, ונמל (NRT).",
     category: "לפני הטיסה",
   },
   {
@@ -242,9 +215,9 @@ export const tipCards = [
   },
   {
     id: "airport",
-    title: "HND מול NRT",
-    summary: "השוו זמן, עלות ונוחות עם ילדים.",
-    body: "Haneda קרוב יותר למרכז; Narita דורש N'EX או Skyliner. בדקו בלוגיסטיקת הנסיעות.",
+    title: "הגעה מ־Narita",
+    summary: "N'EX, Skyliner או אוטובוס — לפי המלון והילדים.",
+    body: "Narita Express מגיע ישירות לשינג'וקו ולשיבויה עם מקום למזוודות. Skyliner מהיר ל־Ueno. בדקו בלוגיסטיקת הנסיעות.",
     href: "/transit",
     accent: "#d09132",
   },

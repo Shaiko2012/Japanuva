@@ -13,7 +13,6 @@ import {
 import { useFamilyStore } from "@/store/family";
 import { SegmentedTabs } from "@/components/ui/SegmentedTabs";
 import { softTapProps } from "@/lib/motion";
-import { cn } from "@/lib/utils";
 
 type AuthMode = "signin" | "signup";
 
@@ -199,7 +198,7 @@ export function AuthButton() {
   if (loading) {
     return (
       <div
-        className="h-11 w-11 animate-pulse rounded-full border border-border bg-surface"
+        className="h-11 w-11 animate-pulse rounded-full border border-border bg-surface-strong shadow-[var(--card-shadow)]"
         aria-hidden
       />
     );
@@ -211,46 +210,22 @@ export function AuthButton() {
         type="button"
         {...tapMotion}
         onClick={() => setOpen(true)}
-        className={cn(
-          "flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1.5 text-xs font-bold transition sm:gap-2 sm:px-3",
-          "max-[419px]:h-11 max-[419px]:w-11 max-[419px]:justify-center max-[419px]:px-0",
-          user
-            ? "border-border bg-surface-strong text-foreground shadow-[var(--card-shadow)] hover:border-yellow/45 hover:shadow-[var(--card-shadow-hover)]"
-            : "glow-accent border-transparent bg-nav-bg text-nav-fg hover:brightness-110",
-        )}
+        className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-surface-strong text-foreground shadow-[var(--card-shadow)] transition hover:border-yellow/50 hover:shadow-[var(--card-shadow-hover)]"
         aria-label={user ? "החשבון שלי" : "התחברות"}
+        title={user ? "החשבון שלי" : "התחברות"}
       >
         {user?.photoURL ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={user.photoURL}
             alt=""
-            className="h-7 w-7 shrink-0 rounded-full object-cover"
+            className="h-full w-full object-cover"
             referrerPolicy="no-referrer"
           />
         ) : user ? (
-          <span
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-foreground/5"
-            aria-hidden
-          >
-            <UserRound className="h-3.5 w-3.5" />
-          </span>
+          <UserRound className="h-4 w-4" strokeWidth={2.2} aria-hidden />
         ) : (
-          <span
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/20"
-            aria-hidden
-          >
-            <LogIn className="h-3.5 w-3.5" />
-          </span>
-        )}
-        {user ? (
-          <span className="hidden max-w-[9rem] truncate sm:inline">
-            {user.displayName || user.email || "החשבון שלי"}
-          </span>
-        ) : (
-          <span className="hidden whitespace-nowrap min-[420px]:inline">
-            התחברות
-          </span>
+          <LogIn className="h-4 w-4" strokeWidth={2.2} aria-hidden />
         )}
       </motion.button>
 

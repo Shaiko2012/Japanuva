@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { CreditCard, Plane, WalletCards } from "lucide-react";
 import { airportOptions, suicaSteps } from "@/data/tools";
@@ -13,23 +13,13 @@ import {
 } from "@/lib/motion";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { ProgressBar } from "@/components/ui/ProgressBar";
-import { SegmentedTabs } from "@/components/ui/SegmentedTabs";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { cn } from "@/lib/utils";
 
 export function TransitHub() {
-  const [airport, setAirport] = useState<"ALL" | "HND" | "NRT">("ALL");
   const [step, setStep] = useState(0);
   const reduceMotion = useReducedMotion();
   const cardMotion = softInteractiveProps(reduceMotion);
-
-  const options = useMemo(
-    () =>
-      airport === "ALL"
-        ? airportOptions
-        : airportOptions.filter((o) => o.airport === airport),
-    [airport],
-  );
 
   return (
     <div className="space-y-4">
@@ -44,7 +34,7 @@ export function TransitHub() {
                 נסיעות ו-Suica
               </h1>
               <p className="mt-1 text-sm text-muted">
-                מדריך הקמה לכרטיס תחבורה והשוואת מעברים מ־HND / NRT.
+                מדריך הקמה לכרטיס תחבורה והשוואת מעברים מ־Narita (NRT).
               </p>
             </div>
           </div>
@@ -98,28 +88,13 @@ export function TransitHub() {
         </GlassCard>
 
         <GlassCard>
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2 text-sm font-semibold">
-              <Plane className="h-4 w-4 text-accent" />
-              השוואת מעבר משדה התעופה
-            </div>
-            <SegmentedTabs
-              items={[
-                { id: "ALL", label: "הכל" },
-                { id: "HND", label: "HND" },
-                { id: "NRT", label: "NRT" },
-              ]}
-              value={airport}
-              onChange={setAirport}
-              layoutId="transit-airport-pill"
-              aria-label="סינון שדה תעופה"
-              size="sm"
-              className="rounded-full border border-border bg-background/35 p-0.5"
-            />
+          <div className="mb-4 flex items-center gap-2 text-sm font-semibold">
+            <Plane className="h-4 w-4 text-accent" />
+            השוואת מעבר מ־Narita
           </div>
 
           <div className="space-y-3">
-            {options.map((option, index) => (
+            {airportOptions.map((option, index) => (
               <motion.div
                 key={option.id}
                 {...softEntranceProps(reduceMotion, {

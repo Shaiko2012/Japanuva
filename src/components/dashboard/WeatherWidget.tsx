@@ -11,7 +11,7 @@ import {
   Umbrella,
 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
-import { softEase, softProgressProps } from "@/lib/motion";
+import { softEase, progressTransformOrigin, softProgressProps } from "@/lib/motion";
 import { weatherTips } from "@/data/trip";
 import { useTripMetaStore } from "@/store/tripMeta";
 import { cn } from "@/lib/utils";
@@ -76,7 +76,7 @@ function KoyoGauge({ value }: { value: number }) {
       >
         <motion.div
           className="absolute inset-y-0 start-0 w-full overflow-hidden rounded-full"
-          style={{ transformOrigin: "inline-start" }}
+          style={{ transformOrigin: progressTransformOrigin }}
           {...fill}
         >
           <div

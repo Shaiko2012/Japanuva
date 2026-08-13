@@ -8,7 +8,9 @@ import { OnboardingGate } from "@/components/auth/OnboardingGate";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const hideMapPip = pathname.startsWith("/itinerary");
+  const isItinerary = pathname.startsWith("/itinerary");
+  // Map chip only on the home dashboard — elsewhere it covers cards + the page scrollbar.
+  const showMapPip = pathname === "/";
 
   return (
     <div className="relative min-h-screen min-h-dvh min-w-0 overflow-x-clip">
@@ -16,14 +18,16 @@ export function AppShell({ children }: { children: ReactNode }) {
       <Navbar />
       <main
         className={`relative z-0 mx-auto w-full min-w-0 max-w-full overflow-x-clip ps-[max(0.75rem,var(--safe-left))] pe-[max(0.75rem,var(--safe-right))] sm:ps-[max(1.25rem,var(--safe-left))] sm:pe-[max(1.25rem,var(--safe-right))] ${
-          hideMapPip
+          isItinerary
             ? "max-w-[1600px] pb-[max(1.5rem,calc(var(--safe-bottom)+1rem))] pt-4"
-            : "max-w-7xl pb-[max(8rem,calc(var(--safe-bottom)+7rem))] pt-5 sm:pt-7"
+            : showMapPip
+              ? "max-w-7xl pb-[max(8rem,calc(var(--safe-bottom)+7rem))] pt-5 sm:pt-7"
+              : "max-w-7xl pb-[max(4.5rem,calc(var(--safe-bottom)+3.5rem))] pt-5 sm:pt-7"
         }`}
       >
         {children}
       </main>
-      {!hideMapPip && <GoogleMapPip />}
+      {showMapPip && <GoogleMapPip />}
       <OnboardingGate />
     </div>
   );

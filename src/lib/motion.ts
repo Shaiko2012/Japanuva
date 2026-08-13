@@ -15,7 +15,14 @@ export const softEase = [0.22, 1, 0.36, 1] as const;
 export const softDuration = 0.32;
 
 /** Prefer for scroll-triggered card lists */
-export const softViewport = { once: true, amount: 0.2 } as const;
+export const softViewport = {
+  once: true,
+  amount: 0.16,
+  margin: "0px 0px -6% 0px",
+} as const;
+
+/** Scroll reveal — slightly longer than UI chrome, still calm */
+export const softRevealDuration = 0.52;
 
 /** Sliding mint nav pill — springy but calm (layoutId OK) */
 export const navPillTransition: Transition = {
@@ -111,6 +118,8 @@ type SoftEntranceOpts = {
 
 /**
  * Shared fade + slight upward settle for cards/panels.
+ * Tied to scroll via whileInView (once) so below-the-fold content
+ * reveals as you arrive — not as a page-load animation.
  * Honors prefers-reduced-motion (opacity only, no travel).
  * GPU-friendly: opacity + transform only.
  */
@@ -119,22 +128,28 @@ export function softEntranceProps(
   opts: SoftEntranceOpts = {},
 ) {
   const delay = opts.delay ?? 0;
-  const y = opts.y ?? 10;
+  const y = opts.y ?? 12;
 
   if (reduceMotion) {
     return {
       initial: { opacity: 0 },
-      animate: { opacity: 1 },
+      whileInView: { opacity: 1 },
+      viewport: softViewport,
       exit: { opacity: 0 },
-      transition: softTransition(delay),
+      transition: { duration: 0.2, delay },
     };
   }
 
   return {
-    initial: { opacity: 0, y },
-    animate: { opacity: 1, y: 0 },
+    initial: { opacity: 0, y, scale: 0.985 },
+    whileInView: { opacity: 1, y: 0, scale: 1 },
+    viewport: softViewport,
     exit: { opacity: 0, y: Math.min(8, y) },
-    transition: softTransition(delay),
+    transition: {
+      duration: softRevealDuration,
+      ease: softEase,
+      delay,
+    },
   };
 }
 
@@ -188,8 +203,11 @@ export function softExpandProps(reduceMotion: boolean | null | undefined) {
 
 /**
  * Progress / meter fill via scaleX (transform) instead of width.
- * Use with `style={{ transformOrigin: "inline-start" }}` for RTL-safe growth.
+ * `inline-start` is not a valid transform-origin — browsers fall back to
+ * center, so the bar grows from the middle. The app is RTL, so origin is right.
  */
+export const progressTransformOrigin = "right";
+
 export function softProgressProps(
   pct: number,
   reduceMotion: boolean | null | undefined,

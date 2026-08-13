@@ -106,7 +106,8 @@ export function GoogleMapPip() {
             className="glow-accent fixed z-[70] flex min-h-11 items-center gap-2 rounded-full border border-nav-bg/40 bg-nav-bg px-4 py-3 text-sm font-bold text-nav-fg shadow-2xl"
             style={{
               bottom: "max(1.75rem, calc(var(--safe-bottom) + 0.5rem))",
-              insetInlineStart: "max(1.25rem, var(--safe-right))",
+              insetInlineStart:
+                "max(1.25rem, calc(var(--safe-right) + 0.85rem))",
             }}
             aria-label="פתח מפת Google"
           >
