@@ -89,9 +89,9 @@ export function Navbar() {
         <nav className="hidden min-w-0 flex-1 lg:block">
           <div
             data-lenis-prevent-horizontal
-            className="nav-pill-shell mx-auto w-fit max-w-full"
+            className="nav-pill-shell mx-auto w-full max-w-full"
           >
-            <ul className="flex items-center gap-0.5">
+            <ul className="flex w-full items-stretch">
               {navItems.map((item) => {
                 const Icon = iconMap[item.icon];
                 const active =
@@ -100,14 +100,14 @@ export function Navbar() {
                     : pathname.startsWith(item.href);
 
                 return (
-                  <li key={item.href} className="shrink-0">
+                  <li key={item.href} className="min-w-0 flex-1">
                     <Link
                       href={item.href}
                       className={cn(
-                        "relative flex min-h-9 items-center gap-1.5 overflow-hidden rounded-full px-2.5 py-1.5 text-xs transition sm:px-3 sm:text-sm",
+                        "relative flex h-9 w-full min-w-0 items-center justify-center gap-1 overflow-hidden rounded-full px-1.5 text-[11px] transition sm:gap-1.5 sm:px-2 sm:text-xs",
                         active
                           ? "font-bold text-[#0A0A0A]"
-                          : "text-foreground/65 hover:text-foreground dark:text-white/75 dark:hover:text-white",
+                          : "font-bold text-foreground/65 hover:text-foreground dark:text-white/75 dark:hover:text-white",
                       )}
                     >
                       {active && (
@@ -119,11 +119,11 @@ export function Navbar() {
                         />
                       )}
                       <Icon
-                        className="relative z-10 h-3.5 w-3.5"
+                        className="relative z-10 h-3.5 w-3.5 shrink-0"
                         strokeWidth={2.2}
                         aria-hidden
                       />
-                      <span className="relative z-10 whitespace-nowrap font-bold">
+                      <span className="relative z-10 min-w-0 truncate">
                         {item.label}
                       </span>
                     </Link>
