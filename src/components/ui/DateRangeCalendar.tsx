@@ -1,8 +1,7 @@
 "use client";
 
-import { useId, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { SegmentedTabs } from "@/components/ui/SegmentedTabs";
 import { cn } from "@/lib/utils";
 
 const WEEKDAYS = ["א", "ב", "ג", "ד", "ה", "ו", "ש"];
@@ -45,7 +44,6 @@ export function DateRangeCalendar(props: DateRangeCalendarProps) {
     () => new Date(initial.getFullYear(), initial.getMonth(), 1),
   );
   const [picking, setPicking] = useState<"start" | "end">("start");
-  const pickingLayoutId = `calendar-picking-${useId().replace(/:/g, "")}`;
 
   const cells = useMemo(() => {
     const year = view.getFullYear();
@@ -130,33 +128,51 @@ export function DateRangeCalendar(props: DateRangeCalendarProps) {
       </div>
 
       {!isSingle && (
-        <div className="mb-2 space-y-2">
-          <SegmentedTabs
-            items={[
-              { id: "start", label: "יציאה" },
-              { id: "end", label: "חזרה" },
-            ]}
-            value={picking}
-            onChange={setPicking}
-            layoutId={pickingLayoutId}
-            aria-label="בחירת יציאה או חזרה"
-            size="sm"
-            className="rounded-2xl border border-border bg-surface/50 p-1"
-          />
-          <p className="rounded-xl bg-foreground px-3 py-2 text-center text-xs font-semibold text-background dark:bg-yellow dark:text-[#141210]">
-            {picking === "start" ? "לחצו על יום יציאה" : "לחצו על יום חזרה"}
+        <div className="mb-3 space-y-2">
+          <div className="grid grid-cols-2 gap-2" role="tablist" aria-label="בחירת יציאה או חזרה">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={picking === "start"}
+              onClick={() => setPicking("start")}
+              className={cn(
+                "min-h-11 rounded-2xl border px-3 py-2 text-sm font-semibold transition",
+                picking === "start"
+                  ? "border-foreground bg-foreground text-background"
+                  : "border-border bg-surface text-muted",
+              )}
+            >
+              יום יציאה
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={picking === "end"}
+              onClick={() => setPicking("end")}
+              className={cn(
+                "min-h-11 rounded-2xl border px-3 py-2 text-sm font-semibold transition",
+                picking === "end"
+                  ? "border-foreground bg-foreground text-background"
+                  : "border-border bg-surface text-muted",
+              )}
+            >
+              יום חזרה
+            </button>
+          </div>
+          <p className="text-center text-xs text-muted">
+            {picking === "start" ? "בחרו בלוח את יום היציאה" : "בחרו בלוח את יום החזרה"}
           </p>
         </div>
       )}
 
-      <div dir="ltr" className="grid grid-cols-7 gap-1 text-center text-[11px] text-muted">
+      <div className="grid grid-cols-7 gap-1 text-center text-[11px] text-muted">
         {WEEKDAYS.map((d) => (
           <div key={d} className="py-1 font-medium">
             {d}
           </div>
         ))}
       </div>
-      <div dir="ltr" className="grid grid-cols-7 gap-1">
+      <div className="grid grid-cols-7 gap-1">
         {cells.map((cell) => {
           const inRange =
             !isSingle &&
@@ -173,7 +189,7 @@ export function DateRangeCalendar(props: DateRangeCalendarProps) {
               type="button"
               onClick={() => handleClick(cell.iso)}
               className={cn(
-                "aspect-square rounded-xl text-sm transition",
+                "flex aspect-square items-center justify-center rounded-xl text-sm tabular-nums transition",
                 !cell.inMonth && "opacity-35",
                 inRange && !edge && "bg-accent-soft text-accent",
                 (edge || selected) &&

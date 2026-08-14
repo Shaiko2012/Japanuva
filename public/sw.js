@@ -1,5 +1,5 @@
 /* Japanuva service worker — shell cache + network-first APIs */
-const CACHE_VERSION = "japanuva-v7";
+const CACHE_VERSION = "japanuva-v8";
 const SHELL_CACHE = `${CACHE_VERSION}-shell`;
 const PRECACHE_URLS = ["/", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png"];
 
