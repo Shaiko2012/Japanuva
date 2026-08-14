@@ -108,7 +108,7 @@ export function Navbar() {
                         "relative flex min-h-9 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs transition sm:px-3 sm:text-sm",
                         active
                           ? "font-bold text-[#0A0A0A]"
-                          : "text-white/75 hover:text-white",
+                          : "text-foreground/65 hover:text-foreground dark:text-white/75 dark:hover:text-white",
                       )}
                     >
                       {active && (

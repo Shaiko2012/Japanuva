@@ -462,16 +462,15 @@ html.theme-switching *::after {
     linear-gradient(165deg, rgba(50, 46, 41, 0.55), rgba(26, 23, 20, 0.4));
 }
 
-/* Centered black pill nav shell (desktop only) */
+/* Centered pill nav shell (desktop only) */
 .nav-pill-shell {
-  background: var(--nav-bg);
-  color: var(--nav-fg);
+  background: var(--surface-strong);
+  color: var(--foreground);
+  border: 1px solid var(--border);
   border-radius: 999px;
   padding: 0.25rem;
   overflow: hidden;
-  box-shadow:
-    0 10px 28px rgba(10, 10, 10, 0.18),
-    0 2px 8px rgba(10, 10, 10, 0.1);
+  box-shadow: var(--card-shadow);
 }
 
 .nav-pill-shell .nav-pill-scroll {
@@ -490,7 +489,8 @@ html.theme-switching *::after {
 }
 
 .dark .nav-pill-shell {
-  background: color-mix(in srgb, var(--nav-bg) 92%, #2a2622);
+  background: var(--nav-bg);
+  color: var(--nav-fg);
   border: 1px solid color-mix(in srgb, var(--yellow) 12%, transparent);
   box-shadow:
     0 12px 32px rgba(12, 10, 8, 0.45),
