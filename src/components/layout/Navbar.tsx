@@ -89,10 +89,9 @@ export function Navbar() {
         <nav className="hidden min-w-0 flex-1 lg:block">
           <div
             data-lenis-prevent-horizontal
-            className="nav-pill-shell mx-auto w-fit max-w-full overflow-x-auto overscroll-x-contain px-1.5 py-1.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-            dir="ltr"
+            className="nav-pill-shell mx-auto w-fit max-w-full overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
-            <ul dir="ltr" className="flex items-center gap-0.5">
+            <ul className="flex items-center gap-0.5">
               {navItems.map((item) => {
                 const Icon = iconMap[item.icon];
                 const active =
