@@ -135,6 +135,7 @@ export function NumberKeypad({
   return (
     <div className="space-y-3">
       <div
+        dir="ltr"
         className={cn(
           "rounded-2xl border border-border bg-background/50 px-4 py-4 text-center",
           "font-[family-name:var(--font-quicksand)] text-3xl font-bold tabular-nums tracking-wide",
@@ -145,7 +146,11 @@ export function NumberKeypad({
         {display}
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div
+        dir="ltr"
+        style={{ direction: "ltr" }}
+        className="grid grid-cols-3 gap-2 [direction:ltr]"
+      >
         {DIGITS.map((d) => (
           <KeyBtn key={d} label={d} onClick={() => pushDigit(d)} reduceMotion={reduceMotion} />
         ))}

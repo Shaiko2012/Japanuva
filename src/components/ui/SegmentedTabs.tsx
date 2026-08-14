@@ -67,7 +67,7 @@ export function SegmentedTabs<T extends string>({
             aria-selected={active}
             onClick={() => onChange(item.id)}
             className={cn(
-              "relative inline-flex items-center justify-center gap-1.5 font-semibold transition-colors",
+              "relative inline-flex min-w-0 items-center justify-center gap-1.5 overflow-hidden font-semibold transition-colors",
               size === "md" && "min-h-11 rounded-full px-3 py-2.5 text-sm",
               size === "sm" && "min-h-8 rounded-full px-2.5 py-1.5 text-xs",
               active
@@ -92,7 +92,7 @@ export function SegmentedTabs<T extends string>({
                 aria-hidden
               />
             ) : null}
-            <span className="relative z-10 whitespace-nowrap">{item.label}</span>
+            <span className="relative z-10 min-w-0 truncate">{item.label}</span>
           </button>
         );
       })}

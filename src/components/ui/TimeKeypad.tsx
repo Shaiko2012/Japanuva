@@ -125,7 +125,10 @@ export function TimeKeypad({ value, onConfirm, onCancel }: TimeKeypadProps) {
         className="rounded-2xl border border-border bg-background/50 px-4 py-4 text-center"
         aria-live="polite"
       >
-        <div className="font-[family-name:var(--font-quicksand)] text-4xl font-bold tabular-nums tracking-[0.12em]">
+        <div
+          dir="ltr"
+          className="font-[family-name:var(--font-quicksand)] text-4xl font-bold tabular-nums tracking-[0.12em]"
+        >
           {display.split("").map((ch, i) => {
             const digitIndex = i < 2 ? i : i - 1;
             const active =
@@ -147,7 +150,11 @@ export function TimeKeypad({ value, onConfirm, onCancel }: TimeKeypadProps) {
         <p className="mt-2 text-[11px] text-muted">שעה : דקה · HH:mm</p>
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div
+        dir="ltr"
+        style={{ direction: "ltr" }}
+        className="grid grid-cols-3 gap-2 [direction:ltr]"
+      >
         {DIGITS.map((d) => (
           <KeyBtn key={d} label={d} onClick={() => pushDigit(d)} reduceMotion={reduceMotion} />
         ))}
