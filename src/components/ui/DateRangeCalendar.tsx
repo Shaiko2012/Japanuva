@@ -149,14 +149,14 @@ export function DateRangeCalendar(props: DateRangeCalendarProps) {
         </div>
       )}
 
-      <div className="grid grid-cols-7 gap-1 text-center text-[11px] text-muted">
+      <div dir="ltr" className="grid grid-cols-7 gap-1 text-center text-[11px] text-muted">
         {WEEKDAYS.map((d) => (
           <div key={d} className="py-1 font-medium">
             {d}
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-7 gap-1">
+      <div dir="ltr" className="grid grid-cols-7 gap-1">
         {cells.map((cell) => {
           const inRange =
             !isSingle &&
