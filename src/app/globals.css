@@ -469,18 +469,14 @@ html.theme-switching *::after {
   border: 1px solid var(--border);
   border-radius: 999px;
   padding: 0.25rem;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   box-shadow: var(--card-shadow);
 }
 
-.nav-pill-shell .nav-pill-scroll {
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.nav-pill-shell .nav-pill-scroll::-webkit-scrollbar {
+.nav-pill-shell::-webkit-scrollbar {
   display: none;
 }
 

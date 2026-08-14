@@ -87,11 +87,10 @@ export function Navbar() {
         </Link>
 
         <nav className="hidden min-w-0 flex-1 lg:block">
-          <div className="nav-pill-shell mx-auto w-fit max-w-full">
-            <div
-              data-lenis-prevent-horizontal
-              className="nav-pill-scroll"
-            >
+          <div
+            data-lenis-prevent-horizontal
+            className="nav-pill-shell mx-auto w-fit max-w-full"
+          >
             <ul className="flex items-center gap-0.5">
               {navItems.map((item) => {
                 const Icon = iconMap[item.icon];
@@ -105,7 +104,7 @@ export function Navbar() {
                     <Link
                       href={item.href}
                       className={cn(
-                        "relative flex min-h-9 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs transition sm:px-3 sm:text-sm",
+                        "relative flex min-h-9 items-center gap-1.5 overflow-hidden rounded-full px-2.5 py-1.5 text-xs transition sm:px-3 sm:text-sm",
                         active
                           ? "font-bold text-[#0A0A0A]"
                           : "text-foreground/65 hover:text-foreground dark:text-white/75 dark:hover:text-white",
@@ -132,7 +131,6 @@ export function Navbar() {
                 );
               })}
             </ul>
-            </div>
           </div>
         </nav>
 
