@@ -7,8 +7,7 @@ import { navSections, sectionForPath } from "@/data/navigation";
 import { tripMeta } from "@/data/trip";
 import { AuthButton } from "@/components/auth/AuthButton";
 import { ThemeToggle } from "./ThemeToggle";
-import { navPillTransition } from "@/lib/motion";
-import { useSlidingPill, type SlidingPillBox } from "@/hooks/useSlidingPill";
+import { InkPill, useSlidingPill } from "@/hooks/useSlidingPill";
 
 function Wordmark() {
   const reduce = useReducedMotion();
@@ -34,30 +33,6 @@ function Wordmark() {
   );
 }
 
-function Pill({
-  box,
-  reduce,
-}: {
-  box: SlidingPillBox | null;
-  reduce: boolean | null;
-}) {
-  if (!box) return null;
-  return (
-    <motion.span
-      aria-hidden
-      className="nav-pill-active pointer-events-none absolute left-0 top-0 z-0"
-      initial={false}
-      animate={{ x: box.x, width: box.width }}
-      transition={
-        reduce
-          ? { duration: 0 }
-          : { x: navPillTransition, width: navPillTransition }
-      }
-      style={{ top: box.y, height: box.height, originX: 0 }}
-    />
-  );
-}
-
 export function Navbar() {
   const pathname = usePathname();
   const current = sectionForPath(pathname);
@@ -80,7 +55,7 @@ export function Navbar() {
 
           <nav aria-label="ניווט ראשי" className="hidden items-center md:flex">
             <ul ref={desktop.listRef} className="nav-pill-shell flex items-stretch">
-              <Pill box={desktop.pill} reduce={desktop.reduce} />
+              <InkPill box={desktop.pill} reduce={desktop.reduce} />
               {navSections.map((section) => {
                 const active = section.id === current.id;
                 return (
@@ -120,7 +95,7 @@ export function Navbar() {
         style={{ paddingBottom: "var(--safe-bottom)" }}
       >
         <ul ref={mobile.listRef} className="relative grid h-[var(--tabbar-h)] grid-cols-4 px-1.5">
-          <Pill box={mobile.pill} reduce={mobile.reduce} />
+          <InkPill box={mobile.pill} reduce={mobile.reduce} />
           {navSections.map((section) => {
             const active = section.id === current.id;
             return (
