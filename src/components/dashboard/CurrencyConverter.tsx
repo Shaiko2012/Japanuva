@@ -40,29 +40,27 @@ export function CurrencyConverter() {
       />
 
       <div className="grid grid-cols-2 gap-3">
-        <div>
-          <span className="field-label" id="fx-ils">שקלים</span>
+        <div className="min-w-0">
           <KeypadField
             mode="number"
+            label="שקלים"
             value={ils}
             min={0}
             title="סכום בשקלים"
-            aria-label="סכום בשקלים"
             onChange={setFromIls}
-            fieldClassName="field mt-0 t-num text-lg"
+            fieldClassName="field mt-1 t-num text-lg"
             prefix={<span className="text-muted">₪</span>}
           />
         </div>
-        <div>
-          <span className="field-label" id="fx-jpy">ין יפני</span>
+        <div className="min-w-0">
           <KeypadField
             mode="number"
+            label="ין יפני"
             value={jpy}
             min={0}
             title="סכום בין"
-            aria-label="סכום בין יפני"
             onChange={setFromJpy}
-            fieldClassName="field mt-0 t-num text-lg"
+            fieldClassName="field mt-1 t-num text-lg"
             prefix={<span className="text-muted">¥</span>}
           />
         </div>

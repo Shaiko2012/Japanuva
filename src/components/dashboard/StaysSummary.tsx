@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import type { EditorDay } from "@/types/editor";
 import { formatDayHe, groupStays, nightsWithoutLodging } from "@/lib/tripSummary";
 import { formatNumber } from "@/lib/utils";
@@ -17,6 +18,7 @@ export function StaysSummary({ days, isDemo }: { days: EditorDay[]; isDemo: bool
   return (
     <section aria-labelledby="stays-title">
       <SectionHead
+        as="h3"
         id="stays-title"
         title="לינה"
         meta={
@@ -26,10 +28,15 @@ export function StaysSummary({ days, isDemo }: { days: EditorDay[]; isDemo: bool
       />
 
       {stays.length === 0 ? (
-        <p className="max-w-xl leading-7 text-ink-soft">
-          עוד לא נוספה לינה. במסלול, כל יום מקבל את המלון של אותו לילה, וכאן
-          תראו את כל השהיות ברצף אחד.
-        </p>
+        <div>
+          <p className="leading-7 text-ink-soft">
+            עוד לא נוספה לינה. כל יום במסלול מקבל את המלון של אותו לילה.
+          </p>
+          <Link href="/itinerary" className="link-nav mt-3 inline-flex">
+            הוספת לינה במסלול
+            <ArrowLeft aria-hidden />
+          </Link>
+        </div>
       ) : (
         <ul className="border-b border-rule">
           {stays.map((stay) => (

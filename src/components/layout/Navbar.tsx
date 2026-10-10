@@ -14,7 +14,7 @@ function Wordmark() {
   return (
     <Link
       href="/"
-      className="group flex min-h-11 shrink-0 items-baseline gap-3 text-foreground no-underline"
+      className="group flex min-h-11 shrink-0 items-center gap-3 text-foreground no-underline"
       aria-label={`${tripMeta.name}, סקירת הטיול`}
     >
       <motion.span

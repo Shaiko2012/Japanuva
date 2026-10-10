@@ -31,29 +31,29 @@ export function Dashboard() {
     <div>
       <TripMasthead days={days} isDemo={isDemo} />
 
-      <div className="mt-[var(--space-section)] grid gap-x-14 gap-y-16 lg:grid-cols-[minmax(0,1fr)_21rem]">
-        <div className="min-w-0 space-y-16">
-          <FadeIn delay={0.04}>
-            <DayLedger days={days} isDemo={isDemo} isEmpty={isEmpty} />
-          </FadeIn>
-          <FadeIn delay={0.08}>
+      <div className="mt-[var(--space-section)] space-y-16">
+        <FadeIn delay={0.04}>
+          <DayLedger days={days} isDemo={isDemo} isEmpty={isEmpty} />
+        </FadeIn>
+
+        <div className="grid items-start gap-x-12 gap-y-14 lg:grid-cols-2">
+          <FadeIn delay={0.08} className="min-w-0">
             <StaysSummary days={days} isDemo={isDemo} />
           </FadeIn>
-        </div>
-        <aside className="min-w-0 space-y-14" aria-label="מידע משלים">
-          <FadeIn delay={0.1}>
-            <TripCosts days={days} isEmpty={isEmpty} />
-          </FadeIn>
-          <FadeIn delay={0.14}>
+          <FadeIn delay={0.1} className="min-w-0">
             <PrepStatus days={days} isDemo={isDemo} />
           </FadeIn>
-          <FadeIn delay={0.18}>
+          <FadeIn delay={0.12} className="min-w-0">
+            <TripCosts days={days} isEmpty={isEmpty} />
+          </FadeIn>
+          <FadeIn delay={0.14} className="min-w-0">
             <CurrencyConverter />
           </FadeIn>
-          <FadeIn delay={0.22}>
-            <WeatherWidget />
-          </FadeIn>
-        </aside>
+        </div>
+
+        <FadeIn delay={0.18}>
+          <WeatherWidget />
+        </FadeIn>
       </div>
     </div>
   );

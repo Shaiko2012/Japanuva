@@ -25,7 +25,7 @@ export function DayLedger({
 }) {
   const reduce = useReducedMotion();
   return (
-    <section aria-labelledby="days-title">
+    <section aria-labelledby="days-title" className="max-w-5xl">
       <SectionHead
         id="days-title"
         title="המסלול, יום אחר יום"
