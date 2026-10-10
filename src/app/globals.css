@@ -1140,6 +1140,7 @@ input[type="range"].range {
 }
 
 .nav-pill-shell {
+  position: relative;
   background: var(--surface-strong);
   color: var(--foreground);
   border: 1px solid var(--border);

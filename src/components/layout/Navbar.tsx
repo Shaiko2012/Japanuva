@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGroup, motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { navSections, sectionForPath } from "@/data/navigation";
 import { tripMeta } from "@/data/trip";
 import { AuthButton } from "@/components/auth/AuthButton";
 import { ThemeToggle } from "./ThemeToggle";
 import { navPillTransition } from "@/lib/motion";
+import { useSlidingPill, type SlidingPillBox } from "@/hooks/useSlidingPill";
 
 function Wordmark() {
   const reduce = useReducedMotion();
@@ -33,11 +34,38 @@ function Wordmark() {
   );
 }
 
+function Pill({
+  box,
+  reduce,
+}: {
+  box: SlidingPillBox | null;
+  reduce: boolean | null;
+}) {
+  if (!box) return null;
+  return (
+    <motion.span
+      aria-hidden
+      className="nav-pill-active pointer-events-none absolute left-0 top-0 z-0"
+      initial={false}
+      animate={{ x: box.x, width: box.width }}
+      transition={
+        reduce
+          ? { duration: 0 }
+          : { x: navPillTransition, width: navPillTransition }
+      }
+      style={{ top: box.y, height: box.height, originX: 0 }}
+    />
+  );
+}
+
 export function Navbar() {
   const pathname = usePathname();
   const current = sectionForPath(pathname);
-  const reduceMotion = useReducedMotion();
-  const pill = reduceMotion ? { duration: 0 } : navPillTransition;
+  const desktop = useSlidingPill(current.id);
+  const mobile = useSlidingPill(
+    current.id,
+    "[aria-current='page'] span.relative.inline-flex",
+  );
 
   return (
     <>
@@ -51,38 +79,31 @@ export function Navbar() {
           </div>
 
           <nav aria-label="ניווט ראשי" className="hidden items-center md:flex">
-            <LayoutGroup id="nav-desktop">
-              <ul className="nav-pill-shell flex items-stretch">
-                {navSections.map((section) => {
-                  const active = section.id === current.id;
-                  return (
-                    <li key={section.id} className="flex">
-                      <Link
-                        href={section.href}
-                        aria-current={active ? "page" : undefined}
-                        className="relative flex items-center px-3.5 text-[0.9375rem] font-bold transition-colors"
+            <ul ref={desktop.listRef} className="nav-pill-shell flex items-stretch">
+              <Pill box={desktop.pill} reduce={desktop.reduce} />
+              {navSections.map((section) => {
+                const active = section.id === current.id;
+                return (
+                  <li key={section.id} className="relative z-10 flex">
+                    <Link
+                      href={section.href}
+                      aria-current={active ? "page" : undefined}
+                      className="relative flex items-center px-3.5 text-[0.9375rem] font-bold transition-colors"
+                    >
+                      <span
+                        className={
+                          active
+                            ? "text-[#0a0a0a]"
+                            : "rounded-full text-muted hover:text-foreground dark:text-[#f5f0e8]/80 dark:hover:text-[#f5f0e8]"
+                        }
                       >
-                        {active && (
-                          <motion.span
-                            layoutId="nav-pill-desktop"
-                            className="nav-pill-active absolute inset-0"
-                            transition={pill}
-                          />
-                        )}
-                        <span
-                          className={
-                            "relative z-10 " +
-                            (active ? "text-[#0a0a0a]" : "rounded-full text-muted hover:text-foreground dark:text-[#f5f0e8]/80 dark:hover:text-[#f5f0e8]")
-                          }
-                        >
-                          {section.label}
-                        </span>
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </LayoutGroup>
+                        {section.label}
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
           </nav>
 
           <div className="ms-auto flex items-center gap-1.5">
@@ -98,42 +119,33 @@ export function Navbar() {
         className="nav-chrome fixed inset-x-0 bottom-0 z-50 overflow-hidden border-t md:hidden"
         style={{ paddingBottom: "var(--safe-bottom)" }}
       >
-        <LayoutGroup id="nav-mobile">
-          <ul className="grid h-[var(--tabbar-h)] grid-cols-4 px-1.5">
-            {navSections.map((section) => {
-              const active = section.id === current.id;
-              return (
-                <li key={section.id} className="flex items-center justify-center">
-                  <Link
-                    href={section.href}
-                    aria-current={active ? "page" : undefined}
-                    className="flex h-full w-full items-center justify-center text-[0.9375rem] font-bold"
-                  >
-                    <span className="relative inline-flex items-center px-3 py-1">
-                      {active && (
-                        <motion.span
-                          layoutId="nav-pill-mobile"
-                          className="nav-pill-active absolute inset-0"
-                          transition={pill}
-                        />
-                      )}
-                      <span
-                        className={
-                          "relative z-10 " +
-                          (active
-                            ? "text-[#0a0a0a]"
-                            : "text-muted dark:text-[#f5f0e8]/80")
-                        }
-                      >
-                        {section.label}
-                      </span>
+        <ul ref={mobile.listRef} className="relative grid h-[var(--tabbar-h)] grid-cols-4 px-1.5">
+          <Pill box={mobile.pill} reduce={mobile.reduce} />
+          {navSections.map((section) => {
+            const active = section.id === current.id;
+            return (
+              <li key={section.id} className="relative z-10 flex items-center justify-center">
+                <Link
+                  href={section.href}
+                  aria-current={active ? "page" : undefined}
+                  className="flex h-full w-full items-center justify-center text-[0.9375rem] font-bold"
+                >
+                  <span className="relative inline-flex items-center px-3 py-1">
+                    <span
+                      className={
+                        active
+                          ? "text-[#0a0a0a]"
+                          : "text-muted dark:text-[#f5f0e8]/80"
+                      }
+                    >
+                      {section.label}
                     </span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </LayoutGroup>
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
       </nav>
     </>
   );
