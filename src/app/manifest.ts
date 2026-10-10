@@ -5,15 +5,15 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Japanuva · טיול ליפן",
     short_name: "Japanuva",
     description:
-      "אפליקציית תכנון אינטראקטיבית לטיול משפחתי ליפן — מסלול, JR Pass, Suica ולוגיסטיקה.",
+      "אפליקציית תכנון אינטראקטיבית לטיול משפחתי ליפן: מסלול, JR Pass, Suica ולוגיסטיקה.",
     start_url: "/",
     scope: "/",
     display: "standalone",
     orientation: "portrait-primary",
     lang: "he",
     dir: "rtl",
-    background_color: "#FEF6E3",
-    theme_color: "#FEF6E3",
+    background_color: "#FAF8F2",
+    theme_color: "#FAF8F2",
     categories: ["travel", "lifestyle"],
     icons: [
       {

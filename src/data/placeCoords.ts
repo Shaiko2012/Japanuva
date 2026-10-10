@@ -3,10 +3,27 @@ import { parseGoogleMapsInput } from "@/lib/mapsParse";
 
 export const CITY_COORDS: Record<EditorCity, { lat: number; lng: number }> = {
   Tokyo: { lat: 35.6812, lng: 139.7671 },
-  Kyoto: { lat: 35.0116, lng: 135.7681 },
-  Osaka: { lat: 34.6937, lng: 135.5023 },
+  Yokohama: { lat: 35.4437, lng: 139.638 },
+  Kamakura: { lat: 35.3192, lng: 139.5467 },
   Hakone: { lat: 35.2324, lng: 139.1069 },
+  Kawaguchiko: { lat: 35.5175, lng: 138.7519 },
+  Nikko: { lat: 36.7198, lng: 139.6982 },
+  Sendai: { lat: 38.2682, lng: 140.8694 },
+  Nagoya: { lat: 35.1815, lng: 136.9066 },
+  Takayama: { lat: 36.1468, lng: 137.2517 },
+  Kanazawa: { lat: 36.5613, lng: 136.6562 },
+  Matsumoto: { lat: 36.238, lng: 137.972 },
+  Kyoto: { lat: 35.0116, lng: 135.7681 },
   Nara: { lat: 34.6851, lng: 135.8048 },
+  Osaka: { lat: 34.6937, lng: 135.5023 },
+  Kobe: { lat: 34.6901, lng: 135.1956 },
+  Himeji: { lat: 34.8154, lng: 134.6853 },
+  Okayama: { lat: 34.6551, lng: 133.9195 },
+  Hiroshima: { lat: 34.3853, lng: 132.4553 },
+  Fukuoka: { lat: 33.5904, lng: 130.4017 },
+  Nagasaki: { lat: 32.7503, lng: 129.8779 },
+  Sapporo: { lat: 43.0618, lng: 141.3545 },
+  Naha: { lat: 26.2124, lng: 127.6792 },
   Other: { lat: 35.2, lng: 136.9 },
 };
 
@@ -28,7 +45,7 @@ export const KNOWN_PLACE_COORDS: Record<string, { lat: number; lng: number }> = 
   "teamlab planets": { lat: 35.6492, lng: 139.7895 },
   "פאשמי אינארי": { lat: 34.9671, lng: 135.7727 },
   "קיומיזו־דרה": { lat: 34.9949, lng: 135.785 },
-  "אראשיאמה — חורשת במבוק": { lat: 35.017, lng: 135.6722 },
+  "אראשיאמה חורשת במבוק": { lat: 35.017, lng: 135.6722 },
   "פארק הקופים איאוואטאיאמה": { lat: 35.0115, lng: 135.6761 },
   "universal studios japan": { lat: 34.6654, lng: 135.4323 },
   "tokyo disneysea": { lat: 35.6264, lng: 139.885 },
@@ -90,6 +107,8 @@ export function resolveCoords(
     if (KNOWN_PLACE_COORDS[locKey]) return KNOWN_PLACE_COORDS[locKey];
   }
 
-  if (explicit?.allowCityFallback && city) return CITY_COORDS[city];
+  if (explicit?.allowCityFallback && city) {
+    return CITY_COORDS[city] ?? CITY_COORDS.Other;
+  }
   return null;
 }

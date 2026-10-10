@@ -82,7 +82,7 @@ function extractLineHint(steps: GoogleLeg): string {
       })
       .filter(Boolean) ?? [];
 
-  return lines.length > 0 ? lines.join(" · ") : "—";
+  return lines.length > 0 ? lines.join(" · ") : "";
 }
 
 function extractPlatformHint(steps: GoogleLeg): string {
@@ -93,7 +93,7 @@ function extractPlatformHint(steps: GoogleLeg): string {
     .at(-1)?.transit_details?.arrival_stop?.name;
 
   if (depart && arrive) return `${depart} → ${arrive}`;
-  return depart ?? "—";
+  return depart ?? "";
 }
 
 function buildNotes(
@@ -131,12 +131,12 @@ function fallbackEstimate(
     priceJpy,
     buyWhere:
       mode === "walk"
-        ? "—"
+        ? ""
         : mode === "taxi"
           ? "אפליקציית מוניות / דגל בכביש"
           : "Suica/Pasmo בשער · או מכונת JR",
-    platformHint: "—",
-    lineHint: km >= 120 ? "Shinkansen / JR" : mode === "jr" ? "JR" : "—",
+    platformHint: "",
+    lineHint: km >= 120 ? "Shinkansen / JR" : mode === "jr" ? "JR" : "",
     notes: buildNotes("estimate", mode, km),
     source: "estimate",
     distanceKm: km,
@@ -227,7 +227,7 @@ export async function GET(request: Request) {
       priceJpy,
       buyWhere:
         mode === "walk"
-          ? "—"
+          ? ""
           : mode === "taxi"
             ? "אפליקציית מוניות / דגל בכביש"
             : "Suica/Pasmo בשער · או מכונת JR",

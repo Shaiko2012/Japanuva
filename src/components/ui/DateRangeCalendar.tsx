@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SlidingPill } from "@/components/ui/Motion";
 
 const WEEKDAYS = ["א", "ב", "ג", "ד", "ה", "ו", "ש"];
 
@@ -97,14 +98,14 @@ export function DateRangeCalendar(props: DateRangeCalendarProps) {
   return (
     <div
       className={cn(
-        "rounded-2xl border border-border bg-background/35 p-3",
+        "border border-rule bg-paper-raised p-3",
         props.className,
       )}
     >
       <div className="mb-3 flex items-center justify-between gap-2">
         <button
           type="button"
-          className="flex h-11 w-11 items-center justify-center rounded-lg border border-border hover:border-accent/40 sm:h-8 sm:w-8 sm:p-1.5"
+          className="btn btn-tertiary btn-icon"
           onClick={() =>
             setView(new Date(view.getFullYear(), view.getMonth() - 1, 1))
           }
@@ -112,12 +113,12 @@ export function DateRangeCalendar(props: DateRangeCalendarProps) {
         >
           <ChevronRight className="h-4 w-4" />
         </button>
-        <div className="min-w-0 truncate text-center text-sm font-semibold">
+        <div className="t-h3 min-w-0 truncate text-center" aria-live="polite">
           {monthLabel}
         </div>
         <button
           type="button"
-          className="flex h-11 w-11 items-center justify-center rounded-lg border border-border hover:border-accent/40 sm:h-8 sm:w-8 sm:p-1.5"
+          className="btn btn-tertiary btn-icon"
           onClick={() =>
             setView(new Date(view.getFullYear(), view.getMonth() + 1, 1))
           }
@@ -129,34 +130,26 @@ export function DateRangeCalendar(props: DateRangeCalendarProps) {
 
       {!isSingle && (
         <div className="mb-3 space-y-2">
-          <div className="grid grid-cols-2 gap-2" role="tablist" aria-label="בחירת יציאה או חזרה">
+          <div className="tabs" role="tablist" aria-label="בחירת יציאה או חזרה">
             <button
               type="button"
               role="tab"
               aria-selected={picking === "start"}
               onClick={() => setPicking("start")}
-              className={cn(
-                "min-h-11 rounded-2xl border px-3 py-2 text-sm font-semibold transition",
-                picking === "start"
-                  ? "border-foreground bg-foreground text-background"
-                  : "border-border bg-surface text-muted",
-              )}
+              className="tab tab-motion flex-1 justify-center"
             >
-              יום יציאה
+              {picking === "start" && <SlidingPill layoutId="japanuva-date-tabs" />}
+              <span className="relative z-10">יום יציאה</span>
             </button>
             <button
               type="button"
               role="tab"
               aria-selected={picking === "end"}
               onClick={() => setPicking("end")}
-              className={cn(
-                "min-h-11 rounded-2xl border px-3 py-2 text-sm font-semibold transition",
-                picking === "end"
-                  ? "border-foreground bg-foreground text-background"
-                  : "border-border bg-surface text-muted",
-              )}
+              className="tab tab-motion flex-1 justify-center"
             >
-              יום חזרה
+              {picking === "end" && <SlidingPill layoutId="japanuva-date-tabs" />}
+              <span className="relative z-10">יום חזרה</span>
             </button>
           </div>
           <p className="text-center text-xs text-muted">
@@ -188,13 +181,18 @@ export function DateRangeCalendar(props: DateRangeCalendarProps) {
               key={`${cell.iso}-${cell.inMonth}`}
               type="button"
               onClick={() => handleClick(cell.iso)}
+              aria-pressed={Boolean(edge || selected)}
+              aria-label={new Intl.DateTimeFormat("he-IL", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+              }).format(new Date(`${cell.iso}T12:00:00`))}
               className={cn(
-                "flex aspect-square items-center justify-center rounded-xl text-sm tabular-nums transition",
-                !cell.inMonth && "opacity-35",
-                inRange && !edge && "bg-accent-soft text-accent",
-                (edge || selected) &&
-                  "bg-nav-bg font-semibold text-nav-fg glow-accent",
-                !inRange && !selected && "hover:bg-foreground/5",
+                "flex aspect-square items-center justify-center rounded-sm text-sm tabular-nums transition",
+                !cell.inMonth && "opacity-40",
+                inRange && !edge && "bg-paper-sunk text-ink",
+                (edge || selected) && "bg-ink font-semibold text-on-ink",
+                !inRange && !selected && "hover:bg-paper-sunk",
               )}
             >
               {cell.day}

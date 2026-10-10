@@ -2,32 +2,41 @@
 
 import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
+import { LayoutGroup } from "framer-motion";
 import { Navbar } from "./Navbar";
-import { GoogleMapPip } from "@/components/maps/GoogleMapPip";
 import { OnboardingGate } from "@/components/auth/OnboardingGate";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const isItinerary = pathname.startsWith("/itinerary");
-  // Map chip only on the home dashboard — elsewhere it covers cards + the page scrollbar.
-  const showMapPip = pathname === "/";
+  const wide = pathname.startsWith("/itinerary");
 
   return (
-    <div className="relative min-h-screen min-h-dvh min-w-0 overflow-x-clip">
-      <div className="pointer-events-none absolute inset-0 grid-noise opacity-35 dark:opacity-20" />
+    <div className="relative flex min-h-dvh min-w-0 flex-col overflow-x-clip">
+      <a href="#main" className="skip-link">
+        דילוג לתוכן
+      </a>
       <Navbar />
       <main
-        className={`relative z-0 mx-auto w-full min-w-0 max-w-full overflow-x-clip ps-[max(0.75rem,var(--safe-left))] pe-[max(0.75rem,var(--safe-right))] sm:ps-[max(1.25rem,var(--safe-left))] sm:pe-[max(1.25rem,var(--safe-right))] ${
-          isItinerary
-            ? "max-w-[1600px] pb-[max(1.5rem,calc(var(--safe-bottom)+1rem))] pt-4"
-            : showMapPip
-              ? "max-w-7xl pb-[max(8rem,calc(var(--safe-bottom)+7rem))] pt-5 sm:pt-7"
-              : "max-w-7xl pb-[max(4.5rem,calc(var(--safe-bottom)+3.5rem))] pt-5 sm:pt-7"
-        }`}
+        id="main"
+        tabIndex={-1}
+        className={
+          "page relative min-w-0 flex-1 outline-none " +
+          (wide ? "max-w-[100rem]" : "")
+        }
       >
-        {children}
+        <LayoutGroup id="section-tabs">{children}</LayoutGroup>
       </main>
-      {showMapPip && <GoogleMapPip />}
+      <footer className="page mt-16 pb-[calc(var(--tabbar-h)+var(--safe-bottom)+1.5rem)] md:pb-10">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 border-t border-border pt-5 text-[0.8125rem] leading-6 text-muted">
+          <p className="max-w-2xl">
+            מחירים, זמני נסיעה ונתוני מזג אוויר באתר הם אומדנים לתכנון בלבד.
+            לפני הזמנה בדקו מול המקור הרשמי.
+          </p>
+          <p dir="ltr" className="font-[family-name:var(--font-quicksand)] font-bold">
+            Japanuva
+          </p>
+        </div>
+      </footer>
       <OnboardingGate />
     </div>
   );

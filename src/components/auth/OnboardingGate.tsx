@@ -1,31 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { TripSetupWizard } from "@/components/auth/TripSetupWizard";
 import { useTripMetaStore } from "@/store/tripMeta";
+import { useHydrated } from "@/hooks/useHydrated";
 
 /** Shows trip setup (dates + family) once, before account creation / first use. */
 export function OnboardingGate() {
   const onboardingCompleted = useTripMetaStore((s) => s.onboardingCompleted);
-  const [hydrated, setHydrated] = useState(false);
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    setHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (!hydrated) return;
-    if (!onboardingCompleted) setOpen(true);
-  }, [hydrated, onboardingCompleted]);
+  const hydrated = useHydrated();
+  const [finished, setFinished] = useState(false);
 
   if (!hydrated) return null;
 
   return (
     <TripSetupWizard
-      open={open}
+      open={!onboardingCompleted && !finished}
       allowSkip={false}
-      onFinished={() => setOpen(false)}
+      onFinished={() => setFinished(true)}
       title="ברוכים הבאים ל־Japanuva"
     />
   );

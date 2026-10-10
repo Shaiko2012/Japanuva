@@ -1,7 +1,5 @@
-"use client";
-
-import { TipsGrid } from "@/components/tools/TipsGrid";
+import { redirect } from "next/navigation";
 
 export default function TipsPage() {
-  return <TipsGrid />;
+  redirect("/guide");
 }

@@ -1,18 +1,15 @@
 "use client";
 
 import { useId, useState, type FormEvent } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Cloud, LogIn, LogOut, Pencil, UserRound } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { GlassModal } from "@/components/editor/GlassModal";
+import { Dialog } from "@/components/ui/Dialog";
 import { TripSetupWizard } from "@/components/auth/TripSetupWizard";
 import {
   formatTripRangeHe,
   useTripMetaStore,
 } from "@/store/tripMeta";
 import { useFamilyStore } from "@/store/family";
-import { SegmentedTabs } from "@/components/ui/SegmentedTabs";
-import { softTapProps } from "@/lib/motion";
+import { SlidingPill } from "@/components/ui/Motion";
 
 type AuthMode = "signin" | "signup";
 
@@ -22,9 +19,6 @@ type PendingAuth =
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD = 6;
-
-const inputClass =
-  "mt-1.5 w-full min-h-11 rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-accent/50";
 
 function validateEmailPassword(
   email: string,
@@ -77,8 +71,6 @@ export function AuthButton() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
   const [resetNotice, setResetNotice] = useState<string | null>(null);
-  const reduceMotion = useReducedMotion();
-  const tapMotion = softTapProps(reduceMotion);
 
   function resetFormMessages() {
     setLocalError(null);
@@ -194,95 +186,104 @@ export function AuthButton() {
   }
 
   const displayError = localError || error;
+  const initial = (user?.displayName || user?.email || "?").trim().charAt(0);
 
   if (loading) {
-    return (
-      <div
-        className="h-11 w-11 animate-pulse rounded-full border border-border bg-surface-strong shadow-[var(--card-shadow)]"
-        aria-hidden
-      />
-    );
+    return <span className="inline-block h-9 w-24" aria-hidden />;
   }
+
+  const submitLabel = busy
+    ? mode === "signup"
+      ? "נרשמים…"
+      : "מתחברים…"
+    : !onboardingCompleted
+      ? mode === "signup"
+        ? "הגדרת הטיול ואז הרשמה"
+        : "הגדרת הטיול ואז התחברות"
+      : mode === "signup"
+        ? "הרשמה"
+        : "התחברות";
 
   return (
     <>
-      <motion.button
-        type="button"
-        {...tapMotion}
-        onClick={() => setOpen(true)}
-        className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-surface-strong text-foreground shadow-[var(--card-shadow)] transition hover:border-yellow/50 hover:shadow-[var(--card-shadow-hover)]"
-        aria-label={user ? "החשבון שלי" : "התחברות"}
-        title={user ? "החשבון שלי" : "התחברות"}
-      >
-        {user?.photoURL ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={user.photoURL}
-            alt=""
-            className="h-full w-full object-cover"
-            referrerPolicy="no-referrer"
-          />
-        ) : user ? (
-          <UserRound className="h-4 w-4" strokeWidth={2.2} aria-hidden />
-        ) : (
-          <LogIn className="h-4 w-4" strokeWidth={2.2} aria-hidden />
-        )}
-      </motion.button>
+      {user ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="btn btn-icon overflow-hidden rounded-full p-0"
+          aria-label="החשבון שלי"
+          title="החשבון שלי"
+        >
+          {user.photoURL ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={user.photoURL}
+              alt=""
+              className="h-8 w-8 rounded-full object-cover"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-ink text-sm font-bold text-on-ink">
+              {initial}
+            </span>
+          )}
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="btn btn-secondary btn-sm"
+        >
+          התחברות
+        </button>
+      )}
 
-      <GlassModal
+      <Dialog
         open={open}
         onClose={() => {
           setOpen(false);
           resetFormMessages();
         }}
-        title={user ? "החשבון שלי" : "הרשמה / התחברות"}
+        title={user ? "החשבון שלי" : "התחברות לשמירה בענן"}
+        description={
+          user
+            ? undefined
+            : "המסלול, התאריכים והרכב המשפחה יישמרו בחשבון ויסונכרנו בין מכשירים."
+        }
       >
-        <div className="space-y-5">
-          <p className="text-sm leading-6 text-muted">
-            לפני יצירת חשבון נבקש תאריכי טיול והרכב משפחה. אחר כך אפשר לשנות
-            הכל מהדשבורד, והכל יישמר בענן אחרי ההתחברות.
-          </p>
-
-          <div className="rounded-2xl border border-border bg-background/35 p-3.5 text-xs leading-5 text-muted">
-            <div>
-              תאריכים:{" "}
-              <span className="font-medium text-foreground">
-                {formatTripRangeHe(startDate, endDate)}
-              </span>
-            </div>
-            <div className="mt-1">
-              משפחה:{" "}
-              <span className="font-medium text-foreground">
-                {family.adults} מבוגרים · {family.kids} ילדים
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                setOpen(false);
-                setPendingAuth(null);
-                setSetupOpen(true);
-              }}
-              className="mt-2.5 inline-flex min-h-11 items-center gap-1.5 rounded-xl px-1 text-sm text-accent hover:underline"
-            >
-              <Pencil className="h-3.5 w-3.5" aria-hidden />
-              עריכת פרטי הטיול
-            </button>
-          </div>
+        <div className="space-y-6">
+          <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 border-y border-rule py-3 text-sm">
+            <dt className="text-muted">תאריכים</dt>
+            <dd className="font-medium">{formatTripRangeHe(startDate, endDate)}</dd>
+            <dt className="text-muted">נוסעים</dt>
+            <dd className="font-medium">
+              {family.adults} מבוגרים · {family.kids} ילדים
+            </dd>
+            <dd className="col-span-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  setPendingAuth(null);
+                  setSetupOpen(true);
+                }}
+                className="btn btn-tertiary btn-sm -ms-1.5"
+              >
+                עריכת פרטי הטיול
+              </button>
+            </dd>
+          </dl>
 
           {!configured && (
-            <div
-              role="status"
-              className="rounded-2xl border border-warning/35 bg-warning/10 p-3 text-xs leading-5 text-warning"
-            >
-              Firebase עדיין לא הוגדר. מלאו את{" "}
-              <code className="rounded bg-background/40 px-1">.env.local</code>.
-            </div>
+            <p role="status" className="note text-sm leading-6">
+              ההתחברות אינה זמינה כרגע: Firebase לא הוגדר בסביבה הזו. הנתונים
+              נשמרים במכשיר בלבד.
+            </p>
           )}
 
           {user ? (
-            <div className="space-y-3">
-              <div className="flex items-center gap-3 rounded-2xl border border-border bg-background/35 p-3">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
                 {user.photoURL ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -292,59 +293,63 @@ export function AuthButton() {
                     referrerPolicy="no-referrer"
                   />
                 ) : (
-                  <div
-                    className="flex h-12 w-12 items-center justify-center rounded-full bg-accent-soft text-accent"
+                  <span
+                    className="flex h-12 w-12 items-center justify-center rounded-full bg-ink text-lg font-bold text-on-ink"
                     aria-hidden
                   >
-                    <UserRound className="h-5 w-5" />
-                  </div>
+                    {initial}
+                  </span>
                 )}
                 <div className="min-w-0">
                   <div className="truncate font-semibold">
                     {user.displayName || "משתמש מחובר"}
                   </div>
-                  <div className="truncate text-xs text-muted">{user.email}</div>
+                  <div className="truncate text-sm text-muted" dir="ltr">
+                    {user.email}
+                  </div>
                 </div>
               </div>
-
-              <div className="inline-flex items-center gap-2 rounded-full border border-success/30 bg-success/10 px-3 py-1.5 text-xs text-success">
-                <Cloud className="h-3.5 w-3.5" aria-hidden />
-                שמירה בענן פעילה (מסלול · משפחה · תאריכים · מפה)
-              </div>
-
+              <p className="text-sm leading-6 text-ink-soft">
+                שמירה בענן פעילה: מסלול, משפחה, תאריכים והעדפות מפה.
+              </p>
               <button
                 type="button"
                 disabled={busy}
                 onClick={handleLogout}
-                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-border px-4 py-3 text-sm hover:border-accent/40"
+                className="btn btn-secondary btn-block"
               >
-                <LogOut className="h-4 w-4" aria-hidden />
-                התנתקות
+                {busy ? "מתנתקים…" : "התנתקות"}
               </button>
             </div>
           ) : (
             <div className="space-y-5">
-              <SegmentedTabs
-                items={[
-                  { id: "signin", label: "התחברות" },
-                  { id: "signup", label: "הרשמה" },
-                ]}
-                value={mode}
-                onChange={(id) => {
-                  setMode(id);
-                  resetFormMessages();
-                }}
-                layoutId="auth-mode-pill"
-                aria-label="מצב התחברות"
-                className="rounded-2xl border border-border bg-background/35 p-1"
-              />
-
-              <form onSubmit={handleEmailSubmit} className="space-y-3.5" noValidate>
-                <div>
-                  <label
-                    htmlFor={emailId}
-                    className="block text-sm font-semibold text-foreground"
+              <div role="tablist" aria-label="סוג כניסה" className="tabs">
+                {(
+                  [
+                    { id: "signin", label: "יש לי חשבון" },
+                    { id: "signup", label: "חשבון חדש" },
+                  ] as const
+                ).map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={mode === tab.id}
+                    className="tab tab-motion"
+                    onClick={() => {
+                      setMode(tab.id);
+                      resetFormMessages();
+                    }}
                   >
+                    {mode === tab.id && <SlidingPill layoutId="japanuva-auth-tabs" />}
+                    <span className="relative z-10">{tab.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              <form onSubmit={handleEmailSubmit} className="space-y-4" noValidate>
+                <div>
+                  <label htmlFor={emailId} className="field-label">
                     אימייל
                   </label>
                   <input
@@ -356,7 +361,7 @@ export function AuthButton() {
                     dir="ltr"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className={inputClass}
+                    className="field"
                     placeholder="you@example.com"
                     disabled={busy || !configured}
                     required
@@ -366,10 +371,7 @@ export function AuthButton() {
                 </div>
 
                 <div>
-                  <label
-                    htmlFor={passwordId}
-                    className="block text-sm font-semibold text-foreground"
-                  >
+                  <label htmlFor={passwordId} className="field-label">
                     סיסמה
                   </label>
                   <input
@@ -382,7 +384,7 @@ export function AuthButton() {
                     dir="ltr"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className={inputClass}
+                    className="field"
                     placeholder={`לפחות ${MIN_PASSWORD} תווים`}
                     disabled={busy || !configured}
                     required
@@ -393,10 +395,7 @@ export function AuthButton() {
 
                 {mode === "signup" && (
                   <div>
-                    <label
-                      htmlFor={confirmId}
-                      className="block text-sm font-semibold text-foreground"
-                    >
+                    <label htmlFor={confirmId} className="field-label">
                       אימות סיסמה
                     </label>
                     <input
@@ -407,7 +406,7 @@ export function AuthButton() {
                       dir="ltr"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className={inputClass}
+                      className="field"
                       placeholder="הקלידו שוב את הסיסמה"
                       disabled={busy || !configured}
                       required
@@ -417,93 +416,63 @@ export function AuthButton() {
                   </div>
                 )}
 
-                {mode === "signin" && (
-                  <div className="flex justify-end">
-                    <button
-                      type="button"
-                      disabled={busy || !configured}
-                      onClick={handleForgotPassword}
-                      className="min-h-11 rounded-lg px-2 text-sm text-foreground hover:underline disabled:opacity-50"
-                    >
-                      שכחתי סיסמה
-                    </button>
-                  </div>
-                )}
-
                 <button
                   type="submit"
                   disabled={busy || !configured}
-                  className="glow-accent inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-nav-bg px-4 py-3 text-sm font-bold text-nav-fg disabled:opacity-50"
+                  className="btn btn-primary btn-block"
                 >
-                  {busy
-                    ? mode === "signup"
-                      ? "נרשם..."
-                      : "מתחבר..."
-                    : !onboardingCompleted
-                      ? mode === "signup"
-                        ? "הגדרת טיול ואז הרשמה"
-                        : "הגדרת טיול ואז התחברות"
-                      : mode === "signup"
-                        ? "הרשמה"
-                        : "התחברות"}
+                  {submitLabel}
                 </button>
+
+                {mode === "signin" && (
+                  <button
+                    type="button"
+                    disabled={busy || !configured}
+                    onClick={handleForgotPassword}
+                    className="btn btn-tertiary btn-sm"
+                  >
+                    שכחתי את הסיסמה
+                  </button>
+                )}
               </form>
 
               <div
-                className="flex items-center gap-3 text-xs text-muted"
+                className="flex items-center gap-3 text-sm text-muted"
                 role="separator"
-                aria-label="או המשך עם Google"
               >
-                <span className="h-px flex-1 bg-border" aria-hidden />
-                או המשך עם Google
-                <span className="h-px flex-1 bg-border" aria-hidden />
+                <span className="h-px flex-1 bg-rule" aria-hidden />
+                או
+                <span className="h-px flex-1 bg-rule" aria-hidden />
               </div>
 
               <button
                 type="button"
                 disabled={busy || !configured}
                 onClick={handleGoogle}
-                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-border bg-background/35 px-4 py-3 text-sm font-bold hover:border-yellow/45 disabled:opacity-50"
+                className="btn btn-secondary btn-block"
               >
-                <LogIn className="h-4 w-4" aria-hidden />
                 {busy
-                  ? "מתחבר..."
+                  ? "מתחברים…"
                   : onboardingCompleted
                     ? "המשך עם Google"
-                    : "הגדרת טיול ואז Google"}
+                    : "הגדרת הטיול ואז Google"}
               </button>
             </div>
           )}
 
-          <AnimatePresence>
-            {resetNotice && (
-              <motion.p
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                role="status"
-                className="rounded-xl border border-success/30 bg-success/10 px-3 py-2.5 text-sm text-success"
-              >
-                {resetNotice}
-              </motion.p>
-            )}
-          </AnimatePresence>
+          {resetNotice && (
+            <p role="status" className="note-quiet text-sm text-moss">
+              {resetNotice}
+            </p>
+          )}
 
-          <AnimatePresence>
-            {displayError && (
-              <motion.p
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                role="alert"
-                className="rounded-xl border border-accent/30 bg-accent-soft px-3 py-2.5 text-sm text-accent"
-              >
-                {displayError}
-              </motion.p>
-            )}
-          </AnimatePresence>
+          {displayError && (
+            <p role="alert" className="note text-sm">
+              {displayError}
+            </p>
+          )}
         </div>
-      </GlassModal>
+      </Dialog>
 
       <TripSetupWizard
         open={setupOpen}
@@ -514,9 +483,7 @@ export function AuthButton() {
         }}
         onFinished={afterSetupFinished}
         title={
-          pendingAuth
-            ? "לפני יצירת חשבון · פרטי הטיול"
-            : "עריכת פרטי הטיול"
+          pendingAuth ? "לפני יצירת החשבון: פרטי הטיול" : "פרטי הטיול"
         }
       />
     </>

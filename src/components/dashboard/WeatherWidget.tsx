@@ -1,20 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import {
-  Cloud,
-  CloudRain,
-  CloudSun,
-  Leaf,
-  Sun,
-  Thermometer,
-  Umbrella,
-} from "lucide-react";
-import { motion, useReducedMotion } from "framer-motion";
-import { softEase, progressTransformOrigin, softProgressProps } from "@/lib/motion";
+import { useCallback, useEffect, useState } from "react";
 import { weatherTips } from "@/data/trip";
 import { useTripMetaStore } from "@/store/tripMeta";
-import { cn } from "@/lib/utils";
+import { SectionHead } from "@/components/ui/PageHeader";
 
 type WeatherPayload = {
   available: boolean;
@@ -23,197 +12,132 @@ type WeatherPayload = {
   avgHighC?: number;
   avgLowC?: number;
   rainfallMm?: number;
+  locationLabelHe?: string;
   sourceLabelHe?: string;
   messageHe?: string | null;
 };
 
-const KOYO_PCT = 78;
-
-function weatherIconFor(rainfallMm?: number, avgHighC?: number) {
-  if (rainfallMm != null && rainfallMm >= 120) {
-    return { Icon: CloudRain, label: "גשום", tone: "text-sky" };
-  }
-  if (rainfallMm != null && rainfallMm >= 60) {
-    return { Icon: Cloud, label: "מעונן", tone: "text-muted" };
-  }
-  if (avgHighC != null && avgHighC >= 22) {
-    return { Icon: Sun, label: "בהיר", tone: "text-amber" };
-  }
-  return { Icon: CloudSun, label: "משתנה", tone: "text-sky" };
-}
-
-function KoyoGauge({ value }: { value: number }) {
-  const pct = Math.min(100, Math.max(0, value));
-  const reduceMotion = useReducedMotion();
-  const fill = softProgressProps(pct, reduceMotion);
-  const status =
-    pct < 40 ? "מוקדם" : pct < 70 ? "מתקרב לשיא" : pct < 90 ? "שיא" : "שיא גבוה";
-  const statusColor =
-    pct < 40
-      ? "text-autumn-green"
-      : pct < 70
-        ? "text-autumn-yellow"
-        : "text-autumn-red";
-
-  return (
-    <div className="space-y-2">
-      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-xs">
-        <span className="flex min-w-0 items-center gap-1.5 font-medium text-muted">
-          <Leaf className="h-3.5 w-3.5 shrink-0 text-autumn-green" strokeWidth={2.25} />
-          שיא עלווה סתיו (Koyo)
-        </span>
-        <span className={cn("shrink-0 font-bold tabular-nums", statusColor)}>
-          {pct}% · {status}
-        </span>
-      </div>
-      <div
-        className="relative h-3.5 overflow-hidden rounded-full border border-border/70 bg-parchment-deep/80"
-        role="meter"
-        aria-valuenow={pct}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-label="מד Koyo"
-      >
-        <motion.div
-          className="absolute inset-y-0 start-0 w-full overflow-hidden rounded-full"
-          style={{ transformOrigin: progressTransformOrigin }}
-          {...fill}
-        >
-          <div
-            className="h-full w-full rounded-full"
-            style={{
-              background:
-                "linear-gradient(to left, var(--autumn-green) 0%, var(--autumn-yellow) 48%, var(--autumn-red) 100%)",
-            }}
-          />
-        </motion.div>
-        <motion.span
-          className="absolute top-1/2 z-10 h-4 w-1.5 -translate-y-1/2 rounded-full border border-border bg-parchment shadow-[0_1px_4px_color-mix(in_srgb,var(--espresso)_25%,transparent)]"
-          style={{ insetInlineStart: `max(0px, calc(${pct}% - 3px))` }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.28, duration: 0.28, ease: softEase }}
-        />
-      </div>
-      <div className="flex justify-between text-[10px] font-medium text-muted">
-        <span className="text-autumn-green">ירוק</span>
-        <span className="text-autumn-yellow">צהוב</span>
-        <span className="text-autumn-red">אדום סתיו</span>
-      </div>
-    </div>
-  );
-}
+type LoadState =
+  | { status: "loading" }
+  | { status: "ready"; data: WeatherPayload }
+  | { status: "error" };
 
 export function WeatherWidget() {
   const startDate = useTripMetaStore((s) => s.startDate);
   const endDate = useTripMetaStore((s) => s.endDate);
-  const [weather, setWeather] = useState<WeatherPayload | null>(null);
+  const [attempt, setAttempt] = useState(0);
+  const requestKey = `${startDate}|${endDate}|${attempt}`;
+  const [result, setResult] = useState<{ key: string; state: LoadState } | null>(null);
+  const state: LoadState =
+    result && result.key === requestKey ? result.state : { status: "loading" };
 
   useEffect(() => {
     let cancelled = false;
-    setWeather(null);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+    const key = `${startDate}|${endDate}|${attempt}`;
 
     void (async () => {
       try {
         const url = new URL("/api/weather", window.location.origin);
         url.searchParams.set("start", startDate);
         url.searchParams.set("end", endDate);
-        const res = await fetch(url.toString());
+        const res = await fetch(url.toString(), { signal: controller.signal });
         const data = (await res.json()) as WeatherPayload;
-        if (!cancelled) setWeather(data);
+        if (!cancelled) setResult({ key, state: { status: "ready", data } });
       } catch {
-        if (!cancelled) {
-          setWeather({
-            available: false,
-            messageHe: "מזג אוויר עדיין לא זמין",
-          });
-        }
+        if (!cancelled) setResult({ key, state: { status: "error" } });
+      } finally {
+        clearTimeout(timer);
       }
     })();
 
     return () => {
       cancelled = true;
+      clearTimeout(timer);
+      controller.abort();
     };
-  }, [startDate, endDate]);
+  }, [startDate, endDate, attempt]);
 
-  const showStats = weather?.available && weather.avgHighC != null;
-  const sky = weatherIconFor(weather?.rainfallMm, weather?.avgHighC);
-  const SkyIcon = sky.Icon;
+  const retry = useCallback(() => setAttempt((n) => n + 1), []);
+  const data = state.status === "ready" ? state.data : null;
+  const hasStats =
+    data?.available && data.avgHighC != null && data.avgLowC != null;
+  const climate = data?.mode === "climate";
 
   return (
-    <div className="autumn-wash flex h-full min-w-0 flex-col space-y-3 p-1 sm:p-1.5">
-      <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-2 gap-y-1">
-        <div className="flex min-w-0 items-center gap-2 text-sm font-semibold text-foreground">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-sky-soft text-sky">
-            <SkyIcon className="h-3.5 w-3.5" strokeWidth={2.25} />
-          </span>
-          <span className="min-w-0">מזג אוויר ו-Koyo</span>
+    <section aria-labelledby="weather-title" aria-busy={state.status === "loading"}>
+      <SectionHead
+        as="h3"
+        id="weather-title"
+        title={`מזג האוויר ב${data?.locationLabelHe ?? "טוקיו"}`}
+        meta={data?.monthLabel ?? weatherTips.monthHint}
+      />
+
+      {state.status === "loading" && (
+        <div className="grid grid-cols-3 gap-4" aria-hidden>
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="space-y-2">
+              <div className="h-8 w-14 animate-pulse bg-paper-sunk" />
+              <div className="h-3 w-16 animate-pulse bg-paper-sunk" />
+            </div>
+          ))}
+          <span className="sr-only">טוען נתוני מזג אוויר</span>
         </div>
-        <span className="shrink-0 text-xs font-medium text-muted">
-          {weather?.monthLabel ?? weatherTips.monthHint}
-        </span>
-      </div>
-
-      {!weather && (
-        <p className="rounded-2xl border border-border bg-surface/70 px-3 py-2 text-sm text-muted">
-          טוען מזג אוויר…
-        </p>
       )}
 
-      {weather && weather.messageHe && (
-        <p className="rounded-2xl border border-border bg-surface/70 px-3 py-2 text-sm leading-6 text-muted">
-          {weather.messageHe}
-        </p>
-      )}
-
-      {showStats ? (
-        <>
-          <div className="grid min-w-0 grid-cols-3 gap-1 sm:gap-2">
-            <div className="min-w-0 rounded-2xl border border-border bg-surface/75 p-1.5 text-center sm:p-2.5">
-              <Sun className="mx-auto mb-0.5 h-3.5 w-3.5 text-amber sm:mb-1 sm:h-4 sm:w-4" strokeWidth={2.25} />
-              <div className="font-[family-name:var(--font-quicksand)] text-[0.8125rem] font-bold tabular-nums leading-tight text-foreground sm:text-lg">
-                {weather.avgHighC}°
-              </div>
-              <div className="text-[10px] leading-tight text-muted sm:text-[11px]">מקסימום</div>
-            </div>
-            <div className="min-w-0 rounded-2xl border border-border bg-surface/75 p-1.5 text-center sm:p-2.5">
-              <Thermometer className="mx-auto mb-0.5 h-3.5 w-3.5 text-olive sm:mb-1 sm:h-4 sm:w-4" strokeWidth={2.25} />
-              <div className="font-[family-name:var(--font-quicksand)] text-[0.8125rem] font-bold tabular-nums leading-tight text-foreground sm:text-lg">
-                {weather.avgLowC}°
-              </div>
-              <div className="text-[10px] leading-tight text-muted sm:text-[11px]">מינימום</div>
-            </div>
-            <div className="min-w-0 rounded-2xl border border-border bg-surface/75 p-1.5 text-center sm:p-2.5">
-              <Umbrella className="mx-auto mb-0.5 h-3.5 w-3.5 text-sky sm:mb-1 sm:h-4 sm:w-4" strokeWidth={2.25} />
-              <div className="break-all font-[family-name:var(--font-quicksand)] text-[0.8125rem] font-bold tabular-nums leading-tight text-foreground sm:text-lg">
-                {weather.rainfallMm}
-              </div>
-              <div className="text-[10px] leading-tight text-muted sm:text-[11px]">מ״מ גשם</div>
-            </div>
-          </div>
-          {weather.sourceLabelHe && (
-            <p className="text-[11px] text-muted">{weather.sourceLabelHe}</p>
-          )}
-        </>
-      ) : (
-        weather &&
-        !weather.messageHe && (
-          <p className="rounded-2xl border border-border bg-surface/70 px-3 py-2 text-sm text-muted">
-            מזג אוויר עדיין לא זמין
+      {state.status === "error" && (
+        <div className="space-y-2">
+          <p className="text-sm text-ink-soft">
+            לא הצלחנו לטעון את נתוני מזג האוויר.
           </p>
-        )
+          <button type="button" onClick={retry} className="btn btn-secondary btn-sm">
+            ניסיון נוסף
+          </button>
+        </div>
       )}
 
-      <KoyoGauge value={KOYO_PCT} />
-      <p className="text-sm leading-6 text-muted">{weatherTips.koyoPeak}</p>
-      <ul className="mt-auto space-y-1.5">
-        {weatherTips.notes.map((note) => (
-          <li key={note} className="flex items-start gap-2 text-xs text-muted">
-            <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-olive/70" />
-            {note}
-          </li>
-        ))}
-      </ul>
-    </div>
+      {data && hasStats && (
+        <dl className="grid grid-cols-3 gap-4">
+          <div className="flex flex-col-reverse gap-1.5">
+            <dt className="t-meta">ממוצע ביום</dt>
+            <dd className="t-num text-[2rem] leading-none">{data.avgHighC}°</dd>
+          </div>
+          <div className="flex flex-col-reverse gap-1.5">
+            <dt className="t-meta">ממוצע בלילה</dt>
+            <dd className="t-num text-[2rem] leading-none">{data.avgLowC}°</dd>
+          </div>
+          <div className="flex flex-col-reverse gap-1.5">
+            <dt className="t-meta">
+              {climate ? "גשם בכל החודש" : "גשם בימי הטיול"}
+            </dt>
+            <dd className="t-num text-[2rem] leading-none">
+              {data.rainfallMm}
+              <span className="ms-1 font-sans text-sm text-muted">מ״מ</span>
+            </dd>
+          </div>
+        </dl>
+      )}
+
+      {data && !hasStats && (
+        <p className="text-sm text-ink-soft">
+          {data.messageHe ?? "נתוני מזג אוויר אינם זמינים כרגע."}
+        </p>
+      )}
+
+      {data && hasStats && (
+        <p className="t-meta mt-3">
+          {climate
+            ? "התאריכים רחוקים מטווח התחזית, לכן מוצג אומדן אקלימי לחודש (Open-Meteo)."
+            : data.sourceLabelHe}
+        </p>
+      )}
+
+      <div className="mt-5 border-t border-rule pt-4">
+        <h4 className="t-label">עלי השלכת (Koyo)</h4>
+        <p className="mt-1.5 text-sm leading-6 text-ink-soft">{weatherTips.koyo}</p>
+        <p className="t-meta mt-1">{weatherTips.koyoCaveat}</p>
+      </div>
+    </section>
   );
 }

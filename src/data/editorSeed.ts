@@ -18,7 +18,6 @@ export const seedEditorDays: EditorDay[] = [
       checkOut: "2027-10-10",
       status: "booked",
       costPerNightJpy: 28000,
-      bookingLink: "https://example.com/gracery",
       notes: "חדר משפחתי · קרוב ל־JR Shinjuku",
       lat: 35.6955,
       lng: 139.7014,
@@ -130,7 +129,7 @@ export const seedEditorDays: EditorDay[] = [
       {
         id: "a-6",
         title: "TeamLab Planets",
-        descriptionHe: "צוותלאב פלאנטס — חוויה אינטראקטיבית למשפחה.",
+        descriptionHe: "צוותלאב פלאנטס, חוויה אינטראקטיבית למשפחה.",
         category: "culture",
         timeSlot: "afternoon",
         familyFriendly: true,
@@ -162,7 +161,7 @@ export const seedEditorDays: EditorDay[] = [
       {
         id: "a-7",
         title: "פאשמי אינארי",
-        descriptionHe: "שערי טוריי אדומים — יציאה מוקדמת עם ילדים.",
+        descriptionHe: "שערי טוריי אדומים. יציאה מוקדמת עם ילדים.",
         category: "temple",
         timeSlot: "morning",
         familyFriendly: true,
@@ -175,7 +174,7 @@ export const seedEditorDays: EditorDay[] = [
       {
         id: "a-8",
         title: "קיומיזו־דרה",
-        descriptionHe: "מקדש ההר ונוף עלווה סתיו.",
+        descriptionHe: "מקדש על צלע ההר עם מרפסת עץ ותצפית על העיר.",
         category: "temple",
         timeSlot: "afternoon",
         familyFriendly: true,
@@ -204,8 +203,8 @@ export const seedEditorDays: EditorDay[] = [
     activities: [
       {
         id: "a-9",
-        title: "אראשיאמה — חורשת במבוק",
-        descriptionHe: "שיא Koyo באזור מערב קיוטו.",
+        title: "אראשיאמה חורשת במבוק",
+        descriptionHe: "שביל במבוק במערב קיוטו. כדאי להגיע מוקדם בבוקר, לפני העומס.",
         category: "nature",
         timeSlot: "morning",
         familyFriendly: true,
@@ -218,7 +217,7 @@ export const seedEditorDays: EditorDay[] = [
       {
         id: "a-10",
         title: "פארק הקופים איאוואטאיאמה",
-        descriptionHe: "תצפית וקופים — כיף לילדים.",
+        descriptionHe: "תצפית וקופים, כיף לילדים.",
         category: "nature",
         timeSlot: "afternoon",
         familyFriendly: true,

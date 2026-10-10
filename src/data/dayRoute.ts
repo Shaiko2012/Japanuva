@@ -6,7 +6,7 @@ export interface RouteStop {
   id: string;
   name: string;
   address: string;
-  /** Official place name from search — used when opening Google Maps. */
+  /** Official place name from search used when opening Google Maps. */
   searchName?: string;
   mapsLink?: string;
   lat?: number;

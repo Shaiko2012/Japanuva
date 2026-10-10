@@ -1,165 +1,97 @@
 "use client";
 
-import { useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
-import { CreditCard, Plane, WalletCards } from "lucide-react";
-import { airportOptions, suicaSteps } from "@/data/tools";
+import { airportOptions, officialLinks, suicaSteps } from "@/data/tools";
 import { formatNumber } from "@/lib/utils";
-import {
-  softEntranceProps,
-  softInteractiveProps,
-  softStagger,
-  softTransition,
-} from "@/lib/motion";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { ProgressBar } from "@/components/ui/ProgressBar";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import { cn } from "@/lib/utils";
+import { PageHeader, SectionHead } from "@/components/ui/PageHeader";
+import { FadeIn } from "@/components/ui/Motion";
 
 export function TransitHub() {
-  const [step, setStep] = useState(0);
-  const reduceMotion = useReducedMotion();
-  const cardMotion = softInteractiveProps(reduceMotion);
-
   return (
-    <div className="space-y-4">
-      <GlassCard strong>
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <span className="glow-accent flex h-12 w-12 items-center justify-center rounded-2xl bg-nav-bg text-nav-fg">
-              <CreditCard className="h-5 w-5" />
-            </span>
-            <div>
-              <h1 className="fluid-title font-[family-name:var(--font-readex)] font-bold">
-                נסיעות ו-Suica
-              </h1>
-              <p className="mt-1 text-sm text-muted">
-                מדריך הקמה לכרטיס תחבורה והשוואת מעברים מ־Narita (NRT).
-              </p>
-            </div>
-          </div>
-          <StatusBadge tone="accent" label="Transit Hub" pulse />
+    <div>
+      <PageHeader
+        kicker="תחבורה"
+        title="מהשדה לעיר, ו־Suica לכל הטיול"
+        lede="שלוש דרכים להגיע מ־Narita למרכז טוקיו, ואיך מסדרים כרטיס נסיעה נטען לכל בני המשפחה."
+      />
+
+      <section aria-labelledby="airport-title">
+        <SectionHead id="airport-title" title="מ־Narita למרכז טוקיו" meta="מחיר משוער למבוגר, בכיוון אחד" />
+
+        <div className="mt-2 overflow-x-auto">
+          <table className="table min-w-[38rem]">
+            <caption className="sr-only">השוואת דרכי הגעה משדה התעופה Narita</caption>
+            <thead>
+              <tr>
+                <th scope="col">אפשרות</th>
+                <th scope="col">מגיע אל</th>
+                <th scope="col">זמן (דקות)</th>
+                <th scope="col" className="text-end">
+                  מחיר
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {airportOptions.map((option) => (
+                <tr key={option.id}>
+                  <th scope="row" className="align-top">
+                    <a
+                      href={option.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="link-inline font-semibold"
+                      dir="ltr"
+                    >
+                      {option.name}
+                    </a>
+                    <span className="sr-only"> (חלון חדש)</span>
+                    <p className="mt-1 max-w-sm text-sm font-normal leading-6 text-ink-soft">
+                      {option.note}
+                    </p>
+                  </th>
+                  <td className="align-top" dir="auto">
+                    {option.destination}
+                  </td>
+                  <td className="align-top">{option.minutes}</td>
+                  <td className="tabular align-top text-end">≈ ¥{formatNumber(option.approxJpy)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </GlassCard>
+        <p className="t-meta mt-3 max-w-2xl">
+          המחירים מעוגלים ומשתנים מעת לעת. ילדים בגילאי 6-11 משלמים בדרך כלל כחצי מחיר. בדקו
+          באתר המפעיל לפני הנסיעה.
+        </p>
+        <a href={officialLinks.narita} target="_blank" rel="noreferrer" className="link-nav mt-4">
+          כל דרכי ההגעה באתר שדה התעופה
+          <span className="sr-only"> (חלון חדש)</span>
+        </a>
+      </section>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <GlassCard>
-          <div className="mb-4 flex items-center gap-2 text-sm font-semibold">
-            <WalletCards className="h-4 w-4 text-accent" />
-            מדריך Suica / Pasmo
-          </div>
-          <div className="space-y-2">
-            {suicaSteps.map((item, index) => {
-              const active = step === index;
-              return (
-                <motion.button
-                  key={item.title}
-                  type="button"
-                  {...softEntranceProps(reduceMotion, {
-                    delay: softStagger(index, 0.05),
-                    y: 8,
-                  })}
-                  {...cardMotion}
-                  onClick={() => setStep(index)}
-                  className={cn(
-                    "w-full rounded-2xl border p-3 text-right transition",
-                    active
-                      ? "border-accent/45 bg-accent-soft"
-                      : "border-border bg-background/30 hover:border-accent/30",
-                  )}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs text-muted">שלב {index + 1}</span>
-                    {active && <StatusBadge tone="accent" label="פעיל" />}
-                  </div>
-                  <div className="mt-1 font-medium">{item.title}</div>
-                  <AnimateText show={active} text={item.detail} reduceMotion={reduceMotion} />
-                </motion.button>
-              );
-            })}
-          </div>
-          <div className="mt-4">
-            <ProgressBar
-              value={step + 1}
-              max={suicaSteps.length}
-              label="התקדמות במדריך"
-            />
-          </div>
-        </GlassCard>
-
-        <GlassCard>
-          <div className="mb-4 flex items-center gap-2 text-sm font-semibold">
-            <Plane className="h-4 w-4 text-accent" />
-            השוואת מעבר מ־Narita
-          </div>
-
-          <div className="space-y-3">
-            {airportOptions.map((option, index) => (
-              <motion.div
-                key={option.id}
-                {...softEntranceProps(reduceMotion, {
-                  delay: softStagger(index, 0.05),
-                  y: 10,
-                })}
-                {...cardMotion}
-                className="rounded-2xl border border-border bg-background/30 p-4"
+      <section aria-labelledby="suica-title" className="mt-16">
+        <SectionHead id="suica-title" title="Suica ו־Pasmo" meta="כרטיס נטען לרכבות, מטרו ואוטובוסים" />
+        <ol className="mt-2 grid gap-x-10 sm:grid-cols-2">
+          {suicaSteps.map((step, index) => (
+            <li key={step.title} className="border-b border-rule">
+              <FadeIn
+                delay={index * 0.07}
+                className="grid grid-cols-[2.5rem_minmax(0,1fr)] gap-3 py-5"
               >
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div>
-                    <div className="text-xs text-muted">{option.airport}</div>
-                    <div className="font-semibold">{option.name}</div>
-                  </div>
-                  <StatusBadge
-                    tone="muted"
-                    label={`ציון משפחה ${option.score}`}
-                  />
-                </div>
-                <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
-                  <div className="rounded-xl border border-border bg-surface/60 px-3 py-2">
-                    <div className="text-[11px] text-muted">זמן</div>
-                    <div className="font-semibold tabular-nums">
-                      ~{option.minutes} דק׳
-                    </div>
-                  </div>
-                  <div className="rounded-xl border border-border bg-surface/60 px-3 py-2">
-                    <div className="text-[11px] text-muted">עלות לאדם</div>
-                    <div className="font-semibold tabular-nums text-accent">
-                      ¥{formatNumber(option.costJpy)}
-                    </div>
-                  </div>
-                </div>
-                <p className="mt-3 text-xs leading-5 text-muted">
-                  {option.familyNote}
-                </p>
-                <div className="mt-3">
-                  <ProgressBar value={option.score} max={100} />
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </GlassCard>
-      </div>
+              <span className="t-num text-3xl leading-none text-vermilion" aria-hidden>
+                {index + 1}
+              </span>
+              <div>
+                <h3 className="t-h3">
+                  <span className="sr-only">שלב {index + 1}: </span>
+                  {step.title}
+                </h3>
+                <p className="mt-1.5 text-[0.9375rem] leading-7 text-ink-soft">{step.detail}</p>
+              </div>
+              </FadeIn>
+            </li>
+          ))}
+        </ol>
+      </section>
     </div>
-  );
-}
-
-function AnimateText({
-  show,
-  text,
-  reduceMotion,
-}: {
-  show: boolean;
-  text: string;
-  reduceMotion: boolean | null;
-}) {
-  if (!show) return null;
-  return (
-    <motion.p
-      {...softEntranceProps(reduceMotion, { y: 8 })}
-      transition={softTransition()}
-      className="mt-2 text-xs leading-5 text-muted"
-    >
-      {text}
-    </motion.p>
   );
 }

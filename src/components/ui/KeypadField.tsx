@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useState, type ReactNode } from "react";
-import { Clock3, Hash } from "lucide-react";
+import { Clock3 } from "lucide-react";
 import { KeypadSheet } from "@/components/ui/KeypadSheet";
 import { NumberKeypad } from "@/components/ui/NumberKeypad";
 import { TimeKeypad } from "@/components/ui/TimeKeypad";
@@ -55,7 +55,7 @@ export function KeypadField(props: KeypadFieldProps) {
 
   const display =
     props.mode === "time"
-      ? props.value || props.emptyLabel || "––:––"
+      ? props.value || props.emptyLabel || "--:--"
       : props.value === 0 && props.emptyLabel
         ? props.emptyLabel
         : props.formatDisplay
@@ -77,22 +77,20 @@ export function KeypadField(props: KeypadFieldProps) {
       aria-expanded={open}
       className={cn(
         bare
-          ? "mt-1 flex min-h-11 w-full min-w-0 items-center gap-2 bg-transparent text-start outline-none"
-          : "mt-1 flex min-h-11 w-full min-w-0 items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2.5 text-start text-sm text-foreground outline-none transition hover:border-yellow/45 focus-visible:border-accent/50",
+          ? "mt-1 flex min-h-11 w-full min-w-0 items-center gap-2 bg-transparent text-start"
+          : "field mt-1 flex w-full min-w-0 items-center gap-2 text-start",
         fieldClassName,
       )}
     >
       {prefix != null ? (
         <span className="shrink-0">{prefix}</span>
       ) : props.mode === "time" ? (
-        <Clock3 className="h-3.5 w-3.5 shrink-0 text-muted" />
-      ) : (
-        <Hash className="h-3.5 w-3.5 shrink-0 text-muted" />
-      )}
+        <Clock3 className="h-3.5 w-3.5 shrink-0 text-muted" aria-hidden />
+      ) : null}
       <span
         className={cn(
           "min-w-0 flex-1 tabular-nums",
-          // Numbers must stay fully readable in narrow cards — never ellipsis mid-digit
+          // Numbers must stay fully readable in narrow cards never ellipsis mid-digit
           props.mode === "number"
             ? "break-all leading-tight"
             : "truncate",
@@ -110,8 +108,12 @@ export function KeypadField(props: KeypadFieldProps) {
   );
 
   return (
-    <div className={cn(label ? "block text-xs text-muted" : undefined, className)}>
-      {label ? <label htmlFor={id}>{label}</label> : null}
+    <div className={cn(label ? "block" : undefined, className)}>
+      {label ? (
+        <label htmlFor={id} className="field-label">
+          {label}
+        </label>
+      ) : null}
       {trigger}
 
       <KeypadSheet

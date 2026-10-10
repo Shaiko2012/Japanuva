@@ -1,154 +1,181 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Check, FileCheck2, RotateCcw } from "lucide-react";
-import { vjwChecklist } from "@/data/tools";
-import {
-  softEntranceProps,
-  softInteractiveProps,
-  softStagger,
-  softTapProps,
-} from "@/lib/motion";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { ProgressBar } from "@/components/ui/ProgressBar";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import { officialLinks, vjwChecklist } from "@/data/tools";
+import { useChecklists } from "@/store/checklists";
+import { useHydrated } from "@/hooks/useHydrated";
+import { PageHeader, SectionHead } from "@/components/ui/PageHeader";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { Meter } from "@/components/ui/Meter";
+import { FadeIn } from "@/components/ui/Motion";
+import { softEase, softStagger, softTap } from "@/lib/motion";
 
-const categories = Array.from(
-  new Set(vjwChecklist.map((item) => item.category)),
-);
+const categories = Array.from(new Set(vjwChecklist.map((item) => item.category)));
 
-export function VjwGuide() {
-  const [done, setDone] = useState<Record<string, boolean>>({});
-  const reduceMotion = useReducedMotion();
-  const cardMotion = softInteractiveProps(reduceMotion);
-  const tapMotion = softTapProps(reduceMotion);
-
-  const completed = useMemo(
-    () => Object.values(done).filter(Boolean).length,
-    [done],
-  );
-
-  function toggle(id: string) {
-    setDone((prev) => ({ ...prev, [id]: !prev[id] }));
-  }
+function VjwCheckRow({
+  title,
+  detail,
+  checked,
+  disabled,
+  onToggle,
+}: {
+  title: string;
+  detail: string;
+  checked: boolean;
+  disabled: boolean;
+  onToggle: () => void;
+}) {
+  const reduce = useReducedMotion();
 
   return (
-    <div className="space-y-4">
-      <GlassCard strong>
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <span className="glow-accent flex h-12 w-12 items-center justify-center rounded-2xl bg-nav-bg text-nav-fg">
-              <FileCheck2 className="h-5 w-5" />
-            </span>
-            <div>
-              <h1 className="fluid-title font-[family-name:var(--font-readex)] font-bold">
-                הצהרות וכניסה · VJW
-              </h1>
-              <p className="mt-1 text-sm text-muted">
-                צ׳קליסט Visit Japan Web למשפחה — סמנו כל שלב עד לנחיתה חלקה.
-              </p>
-            </div>
-          </div>
-          <motion.button
-            type="button"
-            {...tapMotion}
-            onClick={() => setDone({})}
-            className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs text-muted hover:border-accent/40 hover:text-accent"
+    <motion.label
+      className="flex cursor-pointer items-start gap-4 py-4"
+      whileTap={reduce || disabled ? undefined : softTap}
+    >
+      <input
+        type="checkbox"
+        className="check mt-0.5"
+        checked={checked}
+        disabled={disabled}
+        onChange={onToggle}
+      />
+      <span className="min-w-0">
+        <span className="relative inline-block font-semibold">
+          <motion.span
+            className="block"
+            initial={false}
+            animate={{ color: checked ? "var(--muted)" : "var(--foreground)" }}
+            transition={{ duration: reduce ? 0 : 0.22, ease: softEase }}
           >
-            <RotateCcw className="h-3.5 w-3.5" />
-            איפוס
-          </motion.button>
-        </div>
-        <div className="mt-4">
-          <ProgressBar
-            value={completed}
-            max={vjwChecklist.length}
-            label={`${completed} / ${vjwChecklist.length} הושלמו`}
+            {title}
+          </motion.span>
+          <motion.span
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-[0.7em] h-px bg-current"
+            initial={false}
+            animate={{ scaleX: checked ? 1 : 0 }}
+            transition={{ duration: reduce ? 0 : 0.28, ease: softEase }}
+            style={{ originX: 1, color: "var(--muted)" }}
           />
-        </div>
-      </GlassCard>
-
-      {categories.map((category, catIndex) => (
-        <motion.div
-          key={category}
-          {...softEntranceProps(reduceMotion, {
-            delay: softStagger(catIndex, 0.06),
-            y: 10,
-          })}
+        </span>
+        <motion.span
+          className="mt-1 block text-[0.9375rem] leading-6 text-ink-soft"
+          initial={false}
+          animate={{ opacity: checked ? 0.65 : 1 }}
+          transition={{ duration: reduce ? 0 : 0.22, ease: softEase }}
         >
-          <GlassCard>
-            <div className="mb-3 flex items-center justify-between gap-2">
-              <h2 className="text-sm font-semibold">{category}</h2>
-              <StatusBadge
-                tone="muted"
-                label={`${vjwChecklist.filter((i) => i.category === category && done[i.id]).length}/${vjwChecklist.filter((i) => i.category === category).length}`}
-              />
-            </div>
-            <div className="space-y-2">
-              {vjwChecklist
-                .filter((item) => item.category === category)
-                .map((item, index) => {
-                  const checked = Boolean(done[item.id]);
-                  return (
-                    <motion.button
-                      key={item.id}
-                      type="button"
-                      {...softEntranceProps(reduceMotion, {
-                        delay: softStagger(index, 0.04, 0.24),
-                        y: 6,
-                      })}
-                      {...cardMotion}
-                      onClick={() => toggle(item.id)}
-                      className={cn(
-                        "flex w-full items-start gap-3 rounded-2xl border p-3 text-right transition",
-                        checked
-                          ? "border-success/35 bg-success/10"
-                          : "border-border bg-background/30 hover:border-accent/30",
-                      )}
-                    >
-                      <span
-                        className={cn(
-                          "mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border",
-                          checked
-                            ? "border-success bg-success text-white"
-                            : "border-border bg-surface",
-                        )}
-                      >
-                        <AnimatePresence>
-                          {checked && (
-                            <motion.span
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              exit={{ scale: 0 }}
-                              transition={{ duration: 0.2 }}
-                            >
-                              <Check className="h-3.5 w-3.5" />
-                            </motion.span>
-                          )}
-                        </AnimatePresence>
-                      </span>
-                      <span>
-                        <span
-                          className={cn(
-                            "block font-medium",
-                            checked && "text-muted line-through",
-                          )}
-                        >
-                          {item.title}
-                        </span>
-                        <span className="mt-1 block text-xs leading-5 text-muted">
-                          {item.detail}
-                        </span>
-                      </span>
-                    </motion.button>
-                  );
-                })}
-            </div>
-          </GlassCard>
-        </motion.div>
-      ))}
+          {detail}
+        </motion.span>
+      </span>
+    </motion.label>
+  );
+}
+
+export function VjwGuide() {
+  const hydrated = useHydrated();
+  const reduce = useReducedMotion();
+  const stored = useChecklists((s) => s.vjw);
+  const toggle = useChecklists((s) => s.toggleVjw);
+  const reset = useChecklists((s) => s.resetVjw);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const done = hydrated ? stored : {};
+  const completed = vjwChecklist.filter((item) => done[item.id]).length;
+
+  return (
+    <div>
+      <PageHeader
+        kicker="הכנות"
+        title="כניסה ליפן עם Visit Japan Web"
+        lede="השירות הרשמי של ממשלת יפן להגירה ולמכס. ממלאים לפני הטיסה ומציגים קוד QR בנחיתה. השימוש לא חובה, אבל הוא מקצר את התהליך בשדה."
+        actions={
+          <a
+            href={officialLinks.visitJapanWeb}
+            target="_blank"
+            rel="noreferrer"
+            className="btn btn-primary"
+          >
+            לאתר Visit Japan Web
+            <span className="sr-only"> (חלון חדש)</span>
+          </a>
+        }
+      />
+
+      <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_17rem]">
+        <div className="space-y-10">
+          {categories.map((category) => {
+            const items = vjwChecklist.filter((item) => item.category === category);
+            const doneHere = items.filter((item) => done[item.id]).length;
+            return (
+              <section key={category} aria-labelledby={`vjw-${category}`}>
+                <SectionHead
+                  id={`vjw-${category}`}
+                  title={category}
+                  meta={`${doneHere} מתוך ${items.length}`}
+                />
+                <ul className="ruled">
+                  {items.map((item, index) => (
+                    <li key={item.id}>
+                      <FadeIn delay={softStagger(index)} y={10}>
+                        <VjwCheckRow
+                          title={item.title}
+                          detail={item.detail}
+                          checked={Boolean(done[item.id])}
+                          disabled={!hydrated}
+                          onToggle={() => toggle(item.id)}
+                        />
+                      </FadeIn>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            );
+          })}
+        </div>
+
+        <aside className="lg:sticky lg:top-[calc(var(--header-h)+2rem)] lg:self-start">
+          <p className="t-label">ההתקדמות שלכם</p>
+          <p className="mt-2">
+            <motion.span
+              key={completed}
+              className="t-num inline-block text-4xl"
+              initial={reduce ? false : { opacity: 0.45, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: reduce ? 0 : 0.28, ease: softEase }}
+            >
+              {completed}
+            </motion.span>
+            <span className="text-muted"> מתוך {vjwChecklist.length} שלבים</span>
+          </p>
+          <div className="mt-3">
+            <Meter
+              value={completed}
+              max={vjwChecklist.length}
+              label="שלבים שהושלמו"
+              tone={completed === vjwChecklist.length ? "moss" : "ink"}
+            />
+          </div>
+          <p className="t-meta mt-3">הסימונים נשמרים במכשיר הזה בלבד.</p>
+          <button
+            type="button"
+            onClick={() => setConfirmOpen(true)}
+            disabled={completed === 0}
+            className="btn btn-tertiary btn-sm mt-4 text-danger"
+          >
+            ניקוי כל הסימונים
+          </button>
+        </aside>
+      </div>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        title="לנקות את כל הסימונים?"
+        description="כל השלבים יסומנו מחדש כלא בוצעו. הפרטים שמילאתם באתר Visit Japan Web עצמו לא יושפעו."
+        confirmLabel="ניקוי"
+        onConfirm={reset}
+      />
     </div>
   );
 }

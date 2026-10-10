@@ -44,8 +44,12 @@ export function DateField({
   const sheetTitle = title || label || "בחירת תאריך";
 
   return (
-    <div className={cn(label ? "block text-xs text-muted" : undefined, className)}>
-      {label ? <label htmlFor={id}>{label}</label> : null}
+    <div className={cn(label ? "block" : undefined, className)}>
+      {label ? (
+        <label htmlFor={id} className="field-label">
+          {label}
+        </label>
+      ) : null}
       <button
         type="button"
         id={id}
@@ -54,7 +58,7 @@ export function DateField({
         aria-haspopup="dialog"
         aria-expanded={open}
         className={cn(
-          "mt-1 flex w-full min-w-0 items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2.5 text-start text-sm text-foreground outline-none transition hover:border-yellow/45 focus-visible:border-accent/50",
+          "field flex w-full min-w-0 items-center gap-2 text-start",
           fieldClassName,
         )}
       >
@@ -81,7 +85,7 @@ export function DateField({
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="mt-3 flex h-12 w-full items-center justify-center rounded-2xl bg-nav-bg text-sm font-bold text-nav-fg shadow-[0_8px_20px_var(--glow)]"
+          className="btn btn-primary btn-block mt-3"
         >
           אישור
         </button>

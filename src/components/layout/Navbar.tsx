@@ -2,242 +2,139 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import {
-  CalendarDays,
-  ChevronLeft,
-  CreditCard,
-  FileCheck2,
-  LayoutDashboard,
-  Lightbulb,
-  Luggage,
-  Menu,
-  PenSquare,
-  Route,
-  TrainFront,
-  X,
-} from "lucide-react";
-import { useState } from "react";
-import { navItems, tripMeta } from "@/data/trip";
-import { cn } from "@/lib/utils";
-import { LogoMark } from "@/components/brand/LogoMark";
-import {
-  navPillTransition,
-  softLogoHover,
-  softMenuProps,
-  softSpring,
-  softTap,
-  softTapProps,
-} from "@/lib/motion";
-import { ThemeToggle } from "./ThemeToggle";
+import { LayoutGroup, motion, useReducedMotion } from "framer-motion";
+import { navSections, sectionForPath } from "@/data/navigation";
+import { tripMeta } from "@/data/trip";
 import { AuthButton } from "@/components/auth/AuthButton";
+import { ThemeToggle } from "./ThemeToggle";
+import { navPillTransition } from "@/lib/motion";
 
-const iconMap = {
-  LayoutDashboard,
-  CalendarDays,
-  PenSquare,
-  Route,
-  TrainFront,
-  CreditCard,
-  Luggage,
-  FileCheck2,
-  Lightbulb,
-};
+function Wordmark() {
+  const reduce = useReducedMotion();
+  return (
+    <Link
+      href="/"
+      className="group flex min-h-11 shrink-0 items-baseline gap-3 text-foreground no-underline"
+      aria-label={`${tripMeta.name}, סקירת הטיול`}
+    >
+      <motion.span
+        dir="ltr"
+        className="inline-block font-[family-name:var(--font-quicksand)] text-[1.4rem] font-bold leading-none tracking-[-0.02em]"
+        whileHover={reduce ? undefined : { scale: 1.06, rotate: -3 }}
+        whileTap={reduce ? undefined : { scale: 0.96 }}
+        transition={{ type: "spring", stiffness: 420, damping: 22 }}
+      >
+        Japanuva
+      </motion.span>
+      <span className="hidden border-s border-border ps-3 text-[0.8125rem] leading-none text-muted lg:inline">
+        תכנון טיול משפחתי
+      </span>
+    </Link>
+  );
+}
 
 export function Navbar() {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
+  const current = sectionForPath(pathname);
   const reduceMotion = useReducedMotion();
-  const menuMotion = softMenuProps(reduceMotion);
-  const menuBtnTap = softTapProps(reduceMotion);
+  const pill = reduceMotion ? { duration: 0 } : navPillTransition;
 
   return (
-    <header
-      className="sticky top-0 z-50 bg-parchment/80 backdrop-blur-xl"
-      style={{
-        paddingTop: "max(0.75rem, var(--safe-top))",
-        paddingBottom: "0.75rem",
-        paddingLeft: "max(0.85rem, var(--safe-left))",
-        paddingRight: "max(0.85rem, var(--safe-right))",
-      }}
-    >
-      <div className="mx-auto flex max-w-7xl min-w-0 items-center gap-1.5 sm:gap-3">
-        <Link
-          href="/"
-          className="group flex min-h-11 shrink-0 items-center gap-2.5 rounded-2xl sm:gap-3"
-          aria-label={`${tripMeta.name} — דף הבית`}
-        >
-          {/* RTL: mark at inline-start, then Quicksand wordmark */}
-          <motion.span
-            className="flex h-10 w-10 shrink-0 overflow-hidden rounded-full sm:h-11 sm:w-11"
-            aria-hidden
-            whileHover={reduceMotion ? undefined : softLogoHover}
-            whileTap={reduceMotion ? undefined : softTap}
-          >
-            <LogoMark className="h-full w-full" />
-          </motion.span>
-          <span className="flex flex-col leading-none">
-            <span className="whitespace-nowrap font-[family-name:var(--font-quicksand)] text-[15px] font-bold tracking-tight text-foreground sm:text-lg">
-              {tripMeta.name}
-            </span>
-            <span className="mt-0.5 hidden whitespace-nowrap text-[10px] leading-tight text-muted sm:block">
-              תכנון טיול ליפן
-            </span>
-          </span>
-        </Link>
-
-        <nav className="hidden min-w-0 flex-1 lg:block">
-          <div
-            data-lenis-prevent-horizontal
-            className="nav-pill-shell mx-auto w-full max-w-full"
-          >
-            <ul className="flex w-full items-stretch">
-              {navItems.map((item) => {
-                const Icon = iconMap[item.icon];
-                const active =
-                  item.href === "/"
-                    ? pathname === "/"
-                    : pathname.startsWith(item.href);
-
-                return (
-                  <li key={item.href} className="min-w-0 flex-1">
-                    <Link
-                      href={item.href}
-                      className={cn(
-                        "relative flex h-9 w-full min-w-0 items-center justify-center gap-1 overflow-hidden rounded-full px-1.5 text-[11px] transition sm:gap-1.5 sm:px-2 sm:text-xs",
-                        active
-                          ? "font-bold text-[#0A0A0A]"
-                          : "font-bold text-foreground/65 hover:text-foreground dark:text-white/75 dark:hover:text-white",
-                      )}
-                    >
-                      {active && (
-                        <motion.span
-                          layoutId="nav-pill"
-                          className="nav-pill-active absolute inset-0"
-                          transition={navPillTransition}
-                          aria-hidden
-                        />
-                      )}
-                      <Icon
-                        className="relative z-10 h-3.5 w-3.5 shrink-0"
-                        strokeWidth={2.2}
-                        aria-hidden
-                      />
-                      <span className="relative z-10 min-w-0 truncate">
-                        {item.label}
-                      </span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
+    <>
+      <header
+        className="nav-chrome sticky top-0 z-50 border-b"
+        style={{ paddingTop: "var(--safe-top)" }}
+      >
+        <div className="page flex h-[var(--header-h)] items-stretch gap-6 lg:gap-10">
+          <div className="flex items-center">
+            <Wordmark />
           </div>
-        </nav>
 
-        <div className="ms-auto flex min-w-0 shrink-0 items-center gap-1 sm:gap-2">
-          <AuthButton />
-          <ThemeToggle />
-          <motion.button
-            type="button"
-            {...menuBtnTap}
-            className="relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border bg-surface-strong text-foreground shadow-[var(--card-shadow)] transition hover:scale-[1.03] hover:shadow-[var(--card-shadow-hover)] lg:hidden"
-            onClick={() => setOpen((v) => !v)}
-            aria-label="תפריט ניווט"
-            aria-expanded={open}
-          >
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.span
-                key={open ? "close" : "menu"}
-                initial={
-                  reduceMotion
-                    ? { opacity: 0 }
-                    : { opacity: 0, rotate: -40, scale: 0.7 }
-                }
-                animate={
-                  reduceMotion
-                    ? { opacity: 1 }
-                    : { opacity: 1, rotate: 0, scale: 1 }
-                }
-                exit={
-                  reduceMotion
-                    ? { opacity: 0 }
-                    : { opacity: 0, rotate: 40, scale: 0.7 }
-                }
-                transition={softSpring}
-                className="flex"
-              >
-                {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-              </motion.span>
-            </AnimatePresence>
-          </motion.button>
-        </div>
-      </div>
-
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.nav
-            key="mobile-nav"
-            {...menuMotion}
-            className="mx-auto w-full max-w-7xl overflow-hidden lg:hidden"
-          >
-            <div className="nav-mobile-menu mt-3">
-              <ul className="flex flex-col">
-                {navItems.map((item) => {
-                  const Icon = iconMap[item.icon];
-                  const active =
-                    item.href === "/"
-                      ? pathname === "/"
-                      : pathname.startsWith(item.href);
-
+          <nav aria-label="ניווט ראשי" className="hidden items-center md:flex">
+            <LayoutGroup id="nav-desktop">
+              <ul className="nav-pill-shell flex items-stretch">
+                {navSections.map((section) => {
+                  const active = section.id === current.id;
                   return (
-                    <li key={item.href}>
+                    <li key={section.id} className="flex">
                       <Link
-                        href={item.href}
-                        onClick={() => setOpen(false)}
-                        className={cn(
-                          "relative flex min-h-12 items-center gap-3 rounded-xl px-2.5 py-2 text-[15px] transition",
-                          active
-                            ? "font-bold text-[#0A0A0A]"
-                            : "font-medium text-foreground/80 hover:bg-foreground/[0.04] hover:text-foreground",
-                        )}
+                        href={section.href}
+                        aria-current={active ? "page" : undefined}
+                        className="relative flex items-center px-3.5 text-[0.9375rem] font-bold transition-colors"
                       >
                         {active && (
                           <motion.span
-                            layoutId="nav-pill-mobile"
-                            className="nav-pill-active absolute inset-0 rounded-xl"
-                            transition={navPillTransition}
-                            aria-hidden
+                            layoutId="nav-pill-desktop"
+                            className="nav-pill-active absolute inset-0"
+                            transition={pill}
                           />
                         )}
                         <span
-                          className={cn(
-                            "relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
-                            active
-                              ? "bg-black/10 text-[#0A0A0A]"
-                              : "bg-olive-soft text-olive",
-                          )}
+                          className={
+                            "relative z-10 " +
+                            (active ? "text-[#0a0a0a]" : "rounded-full text-muted hover:text-foreground dark:text-[#f5f0e8]/80 dark:hover:text-[#f5f0e8]")
+                          }
                         >
-                          <Icon className="h-4 w-4" strokeWidth={2.2} />
+                          {section.label}
                         </span>
-                        <span className="relative z-10 min-w-0 flex-1">
-                          {item.label}
-                        </span>
-                        <ChevronLeft
-                          className={cn(
-                            "relative z-10 h-4 w-4 shrink-0",
-                            active ? "text-[#0A0A0A]/55" : "text-muted",
-                          )}
-                          aria-hidden
-                        />
                       </Link>
                     </li>
                   );
                 })}
               </ul>
-            </div>
-          </motion.nav>
-        )}
-      </AnimatePresence>
-    </header>
+            </LayoutGroup>
+          </nav>
+
+          <div className="ms-auto flex items-center gap-1.5">
+            <AuthButton />
+            <ThemeToggle />
+          </div>
+        </div>
+      </header>
+
+      {/* Phones: thumb-reach section bar. Sub-pages live in each page's tabs. */}
+      <nav
+        aria-label="ניווט ראשי"
+        className="nav-chrome fixed inset-x-0 bottom-0 z-50 overflow-hidden border-t md:hidden"
+        style={{ paddingBottom: "var(--safe-bottom)" }}
+      >
+        <LayoutGroup id="nav-mobile">
+          <ul className="grid h-[var(--tabbar-h)] grid-cols-4 px-1.5">
+            {navSections.map((section) => {
+              const active = section.id === current.id;
+              return (
+                <li key={section.id} className="flex items-center justify-center">
+                  <Link
+                    href={section.href}
+                    aria-current={active ? "page" : undefined}
+                    className="flex h-full w-full items-center justify-center text-[0.9375rem] font-bold"
+                  >
+                    <span className="relative inline-flex items-center px-3 py-1">
+                      {active && (
+                        <motion.span
+                          layoutId="nav-pill-mobile"
+                          className="nav-pill-active absolute inset-0"
+                          transition={pill}
+                        />
+                      )}
+                      <span
+                        className={
+                          "relative z-10 " +
+                          (active
+                            ? "text-[#0a0a0a]"
+                            : "text-muted dark:text-[#f5f0e8]/80")
+                        }
+                      >
+                        {section.label}
+                      </span>
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </LayoutGroup>
+      </nav>
+    </>
   );
 }

@@ -39,10 +39,11 @@ export function TimeKeypad({ value, onConfirm, onCancel }: TimeKeypadProps) {
   const reduceMotion = useReducedMotion();
   const tap = softTapProps(reduceMotion);
   const [digits, setDigits] = useState(() => parseToDigits(value));
-
-  useEffect(() => {
+  const [seed, setSeed] = useState(value);
+  if (value !== seed) {
+    setSeed(value);
     setDigits(parseToDigits(value));
-  }, [value]);
+  }
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -122,12 +123,12 @@ export function TimeKeypad({ value, onConfirm, onCancel }: TimeKeypadProps) {
   return (
     <div className="space-y-3">
       <div
-        className="rounded-2xl border border-border bg-background/50 px-4 py-4 text-center"
+        className="border-b-2 border-rule-strong px-4 py-3 text-center"
         aria-live="polite"
       >
         <div
           dir="ltr"
-          className="font-[family-name:var(--font-quicksand)] text-4xl font-bold tabular-nums tracking-[0.12em]"
+          className="t-num text-4xl tracking-[0.12em]"
         >
           {display.split("").map((ch, i) => {
             const digitIndex = i < 2 ? i : i - 1;
@@ -139,7 +140,7 @@ export function TimeKeypad({ value, onConfirm, onCancel }: TimeKeypadProps) {
                 className={cn(
                   ch === "·" && "text-muted/45",
                   active &&
-                    "rounded-md bg-yellow/50 px-0.5 text-foreground dark:bg-yellow/25",
+                    "border-b-2 border-vermilion text-foreground",
                 )}
               >
                 {ch}
@@ -179,12 +180,7 @@ export function TimeKeypad({ value, onConfirm, onCancel }: TimeKeypadProps) {
         type="button"
         onClick={confirm}
         disabled={!canConfirm}
-        className={cn(
-          "flex h-12 w-full items-center justify-center rounded-2xl text-sm font-bold transition",
-          canConfirm
-            ? "bg-nav-bg text-nav-fg shadow-[0_8px_20px_var(--glow)]"
-            : "cursor-not-allowed border border-border bg-surface text-muted opacity-60",
-        )}
+        className="btn btn-primary btn-block h-12"
         {...tap}
       >
         אישור
@@ -212,10 +208,10 @@ function KeyBtn({
       onClick={onClick}
       {...softTapProps(reduceMotion)}
       className={cn(
-        "flex h-12 items-center justify-center gap-1.5 rounded-2xl border text-lg font-semibold tabular-nums transition sm:h-14",
+        "flex h-12 items-center justify-center gap-1.5 rounded-[2px] border border-rule text-lg font-semibold tabular-nums transition-colors sm:h-14",
         muted
-          ? "border-border bg-surface text-muted"
-          : "border-border/80 bg-[color-mix(in_srgb,var(--yellow)_35%,white)] text-foreground hover:bg-[color-mix(in_srgb,var(--yellow)_55%,white)] dark:bg-[color-mix(in_srgb,var(--yellow)_18%,transparent)] dark:hover:bg-[color-mix(in_srgb,var(--yellow)_28%,transparent)]",
+          ? "bg-paper-sunk text-ink-soft hover:border-ink-soft"
+          : "bg-paper text-ink hover:border-ink",
       )}
       aria-label={label}
     >

@@ -18,20 +18,22 @@ import "leaflet/dist/leaflet.css";
 
 const TOKYO: [number, number] = [35.68, 139.76];
 
-function markerIcon(color: string, kind: TripPin["kind"]) {
-  const label = kind === "hotel" ? "🏨" : "📍";
+/** Hotels: ink squares. Activities: vermilion dots. Both ringed in paper for legibility on tiles. */
+function markerIcon(_color: string, kind: TripPin["kind"]) {
+  const hotel = kind === "hotel";
+  const size = hotel ? 18 : 16;
   return L.divIcon({
     className: "konnichi-pin",
     html: `<div style="
-      display:flex;align-items:center;justify-content:center;
-      width:34px;height:34px;border-radius:999px;
-      background:${color};color:white;font-size:14px;
-      border:2px solid rgba(255,255,255,.9);
-      box-shadow:0 0 0 3px ${color}55, 0 10px 24px rgba(0,0,0,.35);
-    ">${label}</div>`,
-    iconSize: [34, 34],
-    iconAnchor: [17, 17],
-    popupAnchor: [0, -16],
+      width:${size}px;height:${size}px;
+      border-radius:${hotel ? "2px" : "999px"};
+      background:${hotel ? "#1f1d1a" : "#b8432f"};
+      border:3px solid #fbf8f2;
+      box-shadow:0 1px 4px rgba(31,29,26,.45);
+    "></div>`,
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+    popupAnchor: [0, -size / 2],
   });
 }
 
@@ -204,7 +206,7 @@ interface MultiPinMapProps {
   pins: TripPin[];
   activePinId: string | null;
   onSelectPin: (pin: TripPin) => void;
-  /** When set (and no active pin), fly the map to this place — e.g. district cards. */
+  /** When set (and no active pin), fly the map to this place e.g. district cards. */
   focus?: MapFocus | null;
 }
 

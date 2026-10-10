@@ -1,9 +1,26 @@
 export type EditorCity =
   | "Tokyo"
-  | "Kyoto"
-  | "Osaka"
+  | "Yokohama"
+  | "Kamakura"
   | "Hakone"
+  | "Kawaguchiko"
+  | "Nikko"
+  | "Sendai"
+  | "Nagoya"
+  | "Takayama"
+  | "Kanazawa"
+  | "Matsumoto"
+  | "Kyoto"
   | "Nara"
+  | "Osaka"
+  | "Kobe"
+  | "Himeji"
+  | "Okayama"
+  | "Hiroshima"
+  | "Fukuoka"
+  | "Nagasaki"
+  | "Sapporo"
+  | "Naha"
   | "Other";
 
 export type HotelStatus = "booked" | "considering" | "not_booked";
@@ -59,6 +76,8 @@ export interface EditorDay {
   id: string;
   date: string;
   city: EditorCity;
+  /** Free-text city when `city` is Other. */
+  cityCustom?: string;
   hotel: HotelInfo;
   activities: ActivityItem[];
   foodEstimateJpy: number;
@@ -66,12 +85,39 @@ export interface EditorDay {
 
 export const CITY_LABELS: Record<EditorCity, string> = {
   Tokyo: "טוקיו",
-  Kyoto: "קיוטו",
-  Osaka: "אוסקה",
+  Yokohama: "יוקוהמה",
+  Kamakura: "קמקורה",
   Hakone: "הקונה",
+  Kawaguchiko: "קאוואגוצ'יקו",
+  Nikko: "ניקו",
+  Sendai: "סנדאי",
+  Nagoya: "נגויה",
+  Takayama: "טקאיאמה",
+  Kanazawa: "קנאזאווה",
+  Matsumoto: "מצסומוטו",
+  Kyoto: "קיוטו",
   Nara: "נארה",
-  Other: "אחר",
+  Osaka: "אוסקה",
+  Kobe: "קובה",
+  Himeji: "הימג'י",
+  Okayama: "אוקיאמה",
+  Hiroshima: "הירושימה",
+  Fukuoka: "פוקואוקה",
+  Nagasaki: "נגסאקי",
+  Sapporo: "סאפורו",
+  Naha: "נאהה (אוקינאווה)",
+  Other: "עיר אחרת",
 };
+
+export const CITY_OPTIONS = Object.keys(CITY_LABELS) as EditorCity[];
+
+export function cityLabel(day: Pick<EditorDay, "city" | "cityCustom">): string {
+  if (day.city === "Other") {
+    const custom = day.cityCustom?.trim();
+    return custom || CITY_LABELS.Other;
+  }
+  return CITY_LABELS[day.city] ?? day.city;
+}
 
 export const HOTEL_STATUS_LABELS: Record<HotelStatus, string> = {
   booked: "שמור",
@@ -79,18 +125,15 @@ export const HOTEL_STATUS_LABELS: Record<HotelStatus, string> = {
   not_booked: "לא הוזמן",
 };
 
-export const CATEGORY_META: Record<
-  ActivityCategory,
-  { label: string; emoji: string }
-> = {
-  culture: { label: "תרבות", emoji: "🏛️" },
-  amusement: { label: "פארק שעשועים", emoji: "🎢" },
-  temple: { label: "מקדש", emoji: "⛩️" },
-  food: { label: "אוכל", emoji: "🍱" },
-  nature: { label: "טבע", emoji: "🌳" },
-  shopping: { label: "קניות", emoji: "🛍️" },
-  transit: { label: "מעבר", emoji: "🚅" },
-  other: { label: "אחר", emoji: "✨" },
+export const CATEGORY_META: Record<ActivityCategory, { label: string }> = {
+  culture: { label: "תרבות ומוזיאונים" },
+  amusement: { label: "פארק שעשועים" },
+  temple: { label: "מקדש" },
+  food: { label: "אוכל" },
+  nature: { label: "טבע" },
+  shopping: { label: "קניות" },
+  transit: { label: "מעבר ונסיעה" },
+  other: { label: "אחר" },
 };
 
 export const TICKET_STATUS_LABELS: Record<TicketStatus, string> = {

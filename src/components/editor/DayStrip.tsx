@@ -1,75 +1,78 @@
 "use client";
 
-import { CalendarDays, Plus } from "lucide-react";
-import { motion, useReducedMotion } from "framer-motion";
+import { useEffect, useRef } from "react";
+import { Plus } from "lucide-react";
+import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from "framer-motion";
 import { useItineraryEditor } from "@/store/itineraryEditor";
-import { tabPillMotion } from "@/lib/motion";
+import { formatDayHe } from "@/lib/tripSummary";
 import { cn } from "@/lib/utils";
+import { navPillTransition } from "@/lib/motion";
 
 export function DayStrip() {
   const days = useItineraryEditor((s) => s.days);
   const selectedDayId = useItineraryEditor((s) => s.selectedDayId);
   const selectDay = useItineraryEditor((s) => s.selectDay);
   const addDay = useItineraryEditor((s) => s.addDay);
-  const reduceMotion = useReducedMotion();
-  const pillTransition = tabPillMotion(reduceMotion);
+  const activeRef = useRef<HTMLButtonElement>(null);
+  const reduce = useReducedMotion();
+
+  useEffect(() => {
+    activeRef.current?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }, [selectedDayId]);
 
   return (
-    <div className="flex items-center gap-2 overflow-x-auto overscroll-x-contain px-3 py-3.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      {days.map((day, index) => {
-        const active = day.id === selectedDayId;
-        return (
-          <button
-            key={day.id}
-            type="button"
-            onClick={() => selectDay(day.id)}
-            className={cn(
-              "relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-semibold transition-colors",
-              active
-                ? "text-background"
-                : "border border-border bg-surface text-muted hover:border-accent/40 hover:text-foreground",
-            )}
-            aria-label={`יום ${index + 1}`}
-            aria-current={active ? "true" : undefined}
-          >
-            {active && (
-              <motion.span
-                layoutId="editor-day-pill"
-                className="absolute inset-0 rounded-full bg-foreground shadow-[0_0_0_3px_var(--accent-soft),0_4px_14px_color-mix(in_srgb,var(--foreground)_25%,transparent)]"
-                transition={pillTransition}
-                aria-hidden
-              />
-            )}
-            <span className="relative z-10">{index + 1}</span>
-          </button>
-        );
-      })}
+    <div className="flex items-center gap-1 overflow-x-auto overscroll-x-contain py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <LayoutGroup id="day-strip">
+      <div role="tablist" aria-label="ימי הטיול" className="flex gap-1">
+        <AnimatePresence initial={false}>
+        {days.map((day, index) => {
+          const active = day.id === selectedDayId;
+          return (
+            <motion.button
+              key={day.id}
+              ref={active ? activeRef : undefined}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              onClick={() => selectDay(day.id)}
+              aria-label={`יום ${index + 1}, ${formatDayHe(day.date, { weekday: "long", day: "numeric", month: "long" })}`}
+              initial={reduce ? false : { opacity: 0, scale: 0.85 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.85 }}
+              whileTap={reduce ? undefined : { scale: 0.94 }}
+              className={cn(
+                "relative flex h-14 w-12 shrink-0 flex-col items-center justify-center overflow-hidden rounded-xl border",
+                active
+                  ? "border-transparent text-on-ink"
+                  : "border-rule text-ink-soft hover:border-ink hover:text-ink",
+              )}
+            >
+              {active && (
+                <motion.span
+                  layoutId="day-strip-active"
+                  className="absolute inset-0 bg-ink"
+                  transition={reduce ? { duration: 0 } : navPillTransition}
+                />
+              )}
+              <span className="t-num relative z-10 text-lg leading-none">{index + 1}</span>
+              <span className={cn("relative z-10 mt-1 text-[0.68rem] leading-none", active ? "opacity-80" : "text-muted")}>
+                {formatDayHe(day.date, { day: "numeric", month: "numeric" })}
+              </span>
+            </motion.button>
+          );
+        })}
+        </AnimatePresence>
+      </div>
+      </LayoutGroup>
       <button
         type="button"
         onClick={() => addDay()}
-        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-dashed border-border text-muted hover:border-accent/40 hover:text-accent"
-        aria-label="הוסף יום"
+        aria-label="הוספת יום"
+        className="btn btn-secondary ms-1 h-14 shrink-0 border-dashed px-3"
       >
-        <Plus className="h-4 w-4" />
+        <Plus aria-hidden />
+        יום
       </button>
-    </div>
-  );
-}
-
-export function ItineraryPanelHeader() {
-  const days = useItineraryEditor((s) => s.days);
-
-  return (
-    <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
-      <div className="flex items-center gap-2">
-        <CalendarDays className="h-5 w-5 text-accent" />
-        <h1 className="font-[family-name:var(--font-readex)] text-lg font-bold">
-          מסלול הטיול
-        </h1>
-      </div>
-      <span className="rounded-full bg-accent-soft px-2.5 py-1 text-xs font-medium text-accent">
-        {days.length} {days.length === 1 ? "יום" : "ימים"}
-      </span>
     </div>
   );
 }

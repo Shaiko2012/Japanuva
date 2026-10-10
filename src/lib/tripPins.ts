@@ -18,7 +18,7 @@ export interface TripPin {
   query: string;
 }
 
-/** Tokyo Station — safe fallback when no valid coords exist. */
+/** Tokyo Station safe fallback when no valid coords exist. */
 export const DEFAULT_MAP_CENTER = { lat: 35.68, lng: 139.76 } as const;
 
 export function isValidLatLng(
@@ -93,7 +93,7 @@ export function collectTripPins(days: EditorDay[]): TripPin[] {
         id: `act-${activity.id}`,
         kind: "attraction",
         title: activity.title,
-        subtitle: `${meta.emoji} ${meta.label} · ${day.date}`,
+        subtitle: `${meta.label} · ${day.date}`,
         date: day.date,
         city: day.city,
         lat: coords.lat,

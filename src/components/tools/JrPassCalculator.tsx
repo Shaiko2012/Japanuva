@@ -1,272 +1,256 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Plus, X } from "lucide-react";
 import {
-  DndContext,
-  closestCenter,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  arrayMove,
-  useSortable,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { motion, useReducedMotion } from "framer-motion";
-import { ArrowDown, GripVertical, Plus, Trash2, TrainFront } from "lucide-react";
-import {
-  defaultJrRoute,
+  JR_CITY_LABELS,
   fareForLeg,
   jrCities,
+  jrPassFacts,
   jrPassPrices,
+  officialLinks,
   type JrCity,
   type JrLeg,
+  type JrPassDuration,
 } from "@/data/tools";
-import { tripMeta } from "@/data/trip";
 import { useFamilyStore } from "@/store/family";
-import { formatNumber } from "@/lib/utils";
-import {
-  softEntranceProps,
-  softInteractiveProps,
-  softStagger,
-  softTapProps,
-} from "@/lib/motion";
-import { GlassCard } from "@/components/ui/GlassCard";
+import { useTripDays } from "@/hooks/useTripDays";
+import { useHydrated } from "@/hooks/useHydrated";
+import { formatDayHe } from "@/lib/tripSummary";
+import { formatNumber, cn } from "@/lib/utils";
 import { KeypadField } from "@/components/ui/KeypadField";
-import { ProgressBar } from "@/components/ui/ProgressBar";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import { PageHeader, SectionHead } from "@/components/ui/PageHeader";
+import { softEase } from "@/lib/motion";
+import type { EditorCity, EditorDay } from "@/types/editor";
 
-function SortableLeg({
-  leg,
-  index,
+type Leg = JrLeg & { date?: string };
+
+const DURATIONS: JrPassDuration[] = [7, 14, 21];
+
+const defaultLegs: Leg[] = [
+  { id: "leg-1", from: "Tokyo", to: "Kyoto" },
+  { id: "leg-2", from: "Kyoto", to: "Osaka" },
+  { id: "leg-3", from: "Osaka", to: "Tokyo" },
+];
+
+const CITY_TO_JR: Partial<Record<EditorCity, JrCity>> = {
+  Tokyo: "Tokyo",
+  Nagoya: "Nagoya",
+  Kyoto: "Kyoto",
+  Osaka: "Osaka",
+  Hiroshima: "Hiroshima",
+};
+
+function legsFromItinerary(days: EditorDay[]): Leg[] {
+  const sorted = [...days].sort((a, b) => a.date.localeCompare(b.date));
+  const legs: Leg[] = [];
+  let prev: JrCity | null = null;
+  for (const day of sorted) {
+    const city = CITY_TO_JR[day.city];
+    if (!city) continue;
+    if (prev && city !== prev) {
+      legs.push({ id: `it-${day.id}`, from: prev, to: city, date: day.date });
+    }
+    prev = city;
+  }
+  return legs;
+}
+
+function daySpan(legs: Leg[]): number | null {
+  const dates = legs.map((l) => l.date).filter(Boolean) as string[];
+  if (dates.length < 2 || dates.length !== legs.length) return null;
+  const sorted = [...dates].sort();
+  const first = new Date(`${sorted[0]}T00:00:00`).getTime();
+  const last = new Date(`${sorted[sorted.length - 1]}T00:00:00`).getTime();
+  return Math.round((last - first) / 86_400_000) + 1;
+}
+
+function CitySelect({
+  id,
+  label,
+  value,
   onChange,
-  onRemove,
-  canRemove,
 }: {
-  leg: JrLeg;
-  index: number;
-  onChange: (id: string, patch: Partial<JrLeg>) => void;
-  onRemove: (id: string) => void;
-  canRemove: boolean;
+  id: string;
+  label: string;
+  value: JrCity;
+  onChange: (city: JrCity) => void;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: leg.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={`rounded-2xl border border-border bg-background/40 p-3 ${
-        isDragging ? "glow-accent z-10 opacity-95" : ""
-      }`}
+    <select
+      id={id}
+      aria-label={label}
+      className="field mt-0 py-2"
+      value={value}
+      onChange={(e) => onChange(e.target.value as JrCity)}
     >
-      <div className="mb-2 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 text-xs text-muted">
-          <button
-            type="button"
-            className="rounded-lg border border-border bg-surface p-1.5 touch-none"
-            aria-label="גרור לסידור"
-            {...attributes}
-            {...listeners}
-          >
-            <GripVertical className="h-3.5 w-3.5" />
-          </button>
-          קטע {index + 1}
-        </div>
-        <button
-          type="button"
-          disabled={!canRemove}
-          onClick={() => onRemove(leg.id)}
-          className="rounded-lg border border-border p-1.5 text-muted disabled:opacity-30 hover:border-accent/40 hover:text-accent"
-          aria-label="מחק קטע"
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-        </button>
-      </div>
-
-      <div className="grid gap-2 sm:grid-cols-[1fr_auto_1fr]">
-        <label className="text-xs text-muted">
-          מ־
-          <select
-            className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground"
-            value={leg.from}
-            onChange={(e) =>
-              onChange(leg.id, { from: e.target.value as JrCity })
-            }
-          >
-            {jrCities.map((city) => (
-              <option key={city} value={city}>
-                {city}
-              </option>
-            ))}
-          </select>
-        </label>
-        <div className="flex items-end justify-center pb-2">
-          <ArrowDown className="h-4 w-4 rotate-[-90deg] text-accent sm:rotate-0" />
-        </div>
-        <label className="text-xs text-muted">
-          אל
-          <select
-            className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground"
-            value={leg.to}
-            onChange={(e) => onChange(leg.id, { to: e.target.value as JrCity })}
-          >
-            {jrCities.map((city) => (
-              <option key={city} value={city}>
-                {city}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <div className="mt-2 text-left text-sm font-semibold tabular-nums text-accent">
-        ¥{formatNumber(fareForLeg(leg.from, leg.to))}
-      </div>
-    </div>
+      {jrCities.map((city) => (
+        <option key={city} value={city}>
+          {JR_CITY_LABELS[city]}
+        </option>
+      ))}
+    </select>
   );
 }
 
 export function JrPassCalculator() {
-  const familyTotal = useFamilyStore(
-    (s) => s.family.adults + s.family.kids,
-  );
-  const [legs, setLegs] = useState<JrLeg[]>(defaultJrRoute);
-  const [travelers, setTravelers] = useState(familyTotal);
-  const reduceMotion = useReducedMotion();
-  const cardMotion = softInteractiveProps(reduceMotion);
-  const tapMotion = softTapProps(reduceMotion);
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-  );
+  const hydrated = useHydrated();
+  const family = useFamilyStore((s) => s.family);
+  const { days, isDemo } = useTripDays();
+  const [legs, setLegs] = useState<Leg[]>(defaultLegs);
+  const [adultsOverride, setAdultsOverride] = useState<number | null>(null);
+  const [kidsOverride, setKidsOverride] = useState<number | null>(null);
+  const [extraPerAdult, setExtraPerAdult] = useState(0);
+  const [importNote, setImportNote] = useState<string | null>(null);
 
-  const perPersonTickets = useMemo(
-    () => legs.reduce((sum, leg) => sum + fareForLeg(leg.from, leg.to), 0),
-    [legs],
-  );
-  const ticketTotal = perPersonTickets * travelers;
+  const adults = adultsOverride ?? (hydrated ? family.adults : 2);
+  const kids = kidsOverride ?? (hydrated ? family.kids : 0);
 
-  const comparisons = useMemo(() => {
-    return ([7, 14, 21] as const).map((days) => {
-      const passTotal = jrPassPrices[days] * travelers;
-      const savings = ticketTotal - passTotal;
-      return { days, passTotal, savings, worthIt: savings > 0 };
-    });
-  }, [ticketTotal, travelers]);
+  const fares = legs.map((leg) => fareForLeg(leg.from, leg.to));
+  const unknownCount = fares.filter((f) => f === null).length;
+  const perAdult = fares.reduce<number>((sum, f) => sum + (f ?? 0), 0) + extraPerAdult;
+  const ticketsTotal = Math.round(perAdult * adults + (perAdult / 2) * kids);
+  const span = daySpan(legs);
 
-  const best = comparisons.reduce((a, b) =>
-    b.savings > a.savings ? b : a,
-  );
-
-  const maxCompare = Math.max(
-    ticketTotal,
-    ...comparisons.map((c) => c.passTotal),
-    1,
+  const rows = useMemo(
+    () =>
+      DURATIONS.map((d) => {
+        const total = jrPassPrices[d].adult * adults + jrPassPrices[d].child * kids;
+        return {
+          days: d,
+          total,
+          diff: ticketsTotal - total,
+          covers: span == null || span <= d,
+        };
+      }),
+    [adults, kids, ticketsTotal, span],
   );
 
-  function onDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-    setLegs((items) => {
-      const oldIndex = items.findIndex((i) => i.id === active.id);
-      const newIndex = items.findIndex((i) => i.id === over.id);
-      return arrayMove(items, oldIndex, newIndex);
-    });
+  const covering = rows.filter((r) => r.covers);
+  const cheapestPass = covering.reduce<(typeof rows)[number] | null>(
+    (best, r) => (best == null || r.total < best.total ? r : best),
+    null,
+  );
+  const passWins = cheapestPass != null && cheapestPass.diff > 0;
+
+  function updateLeg(id: string, patch: Partial<Leg>) {
+    setLegs((prev) => prev.map((l) => (l.id === id ? { ...l, ...patch, date: undefined } : l)));
+  }
+
+  function importFromItinerary() {
+    const next = legsFromItinerary(days);
+    if (next.length === 0) {
+      setImportNote("במסלול אין עדיין מעבר בין טוקיו, קיוטו ואוסקה. אפשר להזין נסיעות ידנית.");
+      return;
+    }
+    setLegs(next);
+    setImportNote(
+      `נוספו ${next.length} נסיעות מהמסלול${isDemo ? " לדוגמה" : ""}. הנסיעה מהשדה ואליו לא נכללת.`,
+    );
+  }
+
+  let verdict: string;
+  if (perAdult === 0) {
+    verdict = "הוסיפו את הנסיעות הארוכות של הטיול כדי לקבל חישוב.";
+  } else if (cheapestPass == null) {
+    verdict = `הנסיעות פרוסות על ${span} ימים, יותר ממה ש־JR Pass מכסה. כנראה שכרטיסים רגילים מתאימים יותר.`;
+  } else if (passWins) {
+    verdict = `JR Pass ל־${cheapestPass.days} ימים יחסוך לכם כ־¥${formatNumber(cheapestPass.diff)}.`;
+  } else {
+    verdict = `כרטיסים רגילים יעלו לכם כ־¥${formatNumber(-cheapestPass.diff)} פחות מ־JR Pass.`;
   }
 
   return (
-    <div className="space-y-4">
-      <GlassCard strong>
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <span className="glow-accent flex h-12 w-12 items-center justify-center rounded-2xl bg-nav-bg text-nav-fg">
-              <TrainFront className="h-5 w-5" />
-            </span>
-            <div>
-              <h1 className="fluid-title font-[family-name:var(--font-readex)] font-bold">
-                מחשבון JR Pass
-              </h1>
-              <p className="mt-1 text-sm text-muted">
-                גררו קטעים, עדכנו ערים, והשוו מול כרטיסים נקודה־לנקודה בזמן אמת.
-              </p>
-            </div>
-          </div>
-          <StatusBadge
-            tone={best.worthIt ? "booked" : "pending"}
-            label={
-              best.worthIt
-                ? `כדאי · ${best.days} ימים`
-                : "כרטיסים רגילים זולים יותר"
-            }
-            pulse
-          />
-        </div>
-      </GlassCard>
+    <div>
+      <PageHeader
+        kicker="תחבורה"
+        title="האם JR Pass משתלם?"
+        lede="משווים את מחיר הכרטיס הארצי לסכום הכרטיסים הרגילים לנסיעות שאתם מתכננים, לכל המשפחה."
+      />
 
-      <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
-        <GlassCard>
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-sm font-semibold">בונה מסלול</h2>
-            <div className="flex items-center gap-2 text-xs text-muted">
-              <span>נוסעים</span>
-              <KeypadField
-                mode="number"
-                value={travelers}
-                min={1}
-                max={10}
-                title="נוסעים"
-                aria-label="נוסעים"
-                fieldClassName="mt-0 w-16 py-1.5"
-                onChange={(n) =>
-                  setTravelers(Math.min(10, Math.max(1, n || 1)))
-                }
-              />
-            </div>
-          </div>
-
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={onDragEnd}
+      <section aria-live="polite" className="border-y-2 border-rule-strong py-6 sm:py-8">
+        <p className="t-label">התשובה לפי הנתונים שהזנתם</p>
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={verdict}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.28, ease: softEase }}
+            className="t-h2 mt-2 max-w-3xl text-balance"
           >
-            <SortableContext
-              items={legs.map((l) => l.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              <div className="space-y-3">
-                {legs.map((leg, index) => (
-                  <SortableLeg
-                    key={leg.id}
-                    leg={leg}
-                    index={index}
-                    canRemove={legs.length > 1}
-                    onChange={(id, patch) =>
-                      setLegs((prev) =>
-                        prev.map((item) =>
-                          item.id === id ? { ...item, ...patch } : item,
-                        ),
-                      )
-                    }
-                    onRemove={(id) =>
-                      setLegs((prev) => prev.filter((item) => item.id !== id))
-                    }
-                  />
-                ))}
-              </div>
-            </SortableContext>
-          </DndContext>
+            {verdict}
+          </motion.p>
+        </AnimatePresence>
+        <p className="t-meta mt-3">
+          {adults} מבוגרים{kids > 0 ? ` ו־${kids} ילדים בגילאי 6-11` : ""} · אומדן, לא הצעת מחיר
+        </p>
+      </section>
 
-          <motion.button
+      <div className="mt-10 grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)]">
+        <section aria-labelledby="legs-title">
+          <SectionHead
+            id="legs-title"
+            title="הנסיעות הארוכות"
+            meta={span ? `פרוסות על ${span} ימים` : undefined}
+          />
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button type="button" onClick={importFromItinerary} className="btn btn-secondary btn-sm">
+              ייבוא מהמסלול
+            </button>
+          </div>
+          {importNote && <p className="t-meta mt-2">{importNote}</p>}
+
+          <ol className="ruled mt-4 border-b border-rule">
+            {legs.map((leg, index) => {
+              const fare = fares[index];
+              return (
+                <li
+                  key={leg.id}
+                  className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] items-center gap-2 py-3 sm:grid-cols-[1.5rem_minmax(0,1fr)_minmax(0,1fr)_5.5rem_auto]"
+                >
+                  <span className="t-num hidden text-muted sm:block">{index + 1}</span>
+                  <CitySelect
+                    id={`from-${leg.id}`}
+                    label={`נסיעה ${index + 1}, מוצא`}
+                    value={leg.from}
+                    onChange={(from) => updateLeg(leg.id, { from })}
+                  />
+                  <CitySelect
+                    id={`to-${leg.id}`}
+                    label={`נסיעה ${index + 1}, יעד`}
+                    value={leg.to}
+                    onChange={(to) => updateLeg(leg.id, { to })}
+                  />
+                  <span className="col-span-2 text-sm sm:col-span-1 sm:text-end">
+                    {fare == null ? (
+                      <span className="text-muted">אין אומדן</span>
+                    ) : (
+                      <span className="tabular">¥{formatNumber(fare)}</span>
+                    )}
+                    {leg.date && (
+                      <span className="t-meta block">
+                        {formatDayHe(leg.date, { day: "numeric", month: "short" })}
+                      </span>
+                    )}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setLegs((prev) => prev.filter((l) => l.id !== leg.id))}
+                    disabled={legs.length <= 1}
+                    aria-label={`הסרת נסיעה ${index + 1}`}
+                    className="btn btn-tertiary btn-icon justify-self-end"
+                  >
+                    <X aria-hidden />
+                  </button>
+                </li>
+              );
+            })}
+          </ol>
+
+          <button
             type="button"
-            {...tapMotion}
             onClick={() =>
               setLegs((prev) => [
                 ...prev,
@@ -277,77 +261,118 @@ export function JrPassCalculator() {
                 },
               ])
             }
-            className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-accent/40 bg-accent-soft px-4 py-3 text-sm font-medium text-accent transition hover:border-accent"
+            className="btn btn-tertiary mt-2"
           >
-            <Plus className="h-4 w-4" />
-            הוסיפו קטע למסלול
-          </motion.button>
-        </GlassCard>
+            <Plus aria-hidden />
+            הוספת נסיעה
+          </button>
 
-        <GlassCard>
-          <h2 className="mb-4 text-sm font-semibold">השוואת עלויות</h2>
+          {unknownCount > 0 && (
+            <p className="note mt-4 text-sm">
+              ל־{unknownCount} מהנסיעות אין אומדן מחיר, והן לא נכללות בחישוב.
+            </p>
+          )}
 
-          <div className="mb-5 rounded-2xl border border-border bg-background/35 p-4">
-            <div className="text-xs text-muted">סה״כ כרטיסים נקודה־לנקודה</div>
-            <div className="mt-1 font-[family-name:var(--font-readex)] text-3xl font-bold tabular-nums text-accent">
-              ¥{formatNumber(ticketTotal)}
-            </div>
-            <div className="mt-1 text-xs text-muted">
-              ¥{formatNumber(perPersonTickets)} לאדם · {travelers} נוסעים · שער דמו{" "}
-              {tripMeta.exchangeRateIlsToJpy} ¥/₪
-            </div>
-            <div className="mt-3">
-              <ProgressBar
-                value={ticketTotal}
-                max={maxCompare}
-                label="כרטיסים רגילים"
+          <details className="mt-6 border-t border-rule pt-4">
+            <summary className="btn btn-tertiary btn-sm cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+              נוסעים ונסיעות נוספות
+            </summary>
+            <div className="mt-4 grid gap-4 sm:grid-cols-3">
+              <KeypadField
+                mode="number"
+                label="מבוגרים (12+)"
+                value={adults}
+                min={1}
+                max={10}
+                onChange={(n) => setAdultsOverride(Math.min(10, Math.max(1, n || 1)))}
+              />
+              <KeypadField
+                mode="number"
+                label="ילדים 6-11"
+                value={kids}
+                min={0}
+                max={10}
+                onChange={(n) => setKidsOverride(Math.min(10, Math.max(0, n || 0)))}
+              />
+              <KeypadField
+                mode="number"
+                label="נסיעות JR נוספות (¥ למבוגר)"
+                value={extraPerAdult}
+                min={0}
+                onChange={(n) => setExtraPerAdult(Math.max(0, n || 0))}
               />
             </div>
-          </div>
+            <p className="field-hint">
+              ילדים מתחת לגיל 6 לא נספרים. נסיעות נוספות הן למשל רכבות JR בתוך העיר או טיול יום
+              לנארה.
+            </p>
+          </details>
+        </section>
 
-          <div className="space-y-3">
-            {comparisons.map((row, index) => (
-              <motion.div
-                key={row.days}
-                {...softEntranceProps(reduceMotion, {
-                  delay: softStagger(index, 0.06),
-                  y: 10,
-                })}
-                {...cardMotion}
-                className={`rounded-2xl border p-4 ${
-                  row.days === best.days && row.worthIt
-                    ? "border-accent/45 bg-accent-soft"
-                    : "border-border bg-background/30"
-                }`}
-              >
-                <div className="mb-2 flex items-center justify-between gap-2">
-                  <span className="font-semibold">JR Pass {row.days} ימים</span>
-                  <span className="text-sm tabular-nums">
-                    ¥{formatNumber(row.passTotal)}
-                  </span>
-                </div>
-                <ProgressBar
-                  value={row.passTotal}
-                  max={maxCompare}
-                  barClassName={
-                    row.worthIt
-                      ? undefined
-                      : "from-info to-sky shadow-[0_0_16px_color-mix(in_srgb,var(--sky)_45%,transparent)]"
-                  }
-                />
-                <div
-                  className={`mt-2 text-xs ${
-                    row.savings > 0 ? "text-success" : "text-warning"
-                  }`}
-                >
-                  {row.savings > 0
-                    ? `חיסכון משוער ¥${formatNumber(row.savings)}`
-                    : `יקר יותר ב־¥${formatNumber(Math.abs(row.savings))}`}
-                </div>
-              </motion.div>
+        <section aria-labelledby="compare-title">
+          <SectionHead id="compare-title" title="השוואה לכל המשפחה" />
+          <table className="table mt-3">
+            <caption className="sr-only">עלות כרטיסים רגילים מול JR Pass</caption>
+            <thead>
+              <tr>
+                <th scope="col">אפשרות</th>
+                <th scope="col" className="text-end">
+                  סה״כ
+                </th>
+                <th scope="col" className="text-end">
+                  הפרש
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row" className="font-semibold">
+                  כרטיסים רגילים
+                </th>
+                <td className="tabular text-end">¥{formatNumber(ticketsTotal)}</td>
+                <td className="text-end text-muted"></td>
+              </tr>
+              {rows.map((row) => {
+                const best = passWins && cheapestPass?.days === row.days;
+                return (
+                  <tr key={row.days} className={cn(!row.covers && "text-muted")}>
+                    <th scope="row" className="font-normal">
+                      JR Pass {row.days} ימים
+                      {best && <span className="status status-booked ms-2">משתלם</span>}
+                      {!row.covers && <span className="t-meta block">קצר מדי לנסיעות שלכם</span>}
+                    </th>
+                    <td className="tabular text-end">¥{formatNumber(row.total)}</td>
+                    <td className="tabular text-end">
+                      {row.diff > 0 ? "חיסכון " : "תוספת "}¥{formatNumber(Math.abs(row.diff))}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+
+          <h3 className="t-label mt-8">מה חשוב לדעת</h3>
+          <ul className="ruled mt-2 text-sm leading-6 text-ink-soft">
+            {jrPassFacts.map((fact) => (
+              <li key={fact} className="py-2">
+                {fact}
+              </li>
             ))}
-          </div>
-        </GlassCard>
+          </ul>
+          <p className="t-meta mt-4">
+            מחירי הכרטיס: האתר הרשמי, לרכישה מקוונת, נכון לאפריל 2026. מחירי הנסיעות הם אומדן
+            מעוגל לרכבת Hikari במושב שמור.
+          </p>
+          <a
+            href={officialLinks.jrPass}
+            target="_blank"
+            rel="noreferrer"
+            className="link-nav mt-4"
+          >
+            מחירים עדכניים באתר JR Pass
+            <span className="sr-only"> (חלון חדש)</span>
+          </a>
+        </section>
       </div>
     </div>
   );

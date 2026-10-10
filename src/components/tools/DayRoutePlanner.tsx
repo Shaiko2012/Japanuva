@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import {
   DndContext,
+  KeyboardSensor,
   PointerSensor,
   closestCenter,
   useSensor,
@@ -12,18 +13,12 @@ import {
 import {
   SortableContext,
   arrayMove,
+  sortableKeyboardCoordinates,
   useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import {
-  ExternalLink,
-  GripVertical,
-  Plus,
-  Route,
-  Trash2,
-  TrainFront,
-} from "lucide-react";
+import { GripVertical, Plus } from "lucide-react";
 import {
   createEmptyDayRouteStops,
   createStop,
@@ -35,28 +30,31 @@ import {
 } from "@/data/dayRoute";
 import { geocodePlace } from "@/lib/geocode";
 import { buildMapsDayRouteUrl, isBareCoordQuery, parseGoogleMapsInput } from "@/lib/mapsParse";
-import {
-  fetchTransitLeg,
-  type TransitLegEstimate,
-} from "@/lib/transitRoute";
+import { fetchTransitLeg, type TransitLegEstimate } from "@/lib/transitRoute";
 import { usePersonalTrip } from "@/hooks/usePersonalTrip";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { PlaceSearchPicker } from "@/components/maps/PlaceSearchPicker";
-import { GlassCard } from "@/components/ui/GlassCard";
 import { KeypadField } from "@/components/ui/KeypadField";
-import { SegmentedTabs } from "@/components/ui/SegmentedTabs";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { PageHeader } from "@/components/ui/PageHeader";
 import type { PlaceSearchResult } from "@/types/places";
+import { cn } from "@/lib/utils";
 
-const STAY_UNITS = [
-  { id: "minutes" as const, label: "דקות" },
-  { id: "hours" as const, label: "שעות" },
-];
+function routeKey(stops: RouteStop[], mode: TransitMode | "auto") {
+  return (
+    stops.map((s) => `${s.id}:${s.lat ?? ""}:${s.lng ?? ""}:${s.address}:${s.name}`).join("|") +
+    `::${mode}`
+  );
+}
 
-const inputClass =
-  "mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-accent/50";
+function stayLabel(minutes: number) {
+  if (minutes < 60) return `${minutes} דק׳`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m ? `${h} ש׳ ${m} דק׳` : `${h} ש׳`;
+}
 
-function SortableStop({
+function StopRow({
   stop,
   index,
   onChange,
@@ -69,8 +67,10 @@ function SortableStop({
   onRemove: (id: string) => void;
   canRemove: boolean;
 }) {
+  const [editing, setEditing] = useState(!stop.name.trim());
   const [resolving, setResolving] = useState(false);
-  const [stayUnit, setStayUnit] = useState<"minutes" | "hours">("minutes");
+  const [resolveError, setResolveError] = useState<string | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: stop.id });
 
@@ -78,26 +78,26 @@ function SortableStop({
     const input = stop.address || stop.name;
     if (!input.trim()) return;
     setResolving(true);
+    setResolveError(null);
     try {
       const parsed = parseGoogleMapsInput(input);
       let lat = parsed.lat;
       let lng = parsed.lng;
       let address = parsed.query || input;
-
       if (lat == null || lng == null) {
         const geocoded = await geocodePlace(input);
         if (geocoded) {
           lat = geocoded.lat;
           lng = geocoded.lng;
           address = geocoded.query;
+        } else {
+          setResolveError("לא נמצא מיקום. נסו שם מדויק יותר או קישור מ־Google Maps.");
         }
       }
-
       const searchLabel =
         parsed.titleHint ||
         (!isBareCoordQuery(address) ? address.split(",")[0]?.trim() : "") ||
         "";
-
       onChange(stop.id, {
         address,
         mapsLink: parsed.mapsLink,
@@ -111,145 +111,184 @@ function SortableStop({
     }
   }
 
+  const label = stop.name.trim() || `תחנה ${index + 1}`;
+
   return (
-    <div
+    <li
       ref={setNodeRef}
-      style={{
-        transform: CSS.Transform.toString(transform),
-        transition,
-      }}
-      className={`rounded-2xl border border-border bg-background/35 p-3 ${
-        isDragging ? "glow-accent z-10" : ""
-      }`}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={cn("bg-paper", isDragging && "relative z-10 shadow-[var(--shadow-overlay)]")}
     >
-      <div className="mb-2 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 text-xs text-muted">
-          <button
-            type="button"
-            className="rounded-lg border border-border p-1.5 touch-none"
-            {...attributes}
-            {...listeners}
-          >
-            <GripVertical className="h-3.5 w-3.5" />
-          </button>
-          תחנה {index + 1}
-        </div>
+      <div className="grid grid-cols-[2rem_4.25rem_minmax(0,1fr)_auto] items-center gap-x-2 py-3">
         <button
           type="button"
-          disabled={!canRemove}
-          onClick={() => onRemove(stop.id)}
-          className="rounded-lg border border-border p-1.5 text-muted disabled:opacity-30"
+          className="flex h-11 w-8 cursor-grab touch-none items-center justify-center text-muted hover:text-ink"
+          aria-label={`שינוי סדר: ${label}`}
+          {...attributes}
+          {...listeners}
         >
-          <Trash2 className="h-3.5 w-3.5" />
+          <GripVertical className="h-4 w-4" aria-hidden />
+        </button>
+        <span className="t-num text-xl" dir="ltr">
+          {stop.arriveBy || "--:--"}
+        </span>
+        <span className="min-w-0">
+          <span className="block truncate font-semibold" dir="auto">
+            {label}
+          </span>
+          <span className="block truncate text-sm text-muted" dir="auto">
+            {stop.address && !isBareCoordQuery(stop.address)
+              ? stop.address
+              : "ללא כתובת"}
+            {" · "}
+            {stayLabel(stop.stayMinutes)}
+          </span>
+        </span>
+        <button
+          type="button"
+          onClick={() => setEditing((v) => !v)}
+          aria-expanded={editing}
+          className="btn btn-tertiary btn-sm"
+        >
+          {editing ? "סגירה" : "עריכה"}
         </button>
       </div>
 
-      <div className="grid gap-2 sm:grid-cols-2">
-        <label className="text-xs text-muted">
-          שם המקום
-          <input
-            className={inputClass}
-            value={stop.name}
-            onChange={(e) => onChange(stop.id, { name: e.target.value })}
-            placeholder="DisneySea / מלון / מסעדה"
-          />
-        </label>
-        <KeypadField
-          mode="time"
-          label="שעת הגעה רצויה"
-          value={stop.arriveBy}
-          onChange={(arriveBy) => onChange(stop.id, { arriveBy })}
-        />
-      </div>
+      {editing && (
+        <div className="mb-4 space-y-4 border-s-2 border-rule-strong ps-4 sm:ms-10">
+          <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_10rem]">
+            <div>
+              <label className="field-label" htmlFor={`stop-name-${stop.id}`}>
+                שם התחנה
+              </label>
+              <input
+                id={`stop-name-${stop.id}`}
+                className="field"
+                value={stop.name}
+                onChange={(e) => onChange(stop.id, { name: e.target.value })}
+                placeholder="מלון, מסעדה, אטרקציה"
+                dir="auto"
+              />
+            </div>
+            <KeypadField
+              mode="time"
+              label="שעת הגעה"
+              value={stop.arriveBy}
+              onChange={(arriveBy) => onChange(stop.id, { arriveBy })}
+            />
+          </div>
 
-      <PlaceSearchPicker
-        className="mt-2"
-        label="חיפוש מקום"
-        placeholder="חפשו תחנה, מסעדה, אטרקציה…"
-        onSelect={(place: PlaceSearchResult) =>
-          onChange(stop.id, {
-            name: stop.name || place.name,
-            searchName: place.name,
-            address: place.address || place.name,
-            mapsLink: place.mapsLink,
-            lat: place.lat,
-            lng: place.lng,
-          })
-        }
-      />
-
-      <label className="mt-2 block text-xs text-muted">
-        כתובת / קישור Google Maps
-        <div className="mt-1 flex gap-2">
-          <input
-            className={inputClass + " !mt-0"}
-            value={stop.address}
-            onChange={(e) =>
+          <PlaceSearchPicker
+            label="חיפוש מקום"
+            placeholder="שם המקום באנגלית מוצא יותר תוצאות"
+            onSelect={(place: PlaceSearchResult) =>
               onChange(stop.id, {
-                address: e.target.value,
-                lat: undefined,
-                lng: undefined,
-                searchName: undefined,
+                name: stop.name || place.name,
+                searchName: place.name,
+                address: place.address || place.name,
+                mapsLink: place.mapsLink,
+                lat: place.lat,
+                lng: place.lng,
               })
             }
-            placeholder="הדביקו קישור מפות או כתבו כתובת"
           />
-          <button
-            type="button"
-            onClick={() => void resolveLocation()}
-            disabled={resolving || !(stop.address.trim() || stop.name.trim())}
-            className="shrink-0 rounded-xl border border-accent/40 bg-accent-soft px-3 text-xs font-medium text-accent disabled:opacity-40"
+
+          <details>
+            <summary className="btn btn-tertiary btn-sm cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+              הדבקת קישור או כתובת
+            </summary>
+            <div className="mt-2 flex gap-2">
+              <input
+                className="field mt-0"
+                value={stop.address}
+                onChange={(e) =>
+                  onChange(stop.id, {
+                    address: e.target.value,
+                    lat: undefined,
+                    lng: undefined,
+                    searchName: undefined,
+                  })
+                }
+                placeholder="קישור Google Maps או כתובת"
+                aria-label="קישור Google Maps או כתובת"
+                dir="auto"
+              />
+              <button
+                type="button"
+                onClick={() => void resolveLocation()}
+                disabled={resolving || !(stop.address.trim() || stop.name.trim())}
+                className="btn btn-secondary shrink-0"
+              >
+                {resolving ? "מחפש…" : "איתור"}
+              </button>
+            </div>
+            {resolveError && <p className="field-hint text-danger">{resolveError}</p>}
+          </details>
+
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <KeypadField
+              mode="number"
+              label="זמן במקום (דקות)"
+              className="w-44"
+              value={stop.stayMinutes}
+              min={5}
+              max={1440}
+              onChange={(n) => onChange(stop.id, { stayMinutes: Math.max(5, Math.round(n || 5)) })}
+            />
+            <button
+              type="button"
+              disabled={!canRemove}
+              onClick={() => (stop.name.trim() ? setConfirmOpen(true) : onRemove(stop.id))}
+              className="btn btn-tertiary btn-sm text-danger"
+            >
+              הסרת התחנה
+            </button>
+          </div>
+        </div>
+      )}
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        title={`להסיר את "${label}"?`}
+        description="התחנה תוסר מתכנון היום. המסלול הראשי לא ישתנה."
+        confirmLabel="הסרה"
+        onConfirm={() => onRemove(stop.id)}
+      />
+    </li>
+  );
+}
+
+function LegRow({ leg, loading }: { leg?: TransitLegEstimate; loading: boolean }) {
+  return (
+    <li
+      aria-label="נסיעה לתחנה הבאה"
+      className="flex flex-wrap items-center gap-x-3 gap-y-1 border-s-2 border-dashed border-rule py-2 ps-4 text-sm text-ink-soft ms-[3.1rem]"
+    >
+      {leg ? (
+        <>
+          <span className="font-medium text-ink">{leg.modeLabelHe}</span>
+          {leg.source !== "missing_coords" && leg.durationMinutes > 0 && (
+            <span className="tabular">כ־{leg.durationMinutes} דק׳</span>
+          )}
+          {leg.source === "estimate" && <span className="t-meta">הערכה לפי מרחק</span>}
+          {leg.source === "missing_coords" && (
+            <span className="t-meta">חסר מיקום מדויק</span>
+          )}
+          <a
+            href={leg.mapsDirUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="link-inline ms-auto"
           >
-            {resolving ? "…" : "מצא"}
-          </button>
-        </div>
-        {stop.lat != null && stop.lng != null && (
-          <span className="mt-1 block text-[11px] text-success">
-            מיקום מדויק: {stop.lat.toFixed(5)}, {stop.lng.toFixed(5)}
-          </span>
-        )}
-      </label>
-      <div className="mt-2">
-        <div className="mb-1.5 flex items-center justify-between gap-2">
-          <span className="text-xs text-muted">זמן שהייה</span>
-          <SegmentedTabs
-            items={STAY_UNITS}
-            value={stayUnit}
-            onChange={setStayUnit}
-            layoutId={`stay-unit-${stop.id}`}
-            aria-label="יחידת זמן שהייה"
-            size="sm"
-            className="w-[9.5rem] rounded-full border border-border bg-surface p-0.5"
-          />
-        </div>
-        <KeypadField
-          mode="number"
-          fieldClassName="mt-0"
-          value={
-            stayUnit === "hours"
-              ? Math.round((stop.stayMinutes / 60) * 10) / 10
-              : stop.stayMinutes
-          }
-          allowDecimal={stayUnit === "hours"}
-          maxDecimals={stayUnit === "hours" ? 1 : 0}
-          min={stayUnit === "hours" ? 0.5 : 1}
-          max={stayUnit === "hours" ? 24 : 1440}
-          suffix={
-            <span className="text-xs text-muted">
-              {stayUnit === "hours" ? "ש׳" : "דק׳"}
-            </span>
-          }
-          aria-label={
-            stayUnit === "hours" ? "זמן שהייה בשעות" : "זמן שהייה בדקות"
-          }
-          onChange={(n) => {
-            const minutes =
-              stayUnit === "hours" ? Math.round(n * 60) : Math.round(n);
-            onChange(stop.id, { stayMinutes: Math.max(1, minutes) });
-          }}
-        />
-      </div>
-    </div>
+            הוראות ב־Google Maps
+            <span className="sr-only"> (חלון חדש)</span>
+          </a>
+        </>
+      ) : (
+        <span className="t-meta">{loading ? "מחשב נסיעה…" : ""}</span>
+      )}
+    </li>
   );
 }
 
@@ -257,75 +296,60 @@ export function DayRoutePlanner() {
   const { user, loading: authLoading } = useAuth();
   const isPersonal = usePersonalTrip();
   const [stops, setStops] = useState<RouteStop[]>(createEmptyDayRouteStops);
-  const [modeOverride, setModeOverride] = useState<TransitMode | "auto">(
-    "auto",
-  );
-  const [legs, setLegs] = useState<TransitLegEstimate[]>([]);
-  const [loadingLegs, setLoadingLegs] = useState(false);
+  const [modeOverride, setModeOverride] = useState<TransitMode | "auto">("auto");
+  const [legResult, setLegResult] = useState<{ key: string; legs: TransitLegEstimate[] }>({
+    key: "",
+    legs: [],
+  });
 
-  useEffect(() => {
-    if (authLoading) return;
-    const personal = isPersonal || Boolean(user);
-    if (personal) {
-      setStops((prev) =>
-        isDemoDayRouteStops(prev) ? createEmptyDayRouteStops() : prev,
-      );
-    } else {
-      setStops(demoDayRouteStops);
-    }
-  }, [authLoading, isPersonal, user]);
+  const audience = authLoading ? null : isPersonal || user ? "personal" : "demo";
+  const [appliedAudience, setAppliedAudience] = useState<string | null>(null);
+  if (audience && audience !== appliedAudience) {
+    setAppliedAudience(audience);
+    setStops((prev) =>
+      audience === "demo"
+        ? demoDayRouteStops
+        : isDemoDayRouteStops(prev)
+          ? createEmptyDayRouteStops()
+          : prev,
+    );
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
-  const legKey = useMemo(
-    () =>
-      stops
-        .map(
-          (s) =>
-            `${s.id}:${s.lat ?? ""}:${s.lng ?? ""}:${s.address}:${s.name}`,
-        )
-        .join("|") + `::${modeOverride}`,
-    [stops, modeOverride],
-  );
+  const legKey = routeKey(stops, modeOverride);
+  const legs = stops.length >= 2 ? legResult.legs : [];
+  const loadingLegs = stops.length >= 2 && legResult.key !== legKey;
 
   useEffect(() => {
-    if (stops.length < 2) {
-      setLegs([]);
-      return;
-    }
-
+    if (stops.length < 2) return;
     let cancelled = false;
-    setLoadingLegs(true);
-
-    void (async () => {
-      const next: TransitLegEstimate[] = [];
-      for (let i = 0; i < stops.length - 1; i++) {
-        if (cancelled) return;
-        const leg = await fetchTransitLeg(
-          stops[i],
-          stops[i + 1],
-          modeOverride,
-        );
-        next.push(leg);
-      }
-      if (!cancelled) {
-        setLegs(next);
-        setLoadingLegs(false);
-      }
-    })();
-
+    const key = routeKey(stops, modeOverride);
+    const timer = window.setTimeout(() => {
+      void (async () => {
+        const next: TransitLegEstimate[] = [];
+        for (let i = 0; i < stops.length - 1; i++) {
+          if (cancelled) return;
+          next.push(await fetchTransitLeg(stops[i], stops[i + 1], modeOverride));
+        }
+        if (!cancelled) setLegResult({ key, legs: next });
+      })();
+    }, 400);
     return () => {
       cancelled = true;
-      setLoadingLegs(false);
+      window.clearTimeout(timer);
     };
-  }, [legKey]);
+  }, [stops, modeOverride]);
 
   const fullDayMapsUrl = useMemo(
     () => buildMapsDayRouteUrl(stops.map(stopMapsPoint), "transit"),
     [stops],
   );
+  const namedStops = stops.filter((s) => s.name.trim() || s.address.trim()).length;
+  const demo = !isPersonal && !user && isDemoDayRouteStops(stops);
 
   function onDragEnd(event: DragEndEvent) {
     const { active, over } = event;
@@ -338,152 +362,101 @@ export function DayRoutePlanner() {
   }
 
   return (
-    <div className="space-y-4">
-      <GlassCard strong>
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <span className="glow-accent flex h-12 w-12 items-center justify-center rounded-2xl bg-nav-bg text-nav-fg">
-              <Route className="h-5 w-5" />
-            </span>
-            <div>
-              <h1 className="fluid-title font-[family-name:var(--font-readex)] font-bold">
-                מסלול ליום
-              </h1>
-              <p className="mt-1 text-sm text-muted">
-                בניית יום שלם: מקום → מקום, עם תחבורה מומלצת וקו —
-                מבוסס Google Maps (כשיש מפתח API) או הערכה לפי מרחק.
-              </p>
-            </div>
-          </div>
-          <StatusBadge
-            tone={isPersonal ? "accent" : "pending"}
-            label={isPersonal ? "המסלול שלי" : "דוגמה · דיסני"}
-            pulse
-          />
-        </div>
-      </GlassCard>
+    <div>
+      <PageHeader
+        kicker="תחבורה"
+        title="נסיעות ביום אחד"
+        lede="רושמים את התחנות של היום לפי הסדר, ומקבלים את הנסיעה בין כל שתיים. התכנון הזה לא נשמר במסלול הראשי."
+        actions={
+          namedStops >= 2 ? (
+            <a href={fullDayMapsUrl} target="_blank" rel="noreferrer" className="btn btn-primary">
+              פתיחת כל היום ב־Google Maps
+              <span className="sr-only"> (חלון חדש)</span>
+            </a>
+          ) : undefined
+        }
+      />
 
-      <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
-        <GlassCard>
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-sm font-semibold">תחנות היום</h2>
-            <label className="flex items-center gap-2 text-xs text-muted">
-              מצב תחבורה
-              <select
-                className="rounded-lg border border-border bg-surface px-2 py-1.5 text-foreground"
-                value={modeOverride}
-                onChange={(e) =>
-                  setModeOverride(e.target.value as TransitMode | "auto")
-                }
-              >
-                <option value="auto">אוטומטי (מומלץ)</option>
-                <option value="metro">מטרו</option>
-                <option value="jr">JR</option>
-                <option value="bus">אוטובוס</option>
-                <option value="walk">הליכה</option>
-                <option value="taxi">מונית</option>
-              </select>
-            </label>
+      {demo && (
+        <p className="note mb-6 max-w-2xl">
+          זו דוגמה ליום בדיסני־סי. אחרי התחברות או הגדרת טיול, תתחילו מדף ריק.
+        </p>
+      )}
+
+      <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_18rem]">
+        <section aria-labelledby="stops-title">
+          <div className="section-head">
+            <h2 id="stops-title" className="t-h2">
+              התחנות
+            </h2>
+            <span className="t-meta">{stops.length} תחנות</span>
           </div>
 
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={onDragEnd}
-          >
-            <SortableContext
-              items={stops.map((s) => s.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              <div className="space-y-3">
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+            <SortableContext items={stops.map((s) => s.id)} strategy={verticalListSortingStrategy}>
+              <ol className="mt-2">
                 {stops.map((stop, index) => (
-                  <SortableStop
-                    key={stop.id}
-                    stop={stop}
-                    index={index}
-                    canRemove={stops.length > 2}
-                    onChange={(id, patch) =>
-                      setStops((prev) =>
-                        prev.map((s) => (s.id === id ? { ...s, ...patch } : s)),
-                      )
-                    }
-                    onRemove={(id) =>
-                      setStops((prev) => prev.filter((s) => s.id !== id))
-                    }
-                  />
+                  <Fragment key={stop.id}>
+                    <StopRow
+                      stop={stop}
+                      index={index}
+                      canRemove={stops.length > 2}
+                      onChange={(id, patch) =>
+                        setStops((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)))
+                      }
+                      onRemove={(id) => setStops((prev) => prev.filter((s) => s.id !== id))}
+                    />
+                    {index < stops.length - 1 && (
+                      <LegRow leg={legs[index]} loading={loadingLegs} />
+                    )}
+                  </Fragment>
                 ))}
-              </div>
+              </ol>
             </SortableContext>
           </DndContext>
 
-          <button
-            type="button"
-            onClick={() =>
-              setStops((prev) => [
-                ...prev,
-                createStop({
-                  arriveBy: "15:00",
-                  name: "",
-                  address: "",
-                }),
-              ])
-            }
-            className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-accent/40 bg-accent-soft px-4 py-3 text-sm font-medium text-accent"
-          >
-            <Plus className="h-4 w-4" />
-            הוסיפו תחנה
-          </button>
-        </GlassCard>
-
-        <GlassCard>
-          <div className="mb-4 flex items-center gap-2 text-sm font-semibold">
-            <TrainFront className="h-4 w-4 text-accent" />
-            תחבורה מומלצת בין התחנות
-          </div>
-
-          {stops.length >= 2 && (
-            <a
-              href={fullDayMapsUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="mb-4 inline-flex w-full items-center justify-center gap-3 rounded-2xl border border-nav-bg/40 bg-nav-bg px-5 py-5 text-base font-bold text-nav-fg shadow-[0_8px_24px_var(--glow)] transition hover:brightness-110"
+          <div className="mt-2 border-t border-rule pt-4">
+            <button
+              type="button"
+              onClick={() =>
+                setStops((prev) => [...prev, createStop({ arriveBy: "15:00", name: "", address: "" })])
+              }
+              className="btn btn-secondary"
             >
-              <ExternalLink className="h-5 w-5" />
-              פתיחה בגוגל · כל היום
-            </a>
-          )}
-
-          <div className="space-y-3">
-            {loadingLegs && legs.length === 0 && (
-              <p className="rounded-2xl border border-border bg-background/30 p-4 text-center text-sm text-muted">
-                מכין קישורי מפות…
-              </p>
-            )}
-            {legs.map((leg, i) => {
-              const from = stops[i]?.name || `תחנה ${i + 1}`;
-              const to = stops[i + 1]?.name || `תחנה ${i + 2}`;
-              return (
-                <a
-                  key={`${leg.fromId}-${leg.toId}-${i}`}
-                  href={leg.mapsDirUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-nav-bg/40 bg-nav-bg px-4 py-4 text-sm font-bold text-nav-fg shadow-[0_8px_24px_var(--glow)] transition hover:brightness-110"
-                >
-                  <ExternalLink className="h-4 w-4 shrink-0" />
-                  <span className="min-w-0 text-center">
-                    פתיחה במפות
-                    {(stops[i]?.name || stops[i + 1]?.name) && (
-                      <span className="mt-0.5 block text-xs font-medium text-nav-fg/75">
-                        {from} → {to}
-                      </span>
-                    )}
-                  </span>
-                </a>
-              );
-            })}
+              <Plus aria-hidden />
+              הוספת תחנה
+            </button>
           </div>
-        </GlassCard>
+        </section>
+
+        <aside className="space-y-6">
+          <div>
+            <label className="field-label" htmlFor="transit-mode">
+              אמצעי תחבורה
+            </label>
+            <select
+              id="transit-mode"
+              className="field"
+              value={modeOverride}
+              onChange={(e) => setModeOverride(e.target.value as TransitMode | "auto")}
+            >
+              <option value="auto">לפי המרחק (מומלץ)</option>
+              <option value="metro">מטרו</option>
+              <option value="jr">רכבת JR</option>
+              <option value="bus">אוטובוס</option>
+              <option value="walk">הליכה</option>
+              <option value="taxi">מונית</option>
+            </select>
+            <p className="field-hint">
+              זמני הנסיעה מגיעים מ־Google כשיש חיבור לשירות, ואחרת הם הערכה לפי מרחק.
+              הקישורים פותחים את הוראות הנסיעה המלאות.
+            </p>
+          </div>
+          <div className="note-quiet text-sm leading-6">
+            עם ילדים כדאי לתכנן עד שלוש־ארבע תחנות ביום, ולהוסיף כחצי שעה לכל מעבר בתחנות
+            הגדולות.
+          </div>
+        </aside>
       </div>
     </div>
   );

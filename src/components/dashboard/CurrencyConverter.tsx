@@ -1,149 +1,21 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { ArrowLeftRight, TrendingUp } from "lucide-react";
-import { tripMeta } from "@/data/trip";
+import { useMemo } from "react";
 import { useTripMetaStore } from "@/store/tripMeta";
-import { cn, formatNumber } from "@/lib/utils";
+import { exchangeSourceLabel, useExchangeRate } from "@/hooks/useExchangeRate";
+import { formatNumber } from "@/lib/utils";
 import { KeypadField } from "@/components/ui/KeypadField";
+import { SectionHead } from "@/components/ui/PageHeader";
 
 const QUICK_JPY = [1000, 5000, 10000] as const;
-const FALLBACK_RATE = tripMeta.exchangeRateIlsToJpy;
-
-type ExchangeRatePayload = {
-  rateIlsToJpy: number;
-  rateJpyToIls: number;
-  updatedAt: string;
-  source: string;
-  fallback?: boolean;
-  history?: number[];
-};
-
-function RateSparkline({ values, className }: { values: number[]; className?: string }) {
-  const w = 88;
-  const h = 28;
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const range = max - min || 1;
-  const points = values
-    .map((v, i) => {
-      const x = (i / (values.length - 1)) * w;
-      const y = h - ((v - min) / range) * (h - 4) - 2;
-      return `${x},${y}`;
-    })
-    .join(" ");
-
-  const last = values[values.length - 1];
-  const prev = values[values.length - 2] ?? last;
-  const up = last >= prev;
-
-  return (
-    <div className={cn("flex items-center gap-2", className)}>
-      <svg
-        width={w}
-        height={h}
-        viewBox={`0 0 ${w} ${h}`}
-        className="overflow-visible"
-        aria-hidden
-      >
-        <polyline
-          fill="none"
-          stroke={up ? "var(--olive)" : "var(--sky)"}
-          strokeWidth="1.75"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          points={points}
-        />
-      </svg>
-      <span
-        className={cn(
-          "inline-flex items-center gap-0.5 text-[10px] font-semibold",
-          up ? "text-olive" : "text-sky",
-        )}
-      >
-        <TrendingUp className={cn("h-3 w-3", !up && "rotate-180")} />
-        {up ? "+" : ""}
-        {(last - values[0]).toFixed(1)}
-      </span>
-    </div>
-  );
-}
-
-function formatUpdatedHe(iso: string) {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return null;
-  return new Intl.DateTimeFormat("he-IL", {
-    day: "numeric",
-    month: "short",
-  }).format(d);
-}
-
-function sourceLabelHe(source: string, fallback?: boolean) {
-  if (fallback || source === "fallback") return "שער משוער (גיבוי)";
-  if (source === "frankfurter") return "Frankfurter";
-  return source;
-}
 
 export function CurrencyConverter() {
   const ils = useTripMetaStore((s) => s.budgetIls);
   const setBudgetIls = useTripMetaStore((s) => s.setBudgetIls);
-
-  const [rate, setRate] = useState(FALLBACK_RATE);
-  const [history, setHistory] = useState<number[] | null>(null);
-  const [updatedAt, setUpdatedAt] = useState<string | null>(null);
-  const [source, setSource] = useState("fallback");
-  const [isFallback, setIsFallback] = useState(true);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    void (async () => {
-      setLoading(true);
-      try {
-        const res = await fetch("/api/exchange-rate");
-        const data = (await res.json()) as ExchangeRatePayload;
-        if (cancelled) return;
-        if (
-          typeof data.rateIlsToJpy === "number" &&
-          Number.isFinite(data.rateIlsToJpy) &&
-          data.rateIlsToJpy > 0
-        ) {
-          setRate(data.rateIlsToJpy);
-          setUpdatedAt(data.updatedAt ?? null);
-          setSource(data.source ?? "frankfurter");
-          setIsFallback(Boolean(data.fallback));
-          setHistory(
-            Array.isArray(data.history) && data.history.length >= 2
-              ? data.history
-              : null,
-          );
-        } else {
-          setRate(FALLBACK_RATE);
-          setIsFallback(true);
-          setSource("fallback");
-          setUpdatedAt(new Date().toISOString());
-          setHistory(null);
-        }
-      } catch {
-        if (cancelled) return;
-        setRate(FALLBACK_RATE);
-        setIsFallback(true);
-        setSource("fallback");
-        setUpdatedAt(new Date().toISOString());
-        setHistory(null);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const fx = useExchangeRate();
+  const rate = fx.rate;
 
   const jpy = useMemo(() => Math.round(ils * rate), [ils, rate]);
-  const updatedLabel = updatedAt ? formatUpdatedHe(updatedAt) : null;
 
   function setFromIls(value: number) {
     setBudgetIls(Number.isFinite(value) ? value : 0);
@@ -155,101 +27,65 @@ export function CurrencyConverter() {
   }
 
   return (
-    <div className="flex h-full min-w-0 flex-col space-y-3">
-      <div className="flex min-w-0 flex-wrap items-start justify-between gap-2">
-        <div className="flex min-w-0 items-center gap-2 text-sm font-semibold text-foreground">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-amber-soft text-wood">
-            <ArrowLeftRight className="h-3.5 w-3.5" strokeWidth={2.25} />
+    <section aria-labelledby="fx-title">
+      <SectionHead
+        as="h3"
+        id="fx-title"
+        title="המרת מטבע"
+        meta={
+          <span className="tabular" dir="ltr">
+            ₪1 ≈ ¥{rate.toFixed(1)}
           </span>
-          <span className="min-w-0">המרת מטבע</span>
-        </div>
-        <div className="min-w-0 max-w-full text-end sm:max-w-[55%]">
-          <div className="text-[11px] font-medium tabular-nums text-muted">
-            {loading ? <span>טוען שער…</span> : <span>1 ₪ ≈ {rate} ¥</span>}
-          </div>
-          {history && (
-            <RateSparkline values={history} className="mt-1 justify-end" />
-          )}
-          <p className="mt-1 max-w-full text-[10px] leading-4 text-muted">
-            {loading
-              ? "מתחבר לשער חי…"
-              : `${sourceLabelHe(source, isFallback)}${
-                  updatedLabel ? ` · עודכן ${updatedLabel}` : ""
-                }`}
-          </p>
-        </div>
-      </div>
-
-      <div className="ledger-frame flex min-h-0 min-w-0 flex-1 flex-col justify-center gap-3 rounded-2xl p-3">
-        <div className="grid grid-cols-2 gap-2 sm:gap-3">
-          <div className="min-w-0 overflow-hidden rounded-xl border border-border bg-surface/80 p-2 transition hover:border-olive/40 sm:p-2.5">
-            <div className="text-xs font-semibold text-foreground/80">שקלים (₪)</div>
-            <KeypadField
-              mode="number"
-              bare
-              value={ils}
-              min={0}
-              title="סכום בשקלים"
-              aria-label="סכום בשקלים"
-              onChange={setFromIls}
-              fieldClassName="mt-1 font-[family-name:var(--font-quicksand)] text-sm font-bold tabular-nums sm:text-base"
-              prefix={<span className="text-xs text-muted sm:text-sm">₪</span>}
-            />
-          </div>
-          <div className="min-w-0 overflow-hidden rounded-xl border border-border bg-surface/80 p-2 transition hover:border-olive/40 sm:p-2.5">
-            <div className="text-xs font-semibold text-foreground/80">ין יפני (¥)</div>
-            <KeypadField
-              mode="number"
-              bare
-              value={jpy}
-              min={0}
-              title="סכום בין יפני"
-              aria-label="סכום בין יפני"
-              onChange={setFromJpy}
-              fieldClassName="mt-1 font-[family-name:var(--font-quicksand)] text-sm font-bold tabular-nums sm:text-base"
-              prefix={<span className="text-xs text-muted sm:text-sm">¥</span>}
-            />
-          </div>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          {QUICK_JPY.map((amount) => {
-            const active = jpy === amount;
-            return (
-              <button
-                key={amount}
-                type="button"
-                onClick={() => setFromJpy(amount)}
-                className={cn(
-                  "min-h-11 rounded-full border px-3.5 py-2 text-xs font-semibold transition",
-                  active
-                    ? "border-nav-bg/50 bg-nav-bg text-nav-fg shadow-[0_4px_12px_var(--glow)]"
-                    : "border-border bg-surface/80 text-muted hover:border-yellow/45 hover:text-foreground",
-                )}
-              >
-                ¥{formatNumber(amount)}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <input
-        type="range"
-        min={500}
-        max={20000}
-        step={100}
-        value={Math.min(20000, Math.max(500, ils))}
-        onChange={(e) => setFromIls(Number(e.target.value))}
-        className="mt-auto h-1.5 w-full max-w-full cursor-pointer appearance-none rounded-full bg-foreground/10 accent-[var(--foreground)]"
-        aria-label="סכום בשקלים"
+        }
       />
-      <div className="flex min-w-0 flex-wrap justify-between gap-x-2 gap-y-1 text-[11px] text-muted">
-        <span>בחירה מהירה או הקלדה</span>
-        <span className="min-w-0 break-all tabular-nums font-medium text-foreground/80">
-          ≈ ₪{formatNumber(ils)} / ¥{formatNumber(jpy)}
-        </span>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <span className="field-label" id="fx-ils">שקלים</span>
+          <KeypadField
+            mode="number"
+            value={ils}
+            min={0}
+            title="סכום בשקלים"
+            aria-label="סכום בשקלים"
+            onChange={setFromIls}
+            fieldClassName="field mt-0 t-num text-lg"
+            prefix={<span className="text-muted">₪</span>}
+          />
+        </div>
+        <div>
+          <span className="field-label" id="fx-jpy">ין יפני</span>
+          <KeypadField
+            mode="number"
+            value={jpy}
+            min={0}
+            title="סכום בין"
+            aria-label="סכום בין יפני"
+            onChange={setFromJpy}
+            fieldClassName="field mt-0 t-num text-lg"
+            prefix={<span className="text-muted">¥</span>}
+          />
+        </div>
       </div>
-    </div>
+
+      <div className="mt-2 flex flex-wrap items-center gap-x-1 text-sm">
+        <span className="text-muted">מהיר:</span>
+        {QUICK_JPY.map((amount) => (
+          <button
+            key={amount}
+            type="button"
+            onClick={() => setFromJpy(amount)}
+            aria-pressed={jpy === amount}
+            className="btn btn-tertiary btn-sm tabular aria-pressed:text-vermilion"
+          >
+            ¥{formatNumber(amount)}
+          </button>
+        ))}
+      </div>
+
+      <p className="t-meta mt-2" aria-live="polite">
+        {exchangeSourceLabel(fx)}
+      </p>
+    </section>
   );
 }

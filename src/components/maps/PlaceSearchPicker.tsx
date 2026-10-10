@@ -7,9 +7,6 @@ import type {
   PlaceSearchResult,
 } from "@/types/places";
 
-const inputClass =
-  "w-full rounded-xl border border-border bg-surface px-3 py-2.5 pe-10 text-sm text-foreground outline-none focus:border-accent/50";
-
 type DropdownItem =
   | { kind: "google"; prediction: PlaceAutocompletePrediction }
   | { kind: "nominatim"; result: PlaceSearchResult };
@@ -28,6 +25,7 @@ export function PlaceSearchPicker({
   className?: string;
 }) {
   const listboxId = useId();
+  const inputId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
   const [items, setItems] = useState<DropdownItem[]>([]);
@@ -38,12 +36,7 @@ export function PlaceSearchPicker({
 
   useEffect(() => {
     const trimmed = query.trim();
-    if (trimmed.length < 2) {
-      setItems([]);
-      setOpen(false);
-      setLoading(false);
-      return;
-    }
+    if (trimmed.length < 2) return;
 
     let cancelled = false;
     const timer = window.setTimeout(() => {
@@ -151,21 +144,24 @@ export function PlaceSearchPicker({
     }
   }
 
-  const showDropdown = open && items.length > 0;
-  const busy = loading || resolving;
+  const searchable = query.trim().length >= 2;
+  const showDropdown = open && searchable && items.length > 0;
+  const busy = (loading && searchable) || resolving;
 
   return (
     <div ref={rootRef} className={`relative ${className ?? ""}`}>
-      <label className="block text-xs text-muted">
+      <label className="field-label" htmlFor={inputId}>
         {label}
-        <div className="relative mt-1">
-          <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+      </label>
+      <div className="relative">
+          <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" aria-hidden />
           <input
-            className={inputClass + " ps-10"}
+            id={inputId}
+            className="field mt-0 pe-10 ps-10"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onFocus={() => {
-              if (items.length > 0) setOpen(true);
+              if (items.length > 0 && searchable) setOpen(true);
             }}
             placeholder={placeholder}
             autoComplete="off"
@@ -183,7 +179,7 @@ export function PlaceSearchPicker({
             <ul
               id={listboxId}
               role="listbox"
-              className="absolute z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-xl border border-border bg-surface shadow-lg"
+              className="absolute z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-[2px] border border-rule-strong bg-paper-raised shadow-[var(--shadow-overlay)]"
             >
               {items.map((item, index) => {
                 const name =
@@ -196,15 +192,15 @@ export function PlaceSearchPicker({
                     : item.result.address;
 
                 return (
-                  <li key={index} role="option">
+                  <li key={index} role="option" aria-selected={false}>
                     <button
                       type="button"
                       onClick={() => void pickItem(item)}
-                      className="flex w-full items-start gap-2 border-b border-border/60 px-3 py-2.5 text-start text-sm last:border-b-0 hover:bg-accent-soft/60"
+                      className="flex w-full items-start gap-2 border-b border-rule px-3 py-2.5 text-start text-sm last:border-b-0 hover:bg-paper-sunk"
                     >
-                      <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                      <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-muted" aria-hidden />
                       <span className="min-w-0">
-                        <span className="block font-medium text-foreground">
+                        <span className="block font-medium text-ink" dir="auto">
                           {name}
                         </span>
                         {address && (
@@ -219,16 +215,11 @@ export function PlaceSearchPicker({
               })}
             </ul>
           )}
-        </div>
-        {hint && (
-          <span className="mt-1 block text-[11px] text-muted">{hint}</span>
-        )}
-        {googleAvailable === false && !hint && (
-          <span className="mt-1 block text-[11px] text-muted">
-            חיפוש דרך OpenStreetMap · הוספת מפתח Google Maps משפרת תוצאות
-          </span>
-        )}
-      </label>
+      </div>
+      {hint && <p className="field-hint">{hint}</p>}
+      {googleAvailable === false && !hint && (
+        <p className="field-hint">תוצאות החיפוש מגיעות מ־OpenStreetMap.</p>
+      )}
     </div>
   );
 }

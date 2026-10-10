@@ -1,72 +1,60 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { List, MapPinned } from "lucide-react";
+import { useState } from "react";
 import { EditorMapPanel } from "./EditorMapPanel";
 import { ItineraryEditorPanel } from "./ItineraryEditorPanel";
-import { SegmentedTabs } from "@/components/ui/SegmentedTabs";
-import { cn } from "@/lib/utils";
+import { useHydrated } from "@/hooks/useHydrated";
 
 type MobilePane = "list" | "map";
 
-const MOBILE_PANES = [
-  { id: "list" as const, label: "רשימה", icon: List },
-  { id: "map" as const, label: "מפה", icon: MapPinned },
-];
-
 export function TripEditor() {
-  const [hydrated, setHydrated] = useState(false);
+  const hydrated = useHydrated();
   const [mobilePane, setMobilePane] = useState<MobilePane>("list");
-
-  useEffect(() => setHydrated(true), []);
 
   if (!hydrated) {
     return (
-      <div className="flex h-[60vh] items-center justify-center text-sm text-muted">
-        טוען את עורך המסלול...
+      <div className="flex h-[60vh] items-center justify-center text-sm text-muted" aria-busy="true">
+        טוען את המסלול…
       </div>
     );
   }
 
   return (
-    <div className="space-y-0">
-      <div
-        className={cn(
-          "relative isolate overflow-hidden rounded-2xl border border-border bg-surface-strong shadow-[var(--card-shadow)]",
-          "flex flex-col",
-          // Mobile: card grows with content so Add attraction isn't clipped.
-          // md+: fixed viewport with internal scroll + side-by-side map.
-          "md:grid md:max-h-[calc(100dvh-9rem)] md:min-h-[calc(100dvh-9rem)] md:grid-cols-[minmax(280px,440px)_minmax(0,1fr)] md:grid-rows-1",
-        )}
-      >
-        {/* Mobile only: רשימה | מפה */}
-        <SegmentedTabs
-          items={MOBILE_PANES}
-          value={mobilePane}
-          onChange={setMobilePane}
-          layoutId="itinerary-view-pill"
-          aria-label="תצוגת מסלול"
-          className="shrink-0 border-b border-border bg-background/40 p-1.5 dark:bg-surface-strong/50 md:hidden"
-        />
+    <div className="mt-4 sm:mt-6">
+      <div role="tablist" aria-label="תצוגת המסלול" className="tabs mb-0 md:hidden">
+        {(
+          [
+            { id: "list", label: "ימים" },
+            { id: "map", label: "מפה" },
+          ] as const
+        ).map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            role="tab"
+            aria-selected={mobilePane === tab.id}
+            onClick={() => setMobilePane(tab.id)}
+            className="tab flex-1 justify-center"
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
-        {/*
-          Wrappers keep `hidden` off panel roots (project `cn` does not merge
-          Tailwind display utilities — ItineraryEditorPanel always sets `flex`).
-          Mobile: show one pane via tabs. md+: both panes always visible as grid items.
-        */}
+      <div className="flex flex-col border-border md:grid md:h-[calc(100dvh-var(--header-h)-var(--safe-top)-3rem)] md:min-h-[34rem] md:grid-cols-[minmax(20rem,30rem)_minmax(0,1fr)] md:overflow-hidden md:rounded-2xl md:border md:shadow-[var(--card-shadow)]">
         <div
           className={
             mobilePane === "list"
-              ? "min-w-0 max-md:overflow-visible md:min-h-0 md:flex-1 md:overflow-hidden"
-              : "hidden min-h-0 min-w-0 overflow-hidden md:block"
+              ? "min-w-0 md:min-h-0 md:overflow-hidden md:border-e md:border-rule"
+              : "hidden min-h-0 min-w-0 md:block md:overflow-hidden md:border-e md:border-rule"
           }
         >
-          <ItineraryEditorPanel className="relative z-20 max-md:h-auto max-md:overflow-visible md:h-full md:min-h-0 md:overflow-hidden" />
+          <ItineraryEditorPanel className="md:h-full md:min-h-0" />
         </div>
         <div
           className={
             mobilePane === "map"
-              ? "relative z-0 flex min-h-0 min-w-0 flex-1 flex-col"
+              ? "relative z-0 flex h-[calc(100dvh-var(--header-h)-var(--tabbar-h)-6rem)] min-h-[22rem] min-w-0 flex-col"
               : "relative z-0 hidden min-h-0 min-w-0 md:block"
           }
         >

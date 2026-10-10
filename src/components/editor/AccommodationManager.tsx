@@ -1,296 +1,120 @@
 "use client";
 
 import { useState } from "react";
-import { BedDouble, Link2, Pencil } from "lucide-react";
 import {
   selectSelectedDay,
   useItineraryEditor,
 } from "@/store/itineraryEditor";
-import {
-  HOTEL_STATUS_LABELS,
-  type HotelInfo,
-  type HotelStatus,
-} from "@/types/editor";
-import { tripMeta } from "@/data/trip";
+import { HOTEL_STATUS_LABELS, type HotelInfo, type HotelStatus } from "@/types/editor";
 import { formatNumber } from "@/lib/utils";
 import { PlaceSearchPicker } from "@/components/maps/PlaceSearchPicker";
 import { DateField } from "@/components/ui/DateField";
-import { GlassCard } from "@/components/ui/GlassCard";
 import { KeypadField } from "@/components/ui/KeypadField";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import { Dialog } from "@/components/ui/Dialog";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { HotelStatusLabel } from "@/components/ui/StatusLabel";
 import type { PlaceSearchResult } from "@/types/places";
-import { GlassModal } from "./GlassModal";
 
-const inputClass =
-  "mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-accent/50";
+function emptyHotel(date: string, checkOut: string): Partial<HotelInfo> {
+  return {
+    name: "",
+    status: "not_booked",
+    costPerNightJpy: 0,
+    bookingLink: "",
+    notes: "",
+    lat: undefined,
+    lng: undefined,
+    checkIn: date,
+    checkOut,
+  };
+}
 
-const statusTone: Record<HotelStatus, "booked" | "pending" | "research"> = {
-  booked: "booked",
-  considering: "pending",
-  not_booked: "research",
-};
-
-export function AccommodationManager({
-  variant = "default",
-}: {
-  variant?: "default" | "itinerary";
-}) {
+export function AccommodationManager() {
   const day = useItineraryEditor(selectSelectedDay);
   const updateHotel = useItineraryEditor((s) => s.updateHotel);
   const [open, setOpen] = useState(false);
+  const [confirmRemove, setConfirmRemove] = useState(false);
   const [draft, setDraft] = useState<HotelInfo | null>(null);
 
   if (!day) return null;
+  const hasHotel = Boolean(day.hotel.name.trim());
 
-  const ils = Math.round(
-    day.hotel.costPerNightJpy / tripMeta.exchangeRateIlsToJpy,
-  );
-
-  function openModal() {
+  function openDialog() {
     setDraft({ ...day!.hotel });
     setOpen(true);
   }
 
   function save() {
     if (!draft) return;
-    updateHotel(day!.id, draft);
+    updateHotel(day!.id, { ...draft, name: draft.name.trim() });
     setOpen(false);
   }
 
-  if (variant === "itinerary") {
-    const hasHotel = Boolean(day.hotel.name.trim());
-
-    return (
-      <>
-        {hasHotel ? (
-          <button
-            type="button"
-            onClick={openModal}
-            className="flex w-full items-center justify-between gap-2 rounded-xl border border-border bg-background/40 px-4 py-3 text-right transition hover:border-accent/35"
-          >
-            <div className="min-w-0">
-              <div className="text-[11px] text-muted">לינה</div>
-              <div className="truncate font-medium">{day.hotel.name}</div>
-            </div>
-            <StatusBadge
-              status={statusTone[day.hotel.status]}
-              label={HOTEL_STATUS_LABELS[day.hotel.status]}
-            />
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={openModal}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-yellow/45 bg-yellow-soft/50 px-4 py-3 text-sm font-semibold text-foreground transition hover:border-yellow/70 hover:bg-yellow-soft"
-          >
-            הוסף לינה
-            <span className="text-lg leading-none">+</span>
-          </button>
-        )}
-
-        <GlassModal
-          open={open}
-          onClose={() => setOpen(false)}
-          title="הוספת / עריכת מלון"
-          wide
-        >
-          {draft && (
-            <div className="space-y-3">
-              <PlaceSearchPicker
-                label="חיפוש מלון"
-                placeholder="Hotel Gracery Shinjuku, מלון בטוקיו…"
-                onSelect={(place: PlaceSearchResult) =>
-                  setDraft({
-                    ...draft,
-                    name: draft.name || place.name,
-                    lat: place.lat,
-                    lng: place.lng,
-                  })
-                }
-              />
-
-              <label className="block text-xs text-muted">
-                שם המלון
-                <input
-                  className={inputClass}
-                  value={draft.name}
-                  onChange={(e) => setDraft({ ...draft, name: e.target.value })}
-                  placeholder="לדוגמה: Hotel Gracery Shinjuku"
-                />
-              </label>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <DateField
-                  label="צ׳ק־אין"
-                  value={draft.checkIn}
-                  onChange={(checkIn) => setDraft({ ...draft, checkIn })}
-                />
-                <DateField
-                  label="צ׳ק־אאוט"
-                  value={draft.checkOut}
-                  onChange={(checkOut) => setDraft({ ...draft, checkOut })}
-                />
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <label className="block text-xs text-muted">
-                  סטטוס הזמנה
-                  <select
-                    className={inputClass}
-                    value={draft.status}
-                    onChange={(e) =>
-                      setDraft({
-                        ...draft,
-                        status: e.target.value as HotelStatus,
-                      })
-                    }
-                  >
-                    {(Object.keys(HOTEL_STATUS_LABELS) as HotelStatus[]).map(
-                      (key) => (
-                        <option key={key} value={key}>
-                          {HOTEL_STATUS_LABELS[key]}
-                        </option>
-                      ),
-                    )}
-                  </select>
-                </label>
-                <KeypadField
-                  mode="number"
-                  label="עלות ללילה (¥)"
-                  value={draft.costPerNightJpy}
-                  min={0}
-                  onChange={(costPerNightJpy) =>
-                    setDraft({
-                      ...draft,
-                      costPerNightJpy: costPerNightJpy || 0,
-                    })
-                  }
-                />
-              </div>
-              <label className="block text-xs text-muted">
-                קישור הזמנה
-                <input
-                  className={inputClass}
-                  value={draft.bookingLink ?? ""}
-                  onChange={(e) =>
-                    setDraft({ ...draft, bookingLink: e.target.value })
-                  }
-                  placeholder="https://"
-                />
-              </label>
-              <label className="block text-xs text-muted">
-                הערות
-                <textarea
-                  className={`${inputClass} min-h-24`}
-                  value={draft.notes ?? ""}
-                  onChange={(e) => setDraft({ ...draft, notes: e.target.value })}
-                  placeholder="חדר משפחתי, ליד JR, בקשות מיוחדות..."
-                />
-              </label>
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  className="rounded-xl border border-border px-4 py-2 text-sm"
-                >
-                  ביטול
-                </button>
-                <button
-                  type="button"
-                  onClick={save}
-                  className="rounded-xl bg-nav-bg px-4 py-2 text-sm font-medium text-nav-fg glow-accent"
-                >
-                  שמירת מלון
-                </button>
-              </div>
-            </div>
-          )}
-        </GlassModal>
-      </>
-    );
-  }
-
   return (
-    <>
-      <GlassCard>
-        <div className="mb-3 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 text-sm font-semibold">
-            <BedDouble className="h-4 w-4 text-accent" />
-            ניהול לינה
-          </div>
-          <button
-            type="button"
-            onClick={openModal}
-            className="inline-flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-xs text-muted hover:border-accent/40 hover:text-accent"
-          >
-            <Pencil className="h-3.5 w-3.5" />
-            עריכה / הוספה
-          </button>
-        </div>
+    <section aria-labelledby="lodging-title">
+      <h3 id="lodging-title" className="t-label mb-2">
+        לינה בלילה הזה
+      </h3>
 
-        <div className="rounded-2xl border border-border bg-background/35 p-4">
-          <div className="flex flex-wrap items-start justify-between gap-2">
-            <div>
-              <div className="text-xs text-muted">מלון ליום זה</div>
-              <h3 className="mt-1 text-lg font-semibold">
-                {day.hotel.name || "לא הוגדר מלון"}
-              </h3>
-            </div>
-            <StatusBadge
-              status={statusTone[day.hotel.status]}
-              label={HOTEL_STATUS_LABELS[day.hotel.status]}
-              pulse={day.hotel.status !== "booked"}
-            />
-          </div>
+      {hasHotel ? (
+        <button
+          type="button"
+          onClick={openDialog}
+          className="group flex w-full items-center justify-between gap-3 border-y border-rule py-3 text-start"
+        >
+          <span className="min-w-0">
+            <span className="t-h3 block truncate group-hover:underline" dir="auto">
+              {day.hotel.name}
+            </span>
+            {day.hotel.costPerNightJpy > 0 && (
+              <span className="t-meta tabular">
+                ¥{formatNumber(day.hotel.costPerNightJpy)} ללילה
+              </span>
+            )}
+          </span>
+          <HotelStatusLabel status={day.hotel.status} />
+        </button>
+      ) : (
+        <button type="button" onClick={openDialog} className="btn btn-secondary btn-block">
+          הוספת לינה
+        </button>
+      )}
 
-          <div className="mt-4 grid gap-2 sm:grid-cols-3">
-            <div className="rounded-xl border border-border bg-surface/50 px-3 py-2">
-              <div className="text-[11px] text-muted">צ׳ק־אין</div>
-              <div className="text-sm font-medium">{day.hotel.checkIn || "—"}</div>
-            </div>
-            <div className="rounded-xl border border-border bg-surface/50 px-3 py-2">
-              <div className="text-[11px] text-muted">צ׳ק־אאוט</div>
-              <div className="text-sm font-medium">
-                {day.hotel.checkOut || "—"}
-              </div>
-            </div>
-            <div className="rounded-xl border border-border bg-surface/50 px-3 py-2">
-              <div className="text-[11px] text-muted">עלות ללילה</div>
-              <div className="text-sm font-semibold text-accent">
-                ¥{formatNumber(day.hotel.costPerNightJpy)}
-                <span className="ms-1 text-xs font-normal text-muted">
-                  · ₪{formatNumber(ils)}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {day.hotel.notes && (
-            <p className="mt-3 text-xs leading-5 text-muted">{day.hotel.notes}</p>
-          )}
-          {day.hotel.bookingLink && (
-            <a
-              href={day.hotel.bookingLink}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-accent hover:underline"
-            >
-              <Link2 className="h-3.5 w-3.5" />
-              קישור הזמנה
-            </a>
-          )}
-        </div>
-      </GlassCard>
-
-      <GlassModal
+      <Dialog
         open={open}
         onClose={() => setOpen(false)}
-        title="הוספת / עריכת מלון"
+        title={hasHotel ? "עריכת הלינה" : "הוספת לינה"}
         wide
+        footer={
+          <>
+            {hasHotel && (
+              <button
+                type="button"
+                onClick={() => setConfirmRemove(true)}
+                className="btn btn-tertiary me-auto text-danger"
+              >
+                הסרת הלינה מהיום
+              </button>
+            )}
+            <button type="button" onClick={() => setOpen(false)} className="btn btn-secondary">
+              ביטול
+            </button>
+            <button
+              type="button"
+              onClick={save}
+              disabled={!draft?.name.trim()}
+              className="btn btn-primary"
+            >
+              שמירה
+            </button>
+          </>
+        }
       >
         {draft && (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <PlaceSearchPicker
               label="חיפוש מלון"
-              placeholder="Hotel Gracery Shinjuku, מלון בטוקיו…"
+              placeholder="שם המלון או אזור, למשל Shinjuku"
               onSelect={(place: PlaceSearchResult) =>
                 setDraft({
                   ...draft,
@@ -300,17 +124,19 @@ export function AccommodationManager({
                 })
               }
             />
-
-            <label className="block text-xs text-muted">
-              שם המלון
+            <div>
+              <label className="field-label" htmlFor="hotel-name">
+                שם המלון
+              </label>
               <input
-                className={inputClass}
+                id="hotel-name"
+                className="field"
                 value={draft.name}
                 onChange={(e) => setDraft({ ...draft, name: e.target.value })}
-                placeholder="לדוגמה: Hotel Gracery Shinjuku"
+                dir="auto"
               />
-            </label>
-            <div className="grid gap-3 sm:grid-cols-2">
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
               <DateField
                 label="צ׳ק־אין"
                 value={draft.checkIn}
@@ -322,106 +148,77 @@ export function AccommodationManager({
                 onChange={(checkOut) => setDraft({ ...draft, checkOut })}
               />
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <label className="block text-xs text-muted">
-                סטטוס הזמנה
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="field-label" htmlFor="hotel-status">
+                  סטטוס הזמנה
+                </label>
                 <select
-                  className={inputClass}
+                  id="hotel-status"
+                  className="field"
                   value={draft.status}
                   onChange={(e) =>
-                    setDraft({
-                      ...draft,
-                      status: e.target.value as HotelStatus,
-                    })
+                    setDraft({ ...draft, status: e.target.value as HotelStatus })
                   }
                 >
-                  {(Object.keys(HOTEL_STATUS_LABELS) as HotelStatus[]).map(
-                    (key) => (
-                      <option key={key} value={key}>
-                        {HOTEL_STATUS_LABELS[key]}
-                      </option>
-                    ),
-                  )}
+                  {(Object.keys(HOTEL_STATUS_LABELS) as HotelStatus[]).map((key) => (
+                    <option key={key} value={key}>
+                      {HOTEL_STATUS_LABELS[key]}
+                    </option>
+                  ))}
                 </select>
-              </label>
+              </div>
               <KeypadField
                 mode="number"
-                label="עלות ללילה (¥)"
+                label="מחיר ללילה (¥)"
                 value={draft.costPerNightJpy}
                 min={0}
                 onChange={(costPerNightJpy) =>
-                  setDraft({
-                    ...draft,
-                    costPerNightJpy: costPerNightJpy || 0,
-                  })
+                  setDraft({ ...draft, costPerNightJpy: costPerNightJpy || 0 })
                 }
               />
             </div>
-            <label className="block text-xs text-muted">
-              קישור הזמנה
+            <div>
+              <label className="field-label" htmlFor="hotel-link">
+                קישור להזמנה
+              </label>
               <input
-                className={inputClass}
+                id="hotel-link"
+                className="field"
+                dir="ltr"
+                inputMode="url"
                 value={draft.bookingLink ?? ""}
-                onChange={(e) =>
-                  setDraft({ ...draft, bookingLink: e.target.value })
-                }
+                onChange={(e) => setDraft({ ...draft, bookingLink: e.target.value })}
                 placeholder="https://"
               />
-            </label>
-            <label className="block text-xs text-muted">
-              הערות
+            </div>
+            <div>
+              <label className="field-label" htmlFor="hotel-notes">
+                הערות
+              </label>
               <textarea
-                className={`${inputClass} min-h-24`}
+                id="hotel-notes"
+                className="field"
                 value={draft.notes ?? ""}
                 onChange={(e) => setDraft({ ...draft, notes: e.target.value })}
-                placeholder="חדר משפחתי, ליד JR, בקשות מיוחדות..."
+                placeholder="חדר משפחתי, קרוב לתחנה, בקשות מיוחדות"
               />
-            </label>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <KeypadField
-                mode="number"
-                label="קו רוחב (lat)"
-                value={draft.lat ?? 0}
-                allowDecimal
-                maxDecimals={4}
-                emptyLabel="35.6955"
-                formatDisplay={(v) =>
-                  draft.lat == null ? "בחרו ערך" : String(v)
-                }
-                onChange={(lat) => setDraft({ ...draft, lat })}
-              />
-              <KeypadField
-                mode="number"
-                label="קו אורך (lng)"
-                value={draft.lng ?? 0}
-                allowDecimal
-                maxDecimals={4}
-                emptyLabel="139.7014"
-                formatDisplay={(v) =>
-                  draft.lng == null ? "בחרו ערך" : String(v)
-                }
-                onChange={(lng) => setDraft({ ...draft, lng })}
-              />
-            </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="rounded-xl border border-border px-4 py-2 text-sm"
-              >
-                ביטול
-              </button>
-              <button
-                type="button"
-                onClick={save}
-                className="rounded-xl bg-nav-bg px-4 py-2 text-sm font-medium text-nav-fg glow-accent"
-              >
-                שמירת מלון
-              </button>
             </div>
           </div>
         )}
-      </GlassModal>
-    </>
+      </Dialog>
+
+      <ConfirmDialog
+        open={confirmRemove}
+        onClose={() => setConfirmRemove(false)}
+        title="להסיר את הלינה מהיום?"
+        description={`פרטי "${day.hotel.name}" יימחקו מהיום הזה בלבד. ימים אחרים לא ישתנו.`}
+        confirmLabel="הסרת הלינה"
+        onConfirm={() => {
+          updateHotel(day.id, emptyHotel(day.date, day.hotel.checkOut));
+          setOpen(false);
+        }}
+      />
+    </section>
   );
 }

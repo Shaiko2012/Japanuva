@@ -65,10 +65,12 @@ export async function GET() {
     const [latestRes, historyRes] = await Promise.all([
       fetch(latestUrl, {
         headers: { Accept: "application/json" },
+        signal: AbortSignal.timeout(8000),
         next: { revalidate: REVALIDATE_SECONDS },
       }),
       fetch(historyUrl, {
         headers: { Accept: "application/json" },
+        signal: AbortSignal.timeout(8000),
         next: { revalidate: REVALIDATE_SECONDS },
       }),
     ]);

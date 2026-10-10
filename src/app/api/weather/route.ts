@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-/** Tokyo city center — trip default destination. */
+/** Tokyo city center trip default destination. */
 const DEFAULT_LAT = 35.6812;
 const DEFAULT_LNG = 139.7671;
 const FORECAST_HORIZON_DAYS = 16;
@@ -79,6 +79,7 @@ async function fetchOpenMeteoDaily(
 ): Promise<DailyPayload | null> {
   const res = await fetch(url, {
     headers: { Accept: "application/json" },
+    signal: AbortSignal.timeout(8000),
     next: { revalidate },
   });
   if (!res.ok) return null;
@@ -163,7 +164,7 @@ export async function GET(request: Request) {
       sourceLabelHe: useForecast ? "תחזית Open-Meteo" : "ממוצע עונתי · Open-Meteo",
       messageHe: useForecast
         ? null
-        : "מזג אוויר מדויק עדיין לא זמין לתאריכי הטיול — מוצג ממוצע עונתי",
+        : "מזג אוויר מדויק עדיין לא זמין לתאריכי הטיול. מוצג ממוצע עונתי",
     });
   } catch {
     return NextResponse.json({

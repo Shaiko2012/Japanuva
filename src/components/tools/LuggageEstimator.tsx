@@ -1,146 +1,131 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
-import { Luggage } from "lucide-react";
-import { luggageRoutes } from "@/data/tools";
-import { tripMeta } from "@/data/trip";
-import { formatNumber } from "@/lib/utils";
-import {
-  softEntranceProps,
-  softInteractiveProps,
-  softStagger,
-} from "@/lib/motion";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { ProgressBar } from "@/components/ui/ProgressBar";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { luggageRoutes, luggageSizes, officialLinks } from "@/data/tools";
+import { useExchangeRate } from "@/hooks/useExchangeRate";
+import { formatNumber, cn } from "@/lib/utils";
+import { KeypadField } from "@/components/ui/KeypadField";
+import { PageHeader, SectionHead } from "@/components/ui/PageHeader";
+
+type SizeId = (typeof luggageSizes)[number]["id"];
+
+function roundTo100(n: number) {
+  return Math.round(n / 100) * 100;
+}
 
 export function LuggageEstimator() {
   const [routeId, setRouteId] = useState(luggageRoutes[0].id);
+  const [sizeId, setSizeId] = useState<SizeId>("large");
   const [bags, setBags] = useState(3);
-  const [weight, setWeight] = useState(20);
-  const reduceMotion = useReducedMotion();
-  const cardMotion = softInteractiveProps(reduceMotion);
+  const { rate } = useExchangeRate();
 
   const route = luggageRoutes.find((r) => r.id === routeId) ?? luggageRoutes[0];
-
-  const estimate = useMemo(() => {
-    const weightFactor = weight > 25 ? 1.25 : weight > 20 ? 1.1 : 1;
-    const perBag = Math.round(route.baseJpy * weightFactor);
-    const total = perBag * bags;
-    const ils = Math.round(total / tripMeta.exchangeRateIlsToJpy);
-    return { perBag, total, ils };
-  }, [route, bags, weight]);
+  const size = luggageSizes.find((s) => s.id === sizeId) ?? luggageSizes[0];
+  const perBag = roundTo100(route.largeJpy * size.factor);
+  const total = perBag * bags;
 
   return (
-    <div className="space-y-4">
-      <GlassCard strong>
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <span className="glow-accent flex h-12 w-12 items-center justify-center rounded-2xl bg-nav-bg text-nav-fg">
-              <Luggage className="h-5 w-5" />
-            </span>
-            <div>
-              <h1 className="fluid-title font-[family-name:var(--font-readex)] font-bold">
-                משלוח מזוודות
-              </h1>
-              <p className="mt-1 text-sm text-muted">
-                אומדן Takuhaibin בין מלונות ונמל תעופה — לפי מספר מזוודות ומשקל.
-              </p>
+    <div>
+      <PageHeader
+        kicker="הכנות"
+        title="משלוח מזוודות בין ערים"
+        lede="ביפן נהוג לשלוח את המזוודות מהמלון למלון הבא או לשדה, ולנסוע ברכבת עם תיק קטן. השירות נקרא Takkyubin ומוזמן בדלפק הקבלה."
+      />
+
+      <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <form className="space-y-10" onSubmit={(e) => e.preventDefault()}>
+          <fieldset>
+            <legend className="section-head w-full">
+              <span className="t-h2">מאיפה לאן</span>
+            </legend>
+            <div className="ruled">
+              {luggageRoutes.map((item) => (
+                <label
+                  key={item.id}
+                  className="flex cursor-pointer items-center gap-4 py-3.5"
+                >
+                  <input
+                    type="radio"
+                    name="luggage-route"
+                    className="check"
+                    value={item.id}
+                    checked={routeId === item.id}
+                    onChange={() => setRouteId(item.id)}
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-semibold">
+                      {item.from} <span aria-hidden>←</span>
+                      <span className="sr-only">אל</span> {item.to}
+                    </span>
+                    <span className="t-meta">{item.days}</span>
+                  </span>
+                </label>
+              ))}
             </div>
-          </div>
-          <StatusBadge tone="accent" label={`${route.days} ימי משלוח`} pulse />
-        </div>
-      </GlassCard>
+          </fieldset>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <GlassCard>
-          <h2 className="mb-3 text-sm font-semibold">בחירת מסלול</h2>
-          <div className="space-y-2">
-            {luggageRoutes.map((item, index) => (
-              <motion.button
-                key={item.id}
-                type="button"
-                {...softEntranceProps(reduceMotion, {
-                  delay: softStagger(index, 0.05),
-                  y: 8,
-                })}
-                {...cardMotion}
-                onClick={() => setRouteId(item.id)}
-                className={cn(
-                  "w-full rounded-2xl border p-3 text-right transition",
-                  routeId === item.id
-                    ? "border-accent/45 bg-accent-soft"
-                    : "border-border bg-background/30 hover:border-accent/30",
-                )}
-              >
-                <div className="font-medium">
-                  {item.from} → {item.to}
-                </div>
-                <div className="mt-1 text-xs text-muted">
-                  בסיס ¥{formatNumber(item.baseJpy)} למזוודה · {item.days} יום
-                </div>
-              </motion.button>
-            ))}
-          </div>
-        </GlassCard>
-
-        <GlassCard>
-          <h2 className="mb-4 text-sm font-semibold">מחשבון עלות</h2>
-
-          <label className="mb-4 block text-xs text-muted">
-            מספר מזוודות: {bags}
-            <input
-              type="range"
-              min={1}
-              max={6}
-              value={bags}
-              onChange={(e) => setBags(Number(e.target.value))}
-              className="mt-2 h-2 w-full cursor-pointer appearance-none rounded-full bg-foreground/10 accent-[var(--foreground)]"
-            />
-          </label>
-
-          <label className="mb-5 block text-xs text-muted">
-            משקל ממוצע (ק״ג): {weight}
-            <input
-              type="range"
-              min={10}
-              max={30}
-              value={weight}
-              onChange={(e) => setWeight(Number(e.target.value))}
-              className="mt-2 h-2 w-full cursor-pointer appearance-none rounded-full bg-foreground/10 accent-[var(--foreground)]"
-            />
-          </label>
-
-          <motion.div
-            {...softEntranceProps(reduceMotion, { y: 8 })}
-            className="rounded-2xl border border-accent/35 bg-accent-soft p-4"
-          >
-            <div className="text-xs text-accent/80">אומדן כולל</div>
-            <div className="mt-1 font-[family-name:var(--font-readex)] text-3xl font-bold tabular-nums text-accent">
-              ¥{formatNumber(estimate.total)}
+          <fieldset>
+            <legend className="section-head w-full">
+              <span className="t-h2">המזוודות</span>
+            </legend>
+            <div className="grid gap-6 sm:grid-cols-[minmax(0,1fr)_10rem]">
+              <div className="ruled">
+                {luggageSizes.map((item) => (
+                  <label key={item.id} className="flex cursor-pointer items-center gap-4 py-3.5">
+                    <input
+                      type="radio"
+                      name="luggage-size"
+                      className="check"
+                      value={item.id}
+                      checked={sizeId === item.id}
+                      onChange={() => setSizeId(item.id)}
+                    />
+                    <span>
+                      <span className="block font-semibold">{item.label}</span>
+                      <span className="t-meta">{item.detail}</span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+              <KeypadField
+                mode="number"
+                label="כמה מזוודות"
+                value={bags}
+                min={1}
+                max={12}
+                onChange={(n) => setBags(Math.min(12, Math.max(1, n || 1)))}
+              />
             </div>
-            <div className="mt-1 text-xs text-muted">
-              ≈ ₪{formatNumber(estimate.ils)} · ¥{formatNumber(estimate.perBag)}{" "}
-              למזוודה
+          </fieldset>
+        </form>
+
+        <aside className="lg:sticky lg:top-[calc(var(--header-h)+2rem)] lg:self-start">
+          <SectionHead title="אומדן גס" as="h3" />
+          <p className="mt-3">
+            <span className="t-num text-5xl">¥{formatNumber(total)}</span>
+          </p>
+          <p className="t-meta mt-2 tabular">
+            ≈ ₪{formatNumber(Math.round(total / rate))} · ¥{formatNumber(perBag)} למזוודה
+          </p>
+          <dl className={cn("mt-6 space-y-2 border-t border-rule pt-4 text-sm")}>
+            <div className="flex justify-between gap-3">
+              <dt className="text-muted">מסלול</dt>
+              <dd className="text-end">{route.to}</dd>
             </div>
-          </motion.div>
-
-          <div className="mt-4">
-            <ProgressBar
-              value={estimate.total}
-              max={20000}
-              label="יחס לתקציב לוגיסטיקה משוער"
-            />
-          </div>
-
-          <ul className="mt-4 space-y-1.5 text-xs text-muted">
-            <li>• הזמנה בדלפק המלון בערב שלפני המעבר</li>
-            <li>• לנמל — שליחה לפחות יום־יומיים מראש</li>
-            <li>• שמרו תעודת משלוח עד לקבלה</li>
-          </ul>
-        </GlassCard>
+            <div className="flex justify-between gap-3">
+              <dt className="text-muted">הגעה</dt>
+              <dd className="text-end">{route.days}</dd>
+            </div>
+          </dl>
+          <p className="note mt-6 text-sm leading-6">
+            המחיר בפועל נקבע לפי סכום המידות והמשקל של כל מזוודה ולפי המרחק, ומשולם בדלפק.
+            האומדן כאן נועד רק לתכנון התקציב.
+          </p>
+          <a href={officialLinks.yamato} target="_blank" rel="noreferrer" className="link-nav mt-5">
+            השירות באתר Yamato
+            <span className="sr-only"> (חלון חדש)</span>
+          </a>
+        </aside>
       </div>
     </div>
   );

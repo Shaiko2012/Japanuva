@@ -99,8 +99,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const auth = getFirebaseAuth();
     if (!auth) {
-      setLoading(false);
-      return;
+      const t = setTimeout(() => setLoading(false), 0);
+      return () => clearTimeout(t);
     }
     const unsub = onAuthStateChanged(auth, (next) => {
       setUser(next);

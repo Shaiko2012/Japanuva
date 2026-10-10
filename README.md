@@ -60,11 +60,10 @@ npm run start
 3. להתקנה מקומית נוחה יותר: `npx next start` אחרי build, או `npm run dev -- --experimental-https` לבדיקת HTTPS (ה־SW עדיין כבוי ב־dev בכוונה).
 4. במובייל / Chrome: Install / «הוסף למסך הבית» אחרי deploy ל־HTTPS.
 
-### APK (Android) אחרי deploy
+### APK (Android) — no Google Play
 
-האתר נשאר ב־Vercel. אפליקציית Android היא WebView מלא (Capacitor) בלי Chrome ובלי שורת כתובת. הוראות: [`docs/apk.md`](docs/apk.md).
+Sideload tutorial (English): [`docs/android-sideload-tutorial.md`](docs/android-sideload-tutorial.md).
 
 ```bash
-npm run cap:sync
-npm run cap:open
+npm run cap:apk
 ```

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import {
   AnimatePresence,
@@ -15,6 +15,7 @@ import {
   softTransition,
 } from "@/lib/motion";
 import { cn } from "@/lib/utils";
+import { useHydrated } from "@/hooks/useHydrated";
 
 interface KeypadSheetProps {
   open: boolean;
@@ -23,8 +24,6 @@ interface KeypadSheetProps {
   children: ReactNode;
   className?: string;
 }
-
-const BACKDROP_BLUR = "blur(5px)";
 
 const rootVariants: Variants = {
   open: { transition: { when: "beforeChildren" } },
@@ -38,12 +37,8 @@ export function KeypadSheet({
   children,
   className,
 }: KeypadSheetProps) {
-  const [mounted, setMounted] = useState(false);
+  const mounted = useHydrated();
   const reduceMotion = useReducedMotion();
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -56,29 +51,10 @@ export function KeypadSheet({
 
   if (!mounted) return null;
 
-  const backdropVariants: Variants = reduceMotion
-    ? {
-        open: { opacity: 1, transition: softBackdropTransition() },
-        closed: { opacity: 0, transition: softBackdropTransition() },
-      }
-    : {
-        open: {
-          opacity: 1,
-          backdropFilter: BACKDROP_BLUR,
-          transition: {
-            opacity: softBackdropTransition(),
-            backdropFilter: { duration: 0.12, ease: [0.16, 1, 0.3, 1] },
-          },
-        },
-        closed: {
-          opacity: 0,
-          backdropFilter: "blur(0px)",
-          transition: {
-            opacity: softBackdropTransition(),
-            backdropFilter: { duration: 0.1, ease: [0.16, 1, 0.3, 1] },
-          },
-        },
-      };
+  const backdropVariants: Variants = {
+    open: { opacity: 1, transition: softBackdropTransition() },
+    closed: { opacity: 0, transition: softBackdropTransition() },
+  };
 
   const panelVariants: Variants = reduceMotion
     ? {
@@ -122,15 +98,8 @@ export function KeypadSheet({
             aria-label="סגירה"
             onClick={onClose}
             variants={backdropVariants}
-            className="absolute inset-0 bg-[#141210]/55"
-            style={
-              reduceMotion
-                ? undefined
-                : {
-                    transition:
-                      "backdrop-filter 0.25s ease, -webkit-backdrop-filter 0.25s ease",
-                  }
-            }
+            tabIndex={-1}
+            className="scrim absolute inset-0 cursor-default"
           />
           <motion.div
             role="dialog"
@@ -138,29 +107,26 @@ export function KeypadSheet({
             aria-label={title}
             variants={panelVariants}
             className={cn(
-              "glass-strong relative z-10 flex max-h-[min(92dvh,40rem)] w-full max-w-sm flex-col overflow-hidden rounded-t-[1.75rem] rounded-b-3xl border border-border sm:max-h-[min(88dvh,40rem)] sm:rounded-3xl",
-              "bg-[color-mix(in_srgb,var(--parchment)_92%,white)] shadow-[0_20px_48px_rgba(10,10,10,0.18)]",
-              "dark:bg-[color-mix(in_srgb,var(--surface-strong)_96%,black)]",
+              "relative z-10 flex max-h-[min(92dvh,40rem)] w-full max-w-sm flex-col overflow-hidden glass-strong rounded-t-3xl sm:max-h-[min(88dvh,40rem)] sm:rounded-2xl",
               className,
             )}
           >
-            <div className="mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-foreground/15 sm:hidden" />
-            <div className="flex shrink-0 items-center justify-between gap-3 px-4 pb-2 pt-3 sm:pt-4">
-              <h2 className="min-w-0 font-[family-name:var(--font-readex)] text-base font-bold text-foreground">
+            <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border px-4 pb-2 pt-3 sm:pt-4">
+              <h2 className="t-h3 min-w-0">
                 {title}
               </h2>
               <button
                 type="button"
                 onClick={onClose}
-                className="touch-target flex shrink-0 items-center justify-center rounded-full border border-border bg-surface hover:border-yellow/50"
-                aria-label="סגור"
+                className="btn btn-icon -me-2 text-muted hover:text-foreground"
+                aria-label="סגירה"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
             <div
               data-lenis-prevent
-              className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-[max(1rem,var(--safe-bottom))] pt-1 sm:pb-5"
+              className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-[max(1rem,var(--safe-bottom))] pt-3 sm:pb-5"
             >
               {children}
             </div>

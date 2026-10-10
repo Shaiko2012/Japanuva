@@ -58,13 +58,13 @@ export function parseGoogleMapsInput(input: string): {
         if (!q) query = titleHint;
       }
 
-      // !3dLAT!4dLNG — exact place pin (prefer over map viewport @coords)
+      // !3dLAT!4dLNG exact place pin (prefer over map viewport @coords)
       const bang = mapsLink.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
       if (bang) {
         lat = Number(bang[1]);
         lng = Number(bang[2]);
       } else {
-        // /@lat,lng,zoom — viewport center, less accurate fallback
+        // /@lat,lng,zoom viewport center, less accurate fallback
         const at = url.pathname.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
         if (at) {
           lat = Number(at[1]);

@@ -23,6 +23,7 @@ interface ItineraryEditorState {
   removeDay: (id: string) => void;
   reorderDays: (activeId: string, overId: string) => void;
   updateDayCity: (dayId: string, city: EditorCity) => void;
+  updateDayCityCustom: (dayId: string, cityCustom: string) => void;
   updateDayDate: (dayId: string, date: string) => void;
   updateFoodEstimate: (dayId: string, value: number) => void;
   updateHotel: (dayId: string, hotel: Partial<HotelInfo>) => void;
@@ -126,7 +127,23 @@ export const useItineraryEditor = create<ItineraryEditorState>()(
       updateDayCity: (dayId, city) =>
         set((s) => ({
           dirty: true,
-          days: s.days.map((d) => (d.id === dayId ? { ...d, city } : d)),
+          days: s.days.map((d) =>
+            d.id === dayId
+              ? {
+                  ...d,
+                  city,
+                  cityCustom: city === "Other" ? d.cityCustom : undefined,
+                }
+              : d,
+          ),
+        })),
+
+      updateDayCityCustom: (dayId, cityCustom) =>
+        set((s) => ({
+          dirty: true,
+          days: s.days.map((d) =>
+            d.id === dayId ? { ...d, city: "Other", cityCustom } : d,
+          ),
         })),
 
       updateDayDate: (dayId, date) =>

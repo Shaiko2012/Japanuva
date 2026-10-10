@@ -78,6 +78,14 @@ export const useTripMetaStore = create<TripMetaState>()(
   ),
 );
 
+/** Inclusive calendar days between two ISO dates (0 if invalid). */
+export function tripLengthDays(startDate: string, endDate: string) {
+  const start = new Date(`${startDate}T12:00:00`).getTime();
+  const end = new Date(`${endDate}T12:00:00`).getTime();
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) return 0;
+  return Math.round((end - start) / 86_400_000) + 1;
+}
+
 export function formatTripRangeHe(startDate: string, endDate: string) {
   const start = new Date(`${startDate}T12:00:00`);
   const end = new Date(`${endDate}T12:00:00`);
@@ -90,7 +98,7 @@ export function formatTripRangeHe(startDate: string, endDate: string) {
       month: "long",
       year: "numeric",
     }).format(start);
-    return `${start.getDate()}–${end.getDate()} ב${monthYear}`;
+    return `${start.getDate()}-${end.getDate()} ב${monthYear}`;
   }
 
   const fmt = new Intl.DateTimeFormat("he-IL", {
@@ -98,5 +106,5 @@ export function formatTripRangeHe(startDate: string, endDate: string) {
     month: "short",
     year: "numeric",
   });
-  return `${fmt.format(start)} – ${fmt.format(end)}`;
+  return `${fmt.format(start)} - ${fmt.format(end)}`;
 }

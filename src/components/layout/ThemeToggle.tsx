@@ -1,11 +1,11 @@
 "use client";
 
-import { CloudMoon, Sun } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
 import { flushSync } from "react-dom";
-import { motion, useReducedMotion } from "framer-motion";
-import { softHover, softSpring, softTap } from "@/lib/motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { useHydrated } from "@/hooks/useHydrated";
+import { softSpring } from "@/lib/motion";
 
 function applyThemeClass(theme: "light" | "dark") {
   const root = document.documentElement;
@@ -16,15 +16,11 @@ function applyThemeClass(theme: "light" | "dark") {
 
 export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useHydrated();
   const reduceMotion = useReducedMotion();
 
-  useEffect(() => setMounted(true), []);
-
   if (!mounted) {
-    return (
-      <div className="h-11 w-11 rounded-full border border-border bg-surface-strong shadow-[var(--card-shadow)]" />
-    );
+    return <span className="inline-block h-11 w-11" aria-hidden />;
   }
 
   const isDark = resolvedTheme === "dark";
@@ -43,10 +39,7 @@ export function ThemeToggle() {
       window.setTimeout(() => root.classList.remove("theme-switching"), 40);
     };
 
-    if (
-      !reduceMotion &&
-      typeof document.startViewTransition === "function"
-    ) {
+    if (!reduceMotion && typeof document.startViewTransition === "function") {
       const vt = document.startViewTransition(apply);
       void vt.finished.finally(done);
       return;
@@ -57,34 +50,25 @@ export function ThemeToggle() {
   };
 
   return (
-    <motion.button
+    <button
       type="button"
-      whileHover={reduceMotion ? undefined : softHover}
-      whileTap={reduceMotion ? undefined : softTap}
       onClick={toggleTheme}
-      className="relative flex h-11 w-11 items-center justify-center rounded-full border border-border bg-surface-strong text-foreground shadow-[var(--card-shadow)] transition hover:border-yellow/50 hover:shadow-[var(--card-shadow-hover)]"
-      aria-label={isDark ? "מצב בהיר" : "מצב ערב"}
+      className="btn btn-icon text-foreground hover:text-yellow"
+      aria-label={isDark ? "מעבר למצב בהיר" : "מעבר למצב כהה"}
+      title={isDark ? "מצב בהיר" : "מצב כהה"}
     >
-      <motion.span
-        key={isDark ? "moon" : "sun"}
-        initial={
-          reduceMotion
-            ? { opacity: 0 }
-            : { rotate: -40, opacity: 0, scale: 0.6 }
-        }
-        animate={
-          reduceMotion
-            ? { opacity: 1 }
-            : { rotate: 0, opacity: 1, scale: 1 }
-        }
-        transition={softSpring}
-      >
-        {isDark ? (
-          <CloudMoon className="h-4 w-4 text-yellow" />
-        ) : (
-          <Sun className="h-4 w-4 text-foreground" />
-        )}
-      </motion.span>
-    </motion.button>
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.span
+          key={isDark ? "sun" : "moon"}
+          initial={reduceMotion ? { opacity: 0 } : { rotate: -80, scale: 0.5, opacity: 0 }}
+          animate={reduceMotion ? { opacity: 1 } : { rotate: 0, scale: 1, opacity: 1 }}
+          exit={reduceMotion ? { opacity: 0 } : { rotate: 80, scale: 0.5, opacity: 0 }}
+          transition={reduceMotion ? { duration: 0.12 } : softSpring}
+          className="inline-flex"
+        >
+          {isDark ? <Sun aria-hidden /> : <Moon aria-hidden />}
+        </motion.span>
+      </AnimatePresence>
+    </button>
   );
 }

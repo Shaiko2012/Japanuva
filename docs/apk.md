@@ -1,34 +1,15 @@
-# Android APK (Capacitor WebView)
+# Android APK
 
-Japanuva’s website stays on Vercel. The Android app is a native WebView shell that loads:
+Sideload only — **no Google Play**.
 
-`https://japanuva.vercel.app`
+Full English tutorial:
 
-No Chrome Custom Tabs, no address bar, no browser UI.
+**[Japanuva Android app tutorial (no Google Play)](./android-sideload-tutorial.md)**
 
-## Prerequisites
-
-- JDK 17+
-- [Android Studio](https://developer.android.com/studio) (SDK + platform tools)
-- This repo’s Node dependencies (`npm install`)
-
-## Build
+Quick build:
 
 ```bash
-npm run cap:sync
-npm run cap:open
+npm run cap:apk
 ```
 
-In Android Studio: **Build → Build Bundle(s) / APK(s) → Build APK(s)**.
-
-Release APK/AAB should be signed with your own keystore. Do not commit `*.apk`, `*.aab`, or `*.keystore`.
-
-## Branding assets
-
-Launcher and splash images are generated from the mint + torii mark:
-
-```bash
-node scripts/generate-android-branding.mjs
-```
-
-Replace later if you want a different icon: `android/app/src/main/res/mipmap-*/ic_launcher.png` and `ic_launcher_foreground.png`.
+Output: `android/app/build/outputs/apk/debug/app-debug.apk`

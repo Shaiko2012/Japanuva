@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 import {
   DndContext,
+  KeyboardSensor,
   PointerSensor,
   closestCenter,
   useSensor,
@@ -11,21 +12,12 @@ import {
 } from "@dnd-kit/core";
 import {
   SortableContext,
+  sortableKeyboardCoordinates,
   useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import {
-  Baby,
-  Clock3,
-  ExternalLink,
-  GripVertical,
-  MapPin,
-  Pencil,
-  Plus,
-  Sparkles,
-  Trash2,
-} from "lucide-react";
+import { ExternalLink, GripVertical, Plus } from "lucide-react";
 import {
   selectSelectedDay,
   useItineraryEditor,
@@ -39,21 +31,19 @@ import {
   type TicketStatus,
   type TimeSlot,
 } from "@/types/editor";
-import { tripMeta } from "@/data/trip";
 import { parseGoogleMapsInput, buildMapsOpenUrl } from "@/lib/mapsParse";
 import { geocodePlace } from "@/lib/geocode";
-import { formatNumber } from "@/lib/utils";
+import { formatNumber, cn } from "@/lib/utils";
 import { PlaceSearchPicker } from "@/components/maps/PlaceSearchPicker";
-import { GlassCard } from "@/components/ui/GlassCard";
 import { KeypadField } from "@/components/ui/KeypadField";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import { Dialog } from "@/components/ui/Dialog";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { TicketStatusLabel } from "@/components/ui/StatusLabel";
 import type { PlaceSearchResult } from "@/types/places";
-import { GlassModal } from "./GlassModal";
 
-const inputClass =
-  "mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-accent/50";
+type Draft = Omit<ActivityItem, "id">;
 
-const blankActivity = (): Omit<ActivityItem, "id"> => ({
+const blankActivity = (): Draft => ({
   title: "",
   descriptionHe: "",
   category: "culture",
@@ -69,62 +59,53 @@ const blankActivity = (): Omit<ActivityItem, "id"> => ({
   lng: undefined,
 });
 
-function ActivityFormFields({
+function ActivityForm({
   draft,
   setDraft,
-  mapsPaste,
-  setMapsPaste,
-  resolvingMaps,
-  setResolvingMaps,
 }: {
-  draft: Omit<ActivityItem, "id">;
-  setDraft: (next: Omit<ActivityItem, "id">) => void;
-  mapsPaste: string;
-  setMapsPaste: (v: string) => void;
-  resolvingMaps: boolean;
-  setResolvingMaps: (v: boolean) => void;
+  draft: Draft;
+  setDraft: (next: Draft) => void;
 }) {
+  const [mapsPaste, setMapsPaste] = useState(draft.mapsLink || draft.location || "");
+  const [resolving, setResolving] = useState(false);
+  const [resolveError, setResolveError] = useState<string | null>(null);
+
   async function applyMapsPaste() {
-    const raw = mapsPaste || draft.mapsLink || "";
+    const raw = mapsPaste.trim();
     const parsed = parseGoogleMapsInput(raw);
     if (!parsed.query && !parsed.mapsLink) return;
-
-    setResolvingMaps(true);
+    setResolving(true);
+    setResolveError(null);
     try {
-      // Prefer coords/query from the new paste — do not keep stale draft
-      // lat/lng or location, or geocoding would be skipped for renamed places.
       let lat = parsed.lat;
       let lng = parsed.lng;
       let location = parsed.titleHint || parsed.query || draft.location;
-
       if (lat == null || lng == null) {
         const geocoded = await geocodePlace(raw);
         if (geocoded) {
           lat = geocoded.lat;
           lng = geocoded.lng;
           location = geocoded.query || location;
+        } else {
+          setResolveError("לא נמצא מיקום. נסו שם מדויק יותר או קישור מ־Google Maps.");
         }
       }
-
       const title = draft.title || parsed.titleHint || "";
       setDraft({
         ...draft,
-        title: title || draft.title,
+        title,
         location,
         mapsLink: buildMapsOpenUrl({
-          name: title || (location && !location.match(/^-?\d+\.\d+\s*,/) ? location : undefined),
+          name: title || (location && !/^-?\d+\.\d+\s*,/.test(location) ? location : undefined),
           address: location,
           lat,
           lng,
         }),
         lat,
         lng,
-        descriptionHe:
-          draft.descriptionHe ||
-          (location ? `מיקום: ${location}` : ""),
       });
     } finally {
-      setResolvingMaps(false);
+      setResolving(false);
     }
   }
 
@@ -141,96 +122,37 @@ function ActivityFormFields({
       }),
       lat: place.lat,
       lng: place.lng,
-      descriptionHe:
-        draft.descriptionHe ||
-        (place.address ? `מיקום: ${place.address}` : ""),
     });
     setMapsPaste(place.mapsLink);
   }
 
   return (
-    <div className="space-y-3">
-      <PlaceSearchPicker
-        label="חיפוש מקום במפות"
-        placeholder="DisneySea, TeamLab, מלון בשינג'וקו…"
-        onSelect={applyPlaceSearch}
-      />
-
-      <label className="block text-xs text-muted">
-        קישור Google Maps / כתובת / שם מקום
-        <div className="mt-1 flex gap-2">
-          <input
-            className={inputClass + " !mt-0"}
-            value={mapsPaste}
-            onChange={(e) => setMapsPaste(e.target.value)}
-            placeholder="הדביקו קישור מפות, או כתבו DisneySea / כתובת…"
-          />
-          <button
-            type="button"
-            onClick={() => void applyMapsPaste()}
-            disabled={resolvingMaps}
-            className="shrink-0 rounded-xl border border-accent/40 bg-accent-soft px-3 text-xs font-medium text-accent disabled:opacity-40"
-          >
-            {resolvingMaps ? "…" : "מצא"}
-          </button>
-        </div>
-        <span className="mt-1 block text-[11px] text-muted">
-          אחרי “מצא” נמלא שם/מיקום/קישור · אם אין קואורדינטות בקישור — נחפש כתובת
-          {draft.lat != null && draft.lng != null && (
-            <span className="mt-0.5 block text-success">
-              מיקום מדויק: {draft.lat.toFixed(5)}, {draft.lng.toFixed(5)}
-            </span>
-          )}
-        </span>
-      </label>
-
-      <label className="block text-xs text-muted">
-        כותרת
+    <div className="space-y-5">
+      <div>
+        <label className="field-label" htmlFor="act-title">
+          שם הפעילות
+        </label>
         <input
-          className={inputClass}
+          id="act-title"
+          className="field"
           value={draft.title}
           onChange={(e) => setDraft({ ...draft, title: e.target.value })}
-          placeholder="TeamLab Planets / מקדש סנסו־ג'י"
+          placeholder="למשל: מקדש סנסו־ג׳י"
+          dir="auto"
+          required
         />
-      </label>
-      <label className="block text-xs text-muted">
-        תיאור בעברית
-        <textarea
-          className={`${inputClass} min-h-20`}
-          value={draft.descriptionHe}
-          onChange={(e) =>
-            setDraft({ ...draft, descriptionHe: e.target.value })
-          }
-        />
-      </label>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <label className="block text-xs text-muted">
-          קטגוריה
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label className="field-label" htmlFor="act-slot">
+            מתי ביום
+          </label>
           <select
-            className={inputClass}
-            value={draft.category}
-            onChange={(e) =>
-              setDraft({
-                ...draft,
-                category: e.target.value as ActivityCategory,
-              })
-            }
-          >
-            {(Object.keys(CATEGORY_META) as ActivityCategory[]).map((key) => (
-              <option key={key} value={key}>
-                {CATEGORY_META[key].emoji} {CATEGORY_META[key].label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="block text-xs text-muted">
-          משבצת זמן
-          <select
-            className={inputClass}
+            id="act-slot"
+            className="field"
             value={draft.timeSlot}
-            onChange={(e) =>
-              setDraft({ ...draft, timeSlot: e.target.value as TimeSlot })
-            }
+            onChange={(e) => setDraft({ ...draft, timeSlot: e.target.value as TimeSlot })}
           >
             {(Object.keys(TIME_SLOT_LABELS) as TimeSlot[]).map((key) => (
               <option key={key} value={key}>
@@ -238,261 +160,236 @@ function ActivityFormFields({
               </option>
             ))}
           </select>
-        </label>
-      </div>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <label className="block text-xs text-muted">
-          סטטוס כרטיסים
+        </div>
+        <div>
+          <label className="field-label" htmlFor="act-category">
+            סוג
+          </label>
           <select
-            className={inputClass}
-            value={draft.ticketStatus}
+            id="act-category"
+            className="field"
+            value={draft.category}
             onChange={(e) =>
-              setDraft({
-                ...draft,
-                ticketStatus: e.target.value as TicketStatus,
-              })
+              setDraft({ ...draft, category: e.target.value as ActivityCategory })
             }
           >
-            {(Object.keys(TICKET_STATUS_LABELS) as TicketStatus[]).map(
-              (key) => (
+            {(Object.keys(CATEGORY_META) as ActivityCategory[]).map((key) => (
+              <option key={key} value={key}>
+                {CATEGORY_META[key].label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <fieldset className="space-y-3 border-t border-rule pt-4">
+        <legend className="t-label float-start mb-3 w-full">מיקום</legend>
+        <PlaceSearchPicker
+          label="חיפוש במפות"
+          placeholder="שם המקום, למשל TeamLab Planets"
+          onSelect={applyPlaceSearch}
+        />
+        <details className="group">
+          <summary className="btn btn-tertiary btn-sm cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+            הדבקת קישור או כתובת
+          </summary>
+          <div className="mt-2 flex gap-2">
+            <input
+              className="field"
+              value={mapsPaste}
+              onChange={(e) => setMapsPaste(e.target.value)}
+              placeholder="קישור Google Maps או כתובת"
+              aria-label="קישור Google Maps או כתובת"
+              dir="auto"
+            />
+            <button
+              type="button"
+              onClick={() => void applyMapsPaste()}
+              disabled={resolving || !mapsPaste.trim()}
+              className="btn btn-secondary shrink-0"
+            >
+              {resolving ? "מחפש…" : "איתור"}
+            </button>
+          </div>
+          {resolveError && <p className="field-hint text-danger">{resolveError}</p>}
+        </details>
+        {draft.location ? (
+          <p className="text-sm text-ink-soft">
+            {draft.location}
+            {draft.lat != null && draft.lng != null && (
+              <span className="t-meta ms-2">· מסומן במפה</span>
+            )}
+          </p>
+        ) : (
+          <p className="t-meta">ללא מיקום, הפעילות לא תופיע במפה.</p>
+        )}
+      </fieldset>
+
+      <fieldset className="border-t border-rule pt-4">
+        <legend className="t-label float-start mb-3 w-full">כרטיסים ומשך</legend>
+        <div className="grid w-full gap-4 sm:grid-cols-2">
+          <div>
+            <label className="field-label" htmlFor="act-ticket">
+              כרטיסים
+            </label>
+            <select
+              id="act-ticket"
+              className="field"
+              value={draft.ticketStatus}
+              onChange={(e) =>
+                setDraft({ ...draft, ticketStatus: e.target.value as TicketStatus })
+              }
+            >
+              {(Object.keys(TICKET_STATUS_LABELS) as TicketStatus[]).map((key) => (
                 <option key={key} value={key}>
                   {TICKET_STATUS_LABELS[key]}
                 </option>
-              ),
-            )}
-          </select>
-        </label>
-        <label className="mt-6 flex items-center gap-2 text-sm text-foreground">
-          <input
-            type="checkbox"
-            checked={draft.familyFriendly}
-            onChange={(e) =>
-              setDraft({ ...draft, familyFriendly: e.target.checked })
+              ))}
+            </select>
+          </div>
+          <KeypadField
+            mode="number"
+            label="מחיר כולל לכל המשפחה (¥)"
+            value={draft.priceJpy}
+            min={0}
+            onChange={(priceJpy) => setDraft({ ...draft, priceJpy: priceJpy || 0 })}
+          />
+          <KeypadField
+            mode="number"
+            label="משך משוער (שעות)"
+            value={draft.durationHours}
+            allowDecimal
+            maxDecimals={1}
+            min={0.5}
+            onChange={(durationHours) =>
+              setDraft({ ...draft, durationHours: durationHours || 1 })
             }
-            className="h-4 w-4 accent-[var(--foreground)]"
           />
-          מתאים למשפחה / ילדים
-        </label>
-      </div>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <KeypadField
-          mode="number"
-          label="משך (שעות)"
-          value={draft.durationHours}
-          allowDecimal
-          maxDecimals={1}
-          min={0.5}
-          onChange={(durationHours) =>
-            setDraft({
-              ...draft,
-              durationHours: durationHours || 1,
-            })
-          }
-        />
-        <KeypadField
-          mode="number"
-          label="מחיר כרטיסים (¥)"
-          value={draft.priceJpy}
-          min={0}
-          onChange={(priceJpy) =>
-            setDraft({
-              ...draft,
-              priceJpy: priceJpy || 0,
-            })
-          }
-        />
-      </div>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <label className="block text-xs text-muted">
-          מיקום / כתובת
-          <input
-            className={inputClass}
-            value={draft.location ?? ""}
-            onChange={(e) => setDraft({ ...draft, location: e.target.value })}
-          />
-        </label>
-        <label className="block text-xs text-muted">
-          קישור מפות
-          <input
-            className={inputClass}
-            value={draft.mapsLink ?? ""}
-            onChange={(e) => setDraft({ ...draft, mapsLink: e.target.value })}
-            placeholder="https://maps.google.com/..."
-          />
-        </label>
-      </div>
-      <label className="block text-xs text-muted">
-        הערות פנימיות
-        <textarea
-          className={`${inputClass} min-h-20`}
-          value={draft.notes ?? ""}
-          onChange={(e) => setDraft({ ...draft, notes: e.target.value })}
-        />
-      </label>
+          <label className="flex min-h-11 items-center gap-3 self-end text-[0.9375rem]">
+            <input
+              type="checkbox"
+              className="check"
+              checked={draft.familyFriendly}
+              onChange={(e) => setDraft({ ...draft, familyFriendly: e.target.checked })}
+            />
+            מתאים לילדים
+          </label>
+        </div>
+      </fieldset>
+
+      <details className="border-t border-rule pt-4">
+        <summary className="btn btn-tertiary btn-sm cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+          תיאור והערות
+        </summary>
+        <div className="mt-3 space-y-4">
+          <div>
+            <label className="field-label" htmlFor="act-desc">
+              תיאור
+            </label>
+            <textarea
+              id="act-desc"
+              className="field"
+              value={draft.descriptionHe}
+              onChange={(e) => setDraft({ ...draft, descriptionHe: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="field-label" htmlFor="act-notes">
+              הערות פנימיות
+            </label>
+            <textarea
+              id="act-notes"
+              className="field"
+              value={draft.notes ?? ""}
+              onChange={(e) => setDraft({ ...draft, notes: e.target.value })}
+            />
+          </div>
+        </div>
+      </details>
     </div>
   );
 }
 
-function SortableActivity({
+function ActivityRow({
   activity,
-  onRemove,
   onEdit,
-  compact,
 }: {
   activity: ActivityItem;
-  onRemove: () => void;
   onEdit: () => void;
-  compact?: boolean;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: activity.id });
-  const meta = CATEGORY_META[activity.category];
-  const ils = Math.round(activity.priceJpy / tripMeta.exchangeRateIlsToJpy);
 
   return (
-    <div
+    <li
       ref={setNodeRef}
-      style={{
-        transform: CSS.Transform.toString(transform),
-        transition,
-      }}
-      className={`rounded-xl border border-border bg-background/35 p-3 ${
-        isDragging ? "glow-accent z-10" : ""
-      } ${compact ? "cursor-pointer hover:border-accent/30" : ""}`}
-      onClick={compact ? onEdit : undefined}
-      onKeyDown={
-        compact
-          ? (e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                onEdit();
-              }
-            }
-          : undefined
-      }
-      role={compact ? "button" : undefined}
-      tabIndex={compact ? 0 : undefined}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={cn(
+        "flex items-stretch gap-1 border-t border-rule bg-paper-raised first:border-t-0",
+        isDragging && "relative z-10 shadow-[var(--shadow-overlay)]",
+      )}
     >
-      <div className="flex items-start gap-2">
-        {!compact && (
-          <button
-            type="button"
-            className="mt-1 rounded-lg border border-border p-1.5 text-muted touch-none"
-            aria-label="גרור אטרקציה"
-            {...attributes}
-            {...listeners}
-          >
-            <GripVertical className="h-3.5 w-3.5" />
-          </button>
-        )}
-        <div className="min-w-0 flex-1">
-          {!compact && (
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full border border-border bg-surface px-2 py-0.5 text-[11px]">
-                {meta.emoji} {meta.label}
-              </span>
-              <span className="rounded-full border border-border px-2 py-0.5 text-[11px] text-muted">
-                {TIME_SLOT_LABELS[activity.timeSlot]}
-              </span>
-              {activity.familyFriendly && (
-                <span className="inline-flex items-center gap-1 rounded-full border border-success/30 bg-success/10 px-2 py-0.5 text-[11px] text-success">
-                  <Baby className="h-3 w-3" />
-                  משפחתי
-                </span>
-              )}
-            </div>
-          )}
-          {compact && (
-            <span className="text-[11px] text-muted">
-              {TIME_SLOT_LABELS[activity.timeSlot]} · {meta.emoji}
-            </span>
-          )}
-          <h3 className={compact ? "mt-0.5 font-medium" : "mt-2 font-semibold"}>
+      <button
+        type="button"
+        className="flex w-8 shrink-0 cursor-grab touch-none items-center justify-center text-muted hover:text-ink"
+        aria-label={`שינוי סדר: ${activity.title}`}
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="h-4 w-4" aria-hidden />
+      </button>
+      <button
+        type="button"
+        onClick={onEdit}
+        className="group grid min-w-0 flex-1 grid-cols-[4rem_minmax(0,1fr)] gap-x-3 py-3 pe-1 text-start"
+      >
+        <span className="pt-0.5 text-sm text-muted">{TIME_SLOT_LABELS[activity.timeSlot]}</span>
+        <span className="min-w-0">
+          <span className="block font-semibold group-hover:underline" dir="auto">
             {activity.title}
-          </h3>
-          {!compact && (
-            <p className="mt-1 text-xs leading-5 text-muted">
-              {activity.descriptionHe}
-            </p>
-          )}
-          {!compact && (
-            <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-muted">
-              <StatusBadge
-                tone="muted"
-                label={TICKET_STATUS_LABELS[activity.ticketStatus]}
-              />
-              <span className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-1">
-                <Clock3 className="h-3 w-3" />
-                {activity.durationHours} שע׳
-              </span>
-              <span className="rounded-full border border-accent/30 bg-accent-soft px-2 py-1 text-accent">
-                ¥{formatNumber(activity.priceJpy)} · ₪{formatNumber(ils)}
-              </span>
-              {activity.location && (
-                <span className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-1">
-                  <MapPin className="h-3 w-3" />
-                  {activity.location}
-                </span>
-              )}
-              {activity.mapsLink && (
-                <a
-                  href={activity.mapsLink}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-1 text-accent hover:underline"
-                >
-                  <ExternalLink className="h-3 w-3" />
-                  מפות
-                </a>
-              )}
-            </div>
-          )}
-        </div>
-        {!compact && (
-        <div className="flex flex-col gap-1">
-          <button
-            type="button"
-            onClick={onEdit}
-            className="rounded-lg border border-border p-1.5 text-muted hover:border-accent/40 hover:text-accent"
-            aria-label="ערוך אטרקציה"
-          >
-            <Pencil className="h-3.5 w-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={onRemove}
-            className="rounded-lg border border-border p-1.5 text-muted hover:border-accent/40 hover:text-accent"
-            aria-label="מחק אטרקציה"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </button>
-        </div>
-        )}
-      </div>
-    </div>
+          </span>
+          <span className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
+            <span>{CATEGORY_META[activity.category].label}</span>
+            <span className="tabular">{activity.durationHours} ש׳</span>
+            {activity.priceJpy > 0 && (
+              <span className="tabular">¥{formatNumber(activity.priceJpy)}</span>
+            )}
+            {activity.ticketStatus === "needs_reservation" || activity.ticketStatus === "booked" ? (
+              <TicketStatusLabel status={activity.ticketStatus} />
+            ) : null}
+          </span>
+        </span>
+      </button>
+      {activity.mapsLink && (
+        <a
+          href={activity.mapsLink}
+          target="_blank"
+          rel="noreferrer"
+          className="flex w-10 shrink-0 items-center justify-center text-muted hover:text-ink"
+          aria-label={`פתיחת ${activity.title} במפות (חלון חדש)`}
+        >
+          <ExternalLink className="h-4 w-4" aria-hidden />
+        </a>
+      )}
+    </li>
   );
 }
 
-export function ActivitiesBuilder({
-  variant = "default",
-  renderItinerary,
-}: {
-  variant?: "default" | "itinerary";
-  renderItinerary?: (parts: { cta: ReactNode; list: ReactNode }) => ReactNode;
-}) {
+export function ActivitiesBuilder() {
   const day = useItineraryEditor(selectSelectedDay);
   const addActivity = useItineraryEditor((s) => s.addActivity);
   const updateActivity = useItineraryEditor((s) => s.updateActivity);
   const removeActivity = useItineraryEditor((s) => s.removeActivity);
   const reorderActivities = useItineraryEditor((s) => s.reorderActivities);
   const [open, setOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [draft, setDraft] = useState(blankActivity());
-  const [mapsPaste, setMapsPaste] = useState("");
-  const [resolvingMaps, setResolvingMaps] = useState(false);
+  const [draft, setDraft] = useState<Draft>(blankActivity());
+  const [formKey, setFormKey] = useState(0);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
   if (!day) return null;
@@ -506,7 +403,7 @@ export function ActivitiesBuilder({
   function openCreate() {
     setEditingId(null);
     setDraft(blankActivity());
-    setMapsPaste("");
+    setFormKey((k) => k + 1);
     setOpen(true);
   }
 
@@ -514,147 +411,114 @@ export function ActivitiesBuilder({
     const { id, ...rest } = activity;
     setEditingId(id);
     setDraft(rest);
-    setMapsPaste(activity.mapsLink || activity.location || "");
+    setFormKey((k) => k + 1);
     setOpen(true);
   }
 
   function save() {
     if (!draft.title.trim()) return;
-    if (editingId) {
-      updateActivity(day!.id, editingId, draft);
-    } else {
-      addActivity(day!.id, draft);
-    }
-    setDraft(blankActivity());
-    setMapsPaste("");
-    setEditingId(null);
+    const clean = { ...draft, title: draft.title.trim() };
+    if (editingId) updateActivity(day!.id, editingId, clean);
+    else addActivity(day!.id, clean);
     setOpen(false);
   }
 
-  const itineraryCta = (
-    <button
-      type="button"
-      onClick={openCreate}
-      className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-yellow/45 bg-yellow-soft/50 px-4 py-3.5 text-sm font-semibold text-foreground transition hover:border-yellow/70 hover:bg-yellow-soft"
-    >
-      הוסף אטרקציה
-      <span className="text-lg leading-none">+</span>
-    </button>
-  );
-
-  const itineraryList = (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={onDragEnd}
-    >
-      <SortableContext
-        items={day.activities.map((a) => a.id)}
-        strategy={verticalListSortingStrategy}
-      >
-        <div className="space-y-2">
-          {day.activities.map((activity) => (
-            <SortableActivity
-              key={activity.id}
-              activity={activity}
-              onEdit={() => openEdit(activity)}
-              onRemove={() => removeActivity(day.id, activity.id)}
-              compact
-            />
-          ))}
-        </div>
-      </SortableContext>
-    </DndContext>
-  );
+  const editingTitle = editingId
+    ? day.activities.find((a) => a.id === editingId)?.title
+    : undefined;
 
   return (
-    <>
-      {variant === "itinerary" ? (
-        renderItinerary ? (
-          renderItinerary({ cta: itineraryCta, list: itineraryList })
-        ) : (
-          <div className="space-y-3">
-            {itineraryCta}
-            {itineraryList}
-          </div>
-        )
-      ) : (
-        <GlassCard>
-          <div className="mb-3 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 text-sm font-semibold">
-              <Sparkles className="h-4 w-4 text-accent" />
-              ניהול אטרקציות
-            </div>
-            <button
-              type="button"
-              onClick={openCreate}
-              className="inline-flex items-center gap-1 rounded-full border border-accent/35 bg-accent-soft px-2.5 py-1 text-xs font-medium text-accent"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              אטרקציה חדשה
-            </button>
-          </div>
-
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={onDragEnd}
-          >
-            <SortableContext
-              items={day.activities.map((a) => a.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              <div className="space-y-2">
-                {day.activities.map((activity) => (
-                  <SortableActivity
-                    key={activity.id}
-                    activity={activity}
-                    onEdit={() => openEdit(activity)}
-                    onRemove={() => removeActivity(day.id, activity.id)}
-                  />
-                ))}
-                {day.activities.length === 0 && (
-                  <p className="rounded-2xl border border-dashed border-border px-4 py-8 text-center text-sm text-muted">
-                    אין אטרקציות ליום זה — הוסיפו עם קישור מפות או כתובת.
-                  </p>
-                )}
-              </div>
-            </SortableContext>
-          </DndContext>
-        </GlassCard>
-      )}
-
-      <GlassModal
-        open={open}
-        onClose={() => setOpen(false)}
-        title={editingId ? "עריכת אטרקציה" : "הוספת אטרקציה חדשה"}
-        wide
-      >
-        <ActivityFormFields
-          draft={draft}
-          setDraft={setDraft}
-          mapsPaste={mapsPaste}
-          setMapsPaste={setMapsPaste}
-          resolvingMaps={resolvingMaps}
-          setResolvingMaps={setResolvingMaps}
-        />
-        <div className="mt-4 flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={() => setOpen(false)}
-            className="rounded-xl border border-border px-4 py-2 text-sm"
-          >
-            ביטול
+    <section aria-labelledby="activities-title">
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <h3 id="activities-title" className="t-label">
+          פעילויות
+          {day.activities.length > 0 && (
+            <span className="ms-2 font-normal text-muted">{day.activities.length}</span>
+          )}
+        </h3>
+        {day.activities.length > 0 && (
+          <button type="button" onClick={openCreate} className="btn btn-secondary btn-sm">
+            <Plus aria-hidden />
+            הוספה
           </button>
-          <button
-            type="button"
-            onClick={save}
-            className="rounded-xl bg-nav-bg px-4 py-2 text-sm font-medium text-nav-fg glow-accent"
-          >
-            {editingId ? "שמירת שינויים" : "הוספת אטרקציה"}
+        )}
+      </div>
+
+      {day.activities.length === 0 ? (
+        <div className="border-y border-rule py-5">
+          <p className="text-sm leading-6 text-ink-soft">
+            עדיין אין פעילויות ליום הזה. אפשר לחפש מקום במפות, והוא יסומן גם על
+            המפה.
+          </p>
+          <button type="button" onClick={openCreate} className="btn btn-primary mt-3">
+            <Plus aria-hidden />
+            הוספת פעילות ראשונה
           </button>
         </div>
-      </GlassModal>
-    </>
+      ) : (
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+          <SortableContext
+            items={day.activities.map((a) => a.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <ul className="border-y border-rule">
+              {day.activities.map((activity) => (
+                <ActivityRow
+                  key={activity.id}
+                  activity={activity}
+                  onEdit={() => openEdit(activity)}
+                />
+              ))}
+            </ul>
+          </SortableContext>
+        </DndContext>
+      )}
+
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        title={editingId ? "עריכת פעילות" : "פעילות חדשה"}
+        wide
+        footer={
+          <>
+            {editingId && (
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(true)}
+                className="btn btn-tertiary me-auto text-danger"
+              >
+                מחיקת הפעילות
+              </button>
+            )}
+            <button type="button" onClick={() => setOpen(false)} className="btn btn-secondary">
+              ביטול
+            </button>
+            <button
+              type="button"
+              onClick={save}
+              disabled={!draft.title.trim()}
+              className="btn btn-primary"
+            >
+              {editingId ? "שמירת שינויים" : "הוספה ליום"}
+            </button>
+          </>
+        }
+      >
+        <ActivityForm key={formKey} draft={draft} setDraft={setDraft} />
+      </Dialog>
+
+      <ConfirmDialog
+        open={confirmDelete}
+        onClose={() => setConfirmDelete(false)}
+        title="למחוק את הפעילות?"
+        description={`"${editingTitle ?? ""}" תימחק מהיום הזה. אי אפשר לבטל את הפעולה.`}
+        confirmLabel="מחיקה"
+        onConfirm={() => {
+          if (editingId) removeActivity(day.id, editingId);
+          setEditingId(null);
+          setOpen(false);
+        }}
+      />
+    </section>
   );
 }

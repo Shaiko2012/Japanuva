@@ -4,11 +4,11 @@ import { useReducedMotion, type Transition, type Variants } from "framer-motion"
 
 /**
  * High-refresh (120Hz) motion defaults.
- * Prefer animating only `transform` + `opacity` — avoid height/width/top/left/margin.
+ * Prefer animating only `transform` + `opacity`. Avoid height/width/top/left/margin.
  * `layout` / `layoutId` are reserved for sliding pills (nav, SegmentedTabs).
  */
 
-/** Soft cubic ease — calm settle, no overshoot; samples cleanly at 120Hz */
+/** Soft cubic ease, calm settle, no overshoot; samples cleanly at 120Hz */
 export const softEase = [0.22, 1, 0.36, 1] as const;
 
 /** Snappier than a long fade; still readable on 60Hz */
@@ -21,10 +21,10 @@ export const softViewport = {
   margin: "0px 0px -6% 0px",
 } as const;
 
-/** Scroll reveal — slightly longer than UI chrome, still calm */
+/** Scroll reveal slightly longer than UI chrome, still calm */
 export const softRevealDuration = 0.52;
 
-/** Sliding mint nav pill — springy but calm (layoutId OK) */
+/** Sliding mint nav pill springy but calm (layoutId OK) */
 export const navPillTransition: Transition = {
   type: "spring",
   stiffness: 480,
@@ -32,7 +32,7 @@ export const navPillTransition: Transition = {
   mass: 0.75,
 };
 
-/** Sliding ink tab pill (list|map, auth mode, filters) — same feel as nav */
+/** Sliding ink tab pill (list|map, auth mode, filters). Same feel as nav. */
 export const tabPillTransition: Transition = {
   type: "spring",
   stiffness: 480,
@@ -76,7 +76,7 @@ export const softTap = {
   transition: { duration: 0.12, ease: softEase },
 } as const;
 
-/** Logo / icon mark — tiny lift, no travel spam */
+/** Logo / icon mark tiny lift, no travel spam */
 export const softLogoHover = {
   scale: 1.06,
   rotate: -4,
@@ -100,7 +100,7 @@ export function softTransition(delay = 0): Transition {
   };
 }
 
-/** Modal/sheet dim layer — fast + smooth (synced with panel open) */
+/** Modal/sheet dim layer fast + smooth (synced with panel open) */
 export const softBackdropDuration = 0.12;
 
 export function softBackdropTransition(): Transition {
@@ -119,7 +119,7 @@ type SoftEntranceOpts = {
 /**
  * Shared fade + slight upward settle for cards/panels.
  * Tied to scroll via whileInView (once) so below-the-fold content
- * reveals as you arrive — not as a page-load animation.
+ * reveals as you arrive not as a page-load animation.
  * Honors prefers-reduced-motion (opacity only, no travel).
  * GPU-friendly: opacity + transform only.
  */
@@ -154,7 +154,7 @@ export function softEntranceProps(
 }
 
 /**
- * Mobile nav open — animates height so page content is pushed down (not a teleport fade).
+ * Mobile nav open animates height so page content is pushed down (not a teleport fade).
  */
 export function softMenuProps(reduceMotion: boolean | null | undefined) {
   if (reduceMotion) {
@@ -179,7 +179,7 @@ export function softMenuProps(reduceMotion: boolean | null | undefined) {
 
 /**
  * Soft expand/collapse for accordions.
- * GPU-friendly: opacity + y (+ slight scale) — avoids animating `height: auto`.
+ * GPU-friendly: opacity + y (+ slight scale) avoids animating `height: auto`.
  * Tradeoff: parent box size changes instantly; siblings may jump unless
  * they use `layout="position"` for filter reordering (keep layout off expand itself).
  */
@@ -203,7 +203,7 @@ export function softExpandProps(reduceMotion: boolean | null | undefined) {
 
 /**
  * Progress / meter fill via scaleX (transform) instead of width.
- * `inline-start` is not a valid transform-origin — browsers fall back to
+ * `inline-start` is not a valid transform-origin browsers fall back to
  * center, so the bar grows from the middle. The app is RTL, so origin is right.
  */
 export const progressTransformOrigin = "right";

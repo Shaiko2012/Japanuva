@@ -1,5 +1,5 @@
-/* Japanuva service worker — shell cache + network-first APIs */
-const CACHE_VERSION = "japanuva-v12";
+/* Japanuva service worker shell cache + network-first APIs */
+const CACHE_VERSION = "japanuva-v15";
 const SHELL_CACHE = `${CACHE_VERSION}-shell`;
 const PRECACHE_URLS = ["/", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png"];
 
@@ -108,7 +108,7 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  // Never cache API routes aggressively — always prefer network.
+  // Never cache API routes aggressively always prefer network.
   if (isApiRequest(url)) {
     event.respondWith(
       fetch(request).catch(

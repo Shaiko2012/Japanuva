@@ -40,10 +40,11 @@ export function NumberKeypad({
   const reduceMotion = useReducedMotion();
   const tap = softTapProps(reduceMotion);
   const [draft, setDraft] = useState(() => normalizeSeed(value));
-
-  useEffect(() => {
+  const [seed, setSeed] = useState(value);
+  if (value !== seed) {
+    setSeed(value);
     setDraft(normalizeSeed(value));
-  }, [value]);
+  }
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -137,8 +138,8 @@ export function NumberKeypad({
       <div
         dir="ltr"
         className={cn(
-          "rounded-2xl border border-border bg-background/50 px-4 py-4 text-center",
-          "font-[family-name:var(--font-quicksand)] text-3xl font-bold tabular-nums tracking-wide",
+          "border-b-2 border-rule-strong px-4 py-3 text-center",
+          "t-num text-4xl",
           draft === "" && "text-muted",
         )}
         aria-live="polite"
@@ -180,7 +181,7 @@ export function NumberKeypad({
           <motion.button
             type="button"
             onClick={clear}
-            className="col-span-2 flex h-12 items-center justify-center gap-2 rounded-2xl border border-border bg-surface text-sm font-medium text-muted"
+            className="btn btn-secondary col-span-2"
             {...tap}
           >
             <Eraser className="h-4 w-4" />
@@ -190,11 +191,7 @@ export function NumberKeypad({
         <motion.button
           type="button"
           onClick={confirm}
-          className={cn(
-            "flex h-12 items-center justify-center rounded-2xl text-sm font-bold",
-            "bg-nav-bg text-nav-fg shadow-[0_8px_20px_var(--glow)]",
-            "col-span-2",
-          )}
+          className="btn btn-primary col-span-2 h-12"
           {...tap}
         >
           אישור
@@ -223,10 +220,10 @@ function KeyBtn({
       onClick={onClick}
       {...softTapProps(reduceMotion)}
       className={cn(
-        "flex h-12 items-center justify-center gap-1.5 rounded-2xl border text-lg font-semibold tabular-nums transition sm:h-14",
+        "flex h-12 items-center justify-center gap-1.5 rounded-[2px] border border-rule text-lg font-semibold tabular-nums transition-colors sm:h-14",
         muted
-          ? "border-border bg-surface text-muted"
-          : "border-border/80 bg-[color-mix(in_srgb,var(--yellow)_35%,white)] text-foreground hover:bg-[color-mix(in_srgb,var(--yellow)_55%,white)] dark:bg-[color-mix(in_srgb,var(--yellow)_18%,transparent)] dark:hover:bg-[color-mix(in_srgb,var(--yellow)_28%,transparent)]",
+          ? "bg-paper-sunk text-ink-soft hover:border-ink-soft"
+          : "bg-paper text-ink hover:border-ink",
       )}
       aria-label={label}
     >

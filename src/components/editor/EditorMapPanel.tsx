@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { collectTripPins, type TripPin } from "@/lib/tripPins";
 import { isBundledDemoItinerary } from "@/lib/demoDetect";
 import { useItineraryEditor } from "@/store/itineraryEditor";
@@ -12,8 +12,8 @@ const MultiPinMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex h-full items-center justify-center bg-[#eef1f6] text-sm text-muted dark:bg-[#1a1714]">
-        טוען מפה...
+      <div className="flex h-full items-center justify-center bg-paper-sunk text-sm text-muted">
+        טוען מפה…
       </div>
     ),
   },
@@ -22,36 +22,32 @@ const MultiPinMap = dynamic(
 export function EditorMapPanel({ className }: { className?: string }) {
   const editorDays = useItineraryEditor((s) => s.days);
   const [activePinId, setActivePinId] = useState<string | null>(null);
-  const [hydrated, setHydrated] = useState(false);
-
-  useEffect(() => setHydrated(true), []);
 
   const days = useMemo(() => {
-    if (!hydrated) return [];
     if (!editorDays?.length || isBundledDemoItinerary(editorDays)) return [];
     return editorDays;
-  }, [hydrated, editorDays]);
+  }, [editorDays]);
 
   const pins = useMemo(() => collectTripPins(days), [days]);
 
-  function handleSelectPin(pin: TripPin) {
-    setActivePinId(pin.id);
-  }
-
   return (
-    <div
-      className={cn(
-        "editor-map-shell relative isolate overflow-hidden bg-[#eef1f6] dark:bg-[#1a1714]",
-        className,
-      )}
-    >
-      {hydrated ? (
-        <MultiPinMap
-          pins={pins}
-          activePinId={activePinId}
-          onSelectPin={handleSelectPin}
-        />
-      ) : null}
+    <div className={cn("editor-map-shell relative isolate overflow-hidden", className)}>
+      <MultiPinMap
+        pins={pins}
+        activePinId={activePinId}
+        onSelectPin={(pin: TripPin) => setActivePinId(pin.id)}
+      />
+      <div className="pointer-events-none absolute bottom-3 start-3 z-[3] flex gap-4 border border-rule bg-paper-raised px-3 py-1.5 text-[0.78rem] text-ink-soft">
+        <span className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-[1px] bg-[#1f1d1a]" aria-hidden />
+          לינה
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-full bg-[#b8432f]" aria-hidden />
+          פעילות
+        </span>
+        {pins.length === 0 && <span>עדיין אין מקומות עם מיקום</span>}
+      </div>
     </div>
   );
 }

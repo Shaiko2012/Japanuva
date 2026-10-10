@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { softEase } from "@/lib/motion";
 import { Cloud, CloudOff, LoaderCircle } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import {
@@ -70,6 +72,7 @@ export function CloudSync() {
   const mapList = useMapPip((s) => s.showPinList);
   const hydrateMap = useMapPip((s) => s.hydrateFromCloud);
 
+  const reduceMotion = useReducedMotion();
   const [status, setStatus] = useState<"idle" | "syncing" | "saved" | "error">(
     "idle",
   );
@@ -104,7 +107,7 @@ export function CloudSync() {
             useTripMetaStore.getState().startDate;
 
           if (isBundledDemoItinerary(remoteItinerary.days)) {
-            // Old cloud save from demo — wipe and replace with empty personal trip
+            // Old cloud save from demo wipe and replace with empty personal trip
             markPersonalAccount();
             resetToEmpty(start);
             const state = useItineraryEditor.getState();
@@ -259,22 +262,30 @@ export function CloudSync() {
 
   return (
     <div
-      className="pointer-events-none fixed z-[65]"
-      style={{
-        bottom: "max(1.25rem, var(--safe-bottom))",
-        insetInlineEnd: "max(1rem, var(--safe-left))",
-      }}
+      className="pointer-events-none fixed bottom-[calc(var(--tabbar-h)+var(--safe-bottom)+0.75rem)] z-[65] md:bottom-[max(1.25rem,var(--safe-bottom))]"
+      style={{ insetInlineEnd: "max(1rem, var(--safe-left))" }}
+      role="status"
+      aria-live="polite"
     >
-      <div className="pointer-events-auto inline-flex max-w-[min(16.5rem,calc(100vw-9.5rem))] items-center gap-2 rounded-full border border-border bg-surface-strong/95 px-3 py-1.5 text-[11px] text-foreground shadow-lg">
-        {status === "syncing" ? (
-          <LoaderCircle className="h-3.5 w-3.5 animate-spin text-accent" />
-        ) : status === "error" ? (
-          <CloudOff className="h-3.5 w-3.5 text-warning" />
-        ) : (
-          <Cloud className="h-3.5 w-3.5 text-success" />
-        )}
-        <span>{message ?? "מסונכרן לענן"}</span>
-      </div>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={`${status}-${message ?? "idle"}`}
+          initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.96 }}
+          animate={reduceMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
+          exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 8, scale: 0.96 }}
+          transition={{ duration: 0.28, ease: softEase }}
+          className="pointer-events-auto inline-flex max-w-[min(18rem,calc(100vw-2rem))] items-center gap-2 rounded-full border border-border bg-paper-raised px-3 py-1.5 text-[0.78rem] text-ink-soft shadow-[var(--card-shadow)]"
+        >
+          {status === "syncing" ? (
+            <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden />
+          ) : status === "error" ? (
+            <CloudOff className="h-3.5 w-3.5 text-ochre" aria-hidden />
+          ) : (
+            <Cloud className="h-3.5 w-3.5 text-moss" aria-hidden />
+          )}
+          <span>{message ?? "מסונכרן לענן"}</span>
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }

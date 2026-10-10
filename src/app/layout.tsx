@@ -25,10 +25,14 @@ const quicksand = Quicksand({
   subsets: ["latin"],
   weight: ["500", "600", "700"],
 });
+
 export const metadata: Metadata = {
-  title: "Japanuva · תכנון טיול משפחתי ליפן",
+  title: {
+    default: "Japanuva · תכנון טיול משפחתי ליפן",
+    template: "%s · Japanuva",
+  },
   description:
-    "אפליקציית תכנון אינטראקטיבית לטיול משפחתי ליפן באוקטובר 2027 — מסלול, JR Pass, Suica ולוגיסטיקה.",
+    "תכנון טיול משפחתי ליפן: מסלול יומי, לינה, תחבורה, JR Pass, Suica והכנות לפני הטיסה.",
   applicationName: "Japanuva",
   appleWebApp: {
     capable: true,
