@@ -1,5 +1,6 @@
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { getFirebaseDb } from "@/lib/firebase";
+import { stripUndefined } from "@/lib/utils";
 import type { FamilyMemberCounts, DistrictId } from "@/data/trip";
 import type { MapPlace } from "@/lib/maps";
 import type { PipSize } from "@/store/mapPip";
@@ -55,14 +56,11 @@ export async function saveItineraryToCloud(
   if (!db) throw new Error("Firebase לא מוגדר");
 
   const ref = doc(db, "users", uid, "trip", "itinerary");
-  await setDoc(
-    ref,
-    {
-      ...payload,
-      updatedAt: serverTimestamp(),
-    },
-    { merge: true },
-  );
+  const sanitized = stripUndefined({
+    ...payload,
+    updatedAt: serverTimestamp(),
+  });
+  await setDoc(ref, sanitized, { merge: true });
 }
 
 export async function loadPreferencesFromCloud(
@@ -85,16 +83,13 @@ export async function savePreferencesToCloud(
   if (!db) throw new Error("Firebase לא מוגדר");
 
   const ref = doc(db, "users", uid, "trip", "preferences");
-  await setDoc(
-    ref,
-    {
-      family: payload.family,
-      map: payload.map,
-      trip: payload.trip,
-      budgetIls: payload.budgetIls,
-      isPersonalAccount: payload.isPersonalAccount ?? true,
-      updatedAt: serverTimestamp(),
-    },
-    { merge: true },
-  );
+  const sanitized = stripUndefined({
+    family: payload.family,
+    map: payload.map,
+    trip: payload.trip,
+    budgetIls: payload.budgetIls,
+    isPersonalAccount: payload.isPersonalAccount ?? true,
+    updatedAt: serverTimestamp(),
+  });
+  await setDoc(ref, sanitized, { merge: true });
 }
