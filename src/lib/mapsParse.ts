@@ -107,6 +107,28 @@ export function buildMapsSearchUrl(query: string) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
 
+export function hotelMapsUrl(hotel: {
+  name?: string;
+  address?: string;
+  mapsLink?: string;
+  lat?: number;
+  lng?: number;
+}): string | undefined {
+  const direct = hotel.mapsLink?.trim();
+  if (direct) return direct.startsWith("http") ? direct : `https://${direct}`;
+  const address = hotel.address?.trim();
+  if (hotel.lat != null && hotel.lng != null) {
+    return buildMapsOpenUrl({
+      name: hotel.name,
+      address,
+      lat: hotel.lat,
+      lng: hotel.lng,
+    });
+  }
+  if (address) return buildMapsSearchUrl(address);
+  return undefined;
+}
+
 /** Open a named place in Google Maps (not raw coordinates when a label exists). */
 export function buildMapsOpenUrl(options: {
   name?: string;

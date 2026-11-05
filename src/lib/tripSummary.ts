@@ -1,4 +1,18 @@
-import { cityLabel, type EditorDay, type HotelStatus } from "@/types/editor";
+import {
+  cityLabel,
+  type EditorDay,
+  type HotelInfo,
+  type HotelStatus,
+} from "@/types/editor";
+
+/** A hotel night runs from check-in up to (not including) check-out. */
+export function hotelCoversNight(
+  hotel: Pick<HotelInfo, "name" | "checkIn" | "checkOut">,
+  date: string,
+) {
+  if (!hotel.name.trim() || !hotel.checkIn || !hotel.checkOut) return false;
+  return date >= hotel.checkIn && date < hotel.checkOut;
+}
 
 export function formatDayHe(date: string, opts: Intl.DateTimeFormatOptions) {
   const d = new Date(`${date}T12:00:00`);
@@ -42,7 +56,11 @@ export interface Stay {
   toDate: string;
   nights: number;
   costPerNightJpy: number;
+  address?: string;
+  mapsLink?: string;
   bookingLink?: string;
+  lat?: number;
+  lng?: number;
 }
 
 /** Consecutive itinerary days with the same hotel collapse into one stay. */
@@ -59,6 +77,13 @@ export function groupStays(days: EditorDay[]): Stay[] {
       else if (day.hotel.status === "considering" && last.status === "booked") {
         last.status = "considering";
       }
+      if (!last.address && day.hotel.address) last.address = day.hotel.address;
+      if (!last.mapsLink && day.hotel.mapsLink) last.mapsLink = day.hotel.mapsLink;
+      if (!last.bookingLink && day.hotel.bookingLink) {
+        last.bookingLink = day.hotel.bookingLink;
+      }
+      if (last.lat == null && day.hotel.lat != null) last.lat = day.hotel.lat;
+      if (last.lng == null && day.hotel.lng != null) last.lng = day.hotel.lng;
       continue;
     }
     stays.push({
@@ -68,7 +93,11 @@ export function groupStays(days: EditorDay[]): Stay[] {
       toDate: day.date,
       nights: 1,
       costPerNightJpy: day.hotel.costPerNightJpy,
+      address: day.hotel.address,
+      mapsLink: day.hotel.mapsLink,
       bookingLink: day.hotel.bookingLink,
+      lat: day.hotel.lat,
+      lng: day.hotel.lng,
     });
   }
   return stays;

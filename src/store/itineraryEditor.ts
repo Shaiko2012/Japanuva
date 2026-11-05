@@ -11,6 +11,7 @@ import type {
   EditorDay,
   HotelInfo,
 } from "@/types/editor";
+import { hotelCoversNight } from "@/lib/tripSummary";
 import { tripMeta } from "@/data/trip";
 
 interface ItineraryEditorState {
@@ -75,6 +76,29 @@ function blankDay(date: string): EditorDay {
   };
 }
 
+function withStayFrom(day: EditorDay, source: EditorDay): EditorDay {
+  return {
+    ...day,
+    city: source.city,
+    cityCustom: source.cityCustom,
+    hotel: { ...source.hotel },
+  };
+}
+
+function staySourceForDate(days: EditorDay[], date: string, prefer?: EditorDay) {
+  if (prefer && hotelCoversNight(prefer.hotel, date)) return prefer;
+  return days.find((d) => hotelCoversNight(d.hotel, date));
+}
+
+/** Copy a stay onto empty nights that still fall before check-out. */
+function fillCoveredNights(days: EditorDay[]): EditorDay[] {
+  return days.map((d) => {
+    if (d.hotel.name.trim()) return d;
+    const cover = days.find((s) => hotelCoversNight(s.hotel, d.date));
+    return cover ? { ...d, hotel: { ...cover.hotel } } : d;
+  });
+}
+
 function initialEditorState() {
   const day = blankDay(tripMeta.startDate);
   return {
@@ -96,12 +120,20 @@ export const useItineraryEditor = create<ItineraryEditorState>()(
         const { days, selectedDayId } = get();
         const anchorId = afterId ?? selectedDayId;
         const idx = days.findIndex((d) => d.id === anchorId);
-        const baseDate =
-          idx >= 0 ? days[idx].date : tripMeta.startDate;
-        const day = blankDay(nextDate(baseDate));
+        const prev = idx >= 0 ? days[idx] : undefined;
+        const baseDate = prev?.date ?? tripMeta.startDate;
+        const date = nextDate(baseDate);
+        const stay = staySourceForDate(days, date, prev);
+        const day = stay
+          ? withStayFrom(blankDay(date), stay)
+          : blankDay(date);
         const next = [...days];
         next.splice(idx >= 0 ? idx + 1 : next.length, 0, day);
-        set({ days: next, selectedDayId: day.id, dirty: true });
+        set({
+          days: fillCoveredNights(next),
+          selectedDayId: day.id,
+          dirty: true,
+        });
       },
 
       removeDay: (id) => {
@@ -161,12 +193,28 @@ export const useItineraryEditor = create<ItineraryEditorState>()(
         })),
 
       updateHotel: (dayId, hotel) =>
-        set((s) => ({
-          dirty: true,
-          days: s.days.map((d) =>
-            d.id === dayId ? { ...d, hotel: { ...d.hotel, ...hotel } } : d,
-          ),
-        })),
+        set((s) => {
+          const source = s.days.find((d) => d.id === dayId);
+          if (!source) return s;
+          const nextHotel = { ...source.hotel, ...hotel };
+          const name = nextHotel.name.trim();
+          const previousName = source.hotel.name.trim();
+
+          return {
+            dirty: true,
+            days: s.days.map((d) => {
+              if (d.id === dayId) return { ...d, hotel: nextHotel };
+              if (!name) return d;
+              if (!hotelCoversNight(nextHotel, d.date)) return d;
+              const existing = d.hotel.name.trim();
+              const sameStay =
+                Boolean(existing) &&
+                (existing === previousName || existing === name);
+              if (existing && !sameStay) return d;
+              return { ...d, hotel: { ...nextHotel } };
+            }),
+          };
+        }),
 
       addActivity: (dayId, activity) =>
         set((s) => ({
@@ -234,7 +282,7 @@ export const useItineraryEditor = create<ItineraryEditorState>()(
 
       hydrateFromCloud: (payload) =>
         set({
-          days: payload.days,
+          days: fillCoveredNights(payload.days),
           selectedDayId:
             payload.selectedDayId || payload.days[0]?.id || "",
           lastSavedAt: payload.lastSavedAt,
@@ -285,6 +333,9 @@ export const useItineraryEditor = create<ItineraryEditorState>()(
             lastSavedAt: null,
             dirty: true,
           };
+        }
+        if (saved?.days) {
+          return { ...merged, days: fillCoveredNights(saved.days) };
         }
         return merged;
       },

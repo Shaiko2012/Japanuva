@@ -56,6 +56,8 @@ export function collectTripPins(days: EditorDay[]): TripPin[] {
       const coords = resolveCoords(day.hotel.name, day.city, {
         lat: day.hotel.lat,
         lng: day.hotel.lng,
+        mapsLink: day.hotel.mapsLink,
+        location: day.hotel.address,
       });
       if (coords && !seenHotels.has(hotelKey)) {
         if (!Number.isFinite(coords.lat) || !Number.isFinite(coords.lng)) continue;
@@ -70,7 +72,7 @@ export function collectTripPins(days: EditorDay[]): TripPin[] {
           lat: coords.lat,
           lng: coords.lng,
           color: "#b8735a",
-          query: day.hotel.name,
+          query: day.hotel.address || day.hotel.name,
         });
       }
     }

@@ -49,6 +49,10 @@ export interface HotelInfo {
   checkOut: string;
   status: HotelStatus;
   costPerNightJpy: number;
+  /** Street address or area, used for the map pin. */
+  address?: string;
+  mapsLink?: string;
+  /** Airbnb listing or other booking page. */
   bookingLink?: string;
   notes?: string;
   lat?: number;
